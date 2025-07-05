@@ -1,0 +1,94 @@
+{% load static %}
+<!--
+Author: W3layouts
+Author URL: http://w3layouts.com
+-->
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <title>Minimal login form Responsive Widget Template : W3Layouts</title>
+
+    <!-- Meta tags 
+        -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- Google fonts -->
+    <link href="//fonts.googleapis.com/css?family=Nunito:400,700&display=swap" rel="stylesheet">
+
+    <!-- CSS Stylesheet 
+        -->
+    <link rel="stylesheet" href={% static "CSS/reg.css" %} type="text/css" media="all" />
+    {% if stored %}
+    
+    <script>
+        alert('{{stored}}')
+    </script>
+    {% endif %}
+
+    {% if already_registerd %}
+    
+    <script>
+        alert('{{already_registerd}}')
+    </script>
+    {% endif %}
+
+</head>
+
+<body>
+    <div class="w3l-loginblock signinform">
+        <div class="logo">
+            <a class="brand-logo" href="/">User SignUp</a>
+        </div>
+        <!-- main content -->
+            <div class="row map-content-9">
+                <div class="info-grids">
+                    <form  method="post" class="">
+                        {% csrf_token %}
+                        <div class="form-grid">
+                            <div class="input-field">
+                                <label> Username</label>
+                                <input type="text" name="name" id="email" placeholder="Username" required="" >
+                            </div>
+                            <div class="input-field">
+                                <label>Email</label>
+                                <input type="email" name="email" id="Password" placeholder="Email" required="" >
+                            </div>
+                            <div class="input-field">
+                                <label>Mobile</label>
+                                <input type="text" name="mob" id="Password" placeholder="Contact No"  required="" maxlength="10" minlength="10">
+                            </div>
+                            <div class="input-field">
+                                <label>Password</label>
+                                <input type="password" name="password" id="Password" placeholder="Password"  required="">
+                            </div>
+                            <div class="input-field">
+                                <label>Address</label>
+                                {% comment %} <input type="password" name="password" id="Password" placeholder="Password"  required=""> {% endcomment %}
+                                <textarea name="add" id=""></textarea>
+                            </div>
+                        </div>
+                        <label class="check-remaind">
+                            <input type="checkbox">
+                            <span class="checkmark"></span>
+                            <p class="remember">Remember Me</p>
+
+                        </label>
+                        <button type="submit" class="btn btn-primary btn-style">Register Now</button>
+                    </form>
+                    <a class="mt-3" href="/seller/SignUp/">SELLER SIGNUP<a>
+                </div>
+               
+        <!-- //main content -->
+        <!-- footer -->
+        <!-- footer -->
+    </div>
+
+    <!-- fontawesome v5-->
+    <script src=fontawesome.js></script>
+
+</body>
+
+</html>

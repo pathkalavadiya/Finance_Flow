@@ -76,9 +76,9 @@ WSGI_APPLICATION = 'Finance_Flow_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'incomeexpensesdb',          # Replace with your DB name
-        'USER': 'postgres',            # Replace with your DB user
-        'PASSWORD': 'charusat#123',   # ✅ Correct password here
+        'NAME': 'incomeexpensesdb',
+        'USER': 'postgres',
+        'PASSWORD': 'charusat#123',  # <- update this with correct password
         'HOST': 'localhost',
         'PORT': '5432',
     }
