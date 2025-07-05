@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Finance_Flow_app'
 ]
 
 MIDDLEWARE = [
@@ -120,9 +121,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS= [
-    os.path.join(BASE_DIR, 'static'),  # Ensure this directory exists
-]   
+# Only use STATICFILES_DIRS for extra static folders (not the same as STATIC_ROOT)
+STATICFILES_DIRS = []  # You can add extra static folders here if needed, but do not include STATIC_ROOT
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
