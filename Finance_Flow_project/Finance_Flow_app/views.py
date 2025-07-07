@@ -3,6 +3,7 @@ from .models import Registration
 
 
 # Create your views here.
+<<<<<<< HEAD
 def register(request):
     if request.method == 'POST':
         store_reg = Registration()
@@ -20,3 +21,10 @@ def register(request):
             return render(request,'register.html',{'stored':"registration sucessfull.."})
     else:
         return render(request,'register.html')
+=======
+def index(request):
+    return render(request, 'index.html')
+
+def add_expense(request):
+    return render(request, 'expenses/add_expense.html')
+>>>>>>> c62aaeeeba9b988c71292dc8499b3f225fdc63fc
