@@ -1,0 +1,168 @@
+/* Custom Register Styles Based on Django Template */
+
+body {
+  background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+  font-family: 'Nunito', sans-serif;
+  color: #e0e0e0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.signinform {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.logo .brand-logo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  display: block;
+  text-decoration: none;
+}
+
+.map-content-9 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.info-grids {
+  width: 100%;
+}
+
+form {
+  width: 100%;
+}
+
+.input-field {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.input-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #d1d5db;
+  margin-bottom: 0.5rem;
+  display: block;
+  text-transform: uppercase;
+}
+
+.input-field input,
+.input-field textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  color: #e0e0e0;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.input-field input::placeholder,
+.input-field textarea::placeholder {
+  color: #a0aec0;
+}
+
+.input-field input:focus,
+.input-field textarea:focus {
+  outline: none;
+  border-color: #4f46e5;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 8px #4f46e5aa;
+}
+
+textarea {
+  resize: none;
+  height: 100px;
+}
+
+.check-remaind {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.checkmark {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background: #f1f1f1;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+input[type="checkbox"]:checked + .checkmark {
+  background-color: #4f46e5;
+}
+
+.btn-style {
+  width: 100%;
+  padding: 0.75rem;
+  background: #4f46e5;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.6);
+}
+
+.btn-style:hover {
+  background: #4338ca;
+}
+
+.btn-style:active {
+  background: #3730a3;
+}
+
+.mt-3 {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #a5b4fc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.mt-3:hover {
+  color: #6366f1;
+}
+
+@media (max-width: 480px) {
+  .signinform {
+    padding: 2rem 1.5rem;
+  }
+
+  .input-field input,
+  .input-field textarea {
+    padding: 0.65rem 0.9rem;
+  }
+
+  .btn-style {
+    font-size: 1rem;
+    padding: 0.6rem;
+  }
+}
