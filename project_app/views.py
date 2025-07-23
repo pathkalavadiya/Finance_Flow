@@ -34,7 +34,7 @@ def login(request):
         if check_register:
             if check_register.password == password:
                 request.session['entry_email'] = check_register.email
-                return redirect('index')
+                return redirect('dashboard')
             else:
                 return render(request, 'login.html', {'login_key_incorrect': "Email or password is wrong"})
         else:
