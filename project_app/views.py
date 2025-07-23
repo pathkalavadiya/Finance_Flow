@@ -43,7 +43,10 @@ def login(request):
 
 
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    return render(request, 'dashboard.html', {'user': user})
 
 
 def expense(request):
