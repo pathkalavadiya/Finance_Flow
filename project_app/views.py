@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, redirect
 from .models import Registration, Expense
-
+#this is the views file for the Finance Flow project
 # Create your views here.
 # registration
 def register(request):
