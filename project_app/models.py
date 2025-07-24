@@ -13,6 +13,7 @@ class Registration(models.Model):
         return self.email
 
 class Expense(models.Model):
+    user = models.ForeignKey(Registration, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.CharField(max_length=255)
     currency = models.CharField(max_length=10)
