@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, redirect
-from .models import Registration, Expense
+from django.db.models import Sum
+from .models import Registration, Expense, Income
 #this is the views file for the Finance Flow project
 # Create your views here.
 # registration
@@ -44,9 +45,32 @@ def login(request):
 
 def dashboard(request):
     user = None
+    total_income = 0
+    total_expense = 0
+    net_balance = 0
+    
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
-    return render(request, 'dashboard.html', {'user': user})
+        
+        if user:
+            # Calculate total income
+            income_sum = Income.objects.filter(user=user).aggregate(total=Sum('amount'))
+            total_income = income_sum['total'] or 0
+            
+            # Calculate total expense
+            expense_sum = Expense.objects.filter(user=user).aggregate(total=Sum('amount'))
+            total_expense = expense_sum['total'] or 0
+            
+            # Calculate net balance
+            net_balance = total_income - total_expense
+    
+    context = {
+        'user': user,
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'net_balance': net_balance
+    }
+    return render(request, 'dashboard.html', context)
 
 
 def expense(request):
@@ -84,6 +108,36 @@ def expense(request):
 
 
 def income(request):
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        description = request.POST.get('description')
+        currency = request.POST.get('currency')
+        category = request.POST.get('category')
+        
+        # Save to database with user association
+        if user:
+            Income.objects.create(
+                user=user,
+                amount=amount,
+                description=description,
+                currency=currency,
+                category=category
+            )
+        else:
+            # Handle case where user is not logged in
+            return redirect('login')
+            
+        return render(request, 'income.html', {
+            'success': True,
+            'amount': amount,
+            'description': description,
+            'currency': currency,
+            'category': category
+        })
     return render(request, 'income.html')
 
 
