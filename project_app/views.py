@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, redirect
 from .models import Registration, Expense
-
+#this is the views file for the Finance Flow project
 # Create your views here.
 # registration
 def register(request):
@@ -50,18 +50,29 @@ def dashboard(request):
 
 
 def expense(request):
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
     if request.method == 'POST':
         amount = request.POST.get('amount')
         description = request.POST.get('description')
         currency = request.POST.get('currency')
         category = request.POST.get('category')
-        # Save to database
-        Expense.objects.create(
-            amount=amount,
-            description=description,
-            currency=currency,
-            category=category
-        )
+        
+        # Save to database with user association
+        if user:
+            Expense.objects.create(
+                user=user,
+                amount=amount,
+                description=description,
+                currency=currency,
+                category=category
+            )
+        else:
+            # Handle case where user is not logged in
+            return redirect('login')
+            
         return render(request, 'expense.html', {
             'success': True,
             'amount': amount,
@@ -70,6 +81,10 @@ def expense(request):
             'category': category
         })
     return render(request, 'expense.html')
+
+
+def income(request):
+    return render(request, 'income.html')
 
 
 def profile(request):

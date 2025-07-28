@@ -1,75 +1,426 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
-        body { background: #f4f5f7; }
-        .sidebar { min-width: 220px; background: #fff; height: 100vh; border-right: 1px solid #e0e0e0; }
-        .sidebar .nav-link { color: #333; }
-        .sidebar .nav-link.active { background: #f0f0f0; font-weight: bold; }
-        .topbar { background: #fff; border-bottom: 1px solid #e0e0e0; }
-        .goal-card { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .progress { height: 6px; border-radius: 3px; }
-        .goal-title { font-size: 1.1rem; font-weight: 500; }
-        .goal-balance { font-size: 1.3rem; font-weight: bold; }
-        .auto-save { font-size: 0.9rem; }
-    </style>
-</head>
-<body>
-<div class="d-flex">
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Finance Flow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .sidebar {
+        width: 280px;
+        padding: 24px;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 24px;
+    }
+
+    .user-profile {
+        text-align: center;
+        padding: 24px 0;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        font-weight: 600;
+    }
+
+    .user-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .user-email {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .nav-section {
+        margin-bottom: 32px;
+    }
+
+    .nav-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        padding-left: 16px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 12px;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-item:hover, .nav-item.active {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        transform: translateX(4px);
+    }
+
+    .nav-icon {
+        width: 20px;
+        margin-right: 12px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .stat-icon.income {
+        background: linear-gradient(135deg, var(--accent-color), #059669);
+    }
+
+    .stat-icon.expense {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    }
+
+    .stat-icon.balance {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .action-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--text-primary);
+    }
+
+    .action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        color: var(--text-primary);
+        text-decoration: none;
+    }
+
+    .action-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 28px;
+        color: white;
+    }
+
+    .action-icon.add-expense {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    }
+
+    .action-icon.add-income {
+        background: linear-gradient(135deg, var(--accent-color), #059669);
+    }
+
+    .action-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .action-description {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .recent-activity {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
     <!-- Sidebar -->
-    <div class="sidebar p-3">
-        <div class="mb-4 text-center">
-            <img src="https://ui-avatars.com/api/?name={{ user.name|default:'User'|urlencode }}&background=0D8ABC&color=fff&size=64" alt="Profile" class="rounded-circle mb-2" width="64" height="64">
-            <div class="fw-bold fs-5">{{ user.name|default:'User' }}</div>
-            <div><a href="{% url 'profile' %}" class="small text-decoration-none">View Profile</a></div>
+    <div class="sidebar glass-card">
+        <div class="user-profile">
+            <div class="user-avatar">
+                {{ user.name|default:"U"|first|upper }}
+            </div>
+            <div class="user-name">{{ user.name|default:"User" }}</div>
+            <div class="user-email">{{ user.email|default:"user@example.com" }}</div>
         </div>
-        <nav class="nav flex-column mb-4">
-            <a class="nav-link" href="#"><i class="bi bi-house-door me-2"></i>Dashboard</a>
-            <a class="nav-link" href="#"><i class="bi bi-arrow-left-right me-2"></i>Transactions</a>
-            <a class="nav-link" href="/expense/"><i class="bi bi-cash-stack me-2"></i>Expense</a>
-            <a class="nav-link" href="#"><i class="bi bi-receipt me-2"></i>Bills & Payments</a>
-            <a class="nav-link" href="#"><i class="bi bi-file-earmark-text me-2"></i>Invoices</a>
-            <a class="nav-link" href="#"><i class="bi bi-graph-up-arrow me-2"></i>Investments</a>
-            <a class="nav-link" href="#"><i class="bi bi-bar-chart-line me-2"></i>Reports</a>
-            <a class="nav-link active" href="#"><i class="bi bi-bullseye me-2"></i>Goals</a>
-        </nav>
-        <div class="mt-auto">
-            <a class="nav-link" href="#">Settings</a>
-            <a class="nav-link" href="#">Get Support</a>
-            <a class="nav-link" href="#">Give Feedback</a>
+
+        <div class="nav-section">
+            <div class="nav-title">Main Menu</div>
+            <a href="{% url 'dashboard' %}" class="nav-item active">
+                <i class="bi bi-house-door nav-icon"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'expense' %}" class="nav-item">
+                <i class="bi bi-cash-stack nav-icon"></i>
+                Expenses
+            </a>
+            <a href="{% url 'income' %}" class="nav-item">
+                <i class="bi bi-currency-dollar nav-icon"></i>
+                Income
+            </a>
         </div>
-        <div class="mt-4 p-2 bg-light rounded">
-            <div class="small">Set up 50% completed</div>
-            <div class="small text-muted">Your free trial ends in 10 days</div>
-            <a href="#" class="small">See plan →</a>
+
+        <div class="nav-section">
+            <div class="nav-title">Tools</div>
+            <a href="#" class="nav-item">
+                <i class="bi bi-graph-up-arrow nav-icon"></i>
+                Analytics
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-pie-chart nav-icon"></i>
+                Reports
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-calendar-event nav-icon"></i>
+                Budget
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Account</div>
+            <a href="{% url 'profile' %}" class="nav-item">
+                <i class="bi bi-person nav-icon"></i>
+                Profile
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-gear nav-icon"></i>
+                Settings
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-question-circle nav-icon"></i>
+                Help
+            </a>
         </div>
     </div>
+
     <!-- Main Content -->
-    <div class="flex-grow-1">
-        <!-- Topbar -->
-        <div class="topbar d-flex align-items-center justify-content-between px-4 py-3">
-            <div class="fw-bold fs-5">Goals</div>
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">Dashboard</h1>
             <div>
-                <button class="btn btn-dark">+ Create Goals</button>
+                <button class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Quick Add
+                </button>
             </div>
         </div>
-        <div class="container-fluid mt-4">
-            <div class="row mb-3">
-            </div>
-            <div class="row g-4">
-                <!-- No default goal cards -->
-                <div class="col-12 text-center text-muted py-5">
-                    <h5>No goals yet.</h5>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon income">
+                        <i class="bi bi-arrow-up-circle"></i>
+                    </div>
+                    <div class="stat-change positive">+12.5%</div>
                 </div>
+                <div class="stat-value">$2,450</div>
+                <div class="stat-label">Total Income</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon expense">
+                        <i class="bi bi-arrow-down-circle"></i>
+                    </div>
+                    <div class="stat-change negative">-8.2%</div>
+                </div>
+                <div class="stat-value">$1,280</div>
+                <div class="stat-label">Total Expenses</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon balance">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div class="stat-change positive">+4.3%</div>
+                </div>
+                <div class="stat-value">$1,170</div>
+                <div class="stat-label">Net Balance</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{% url 'expense' %}" class="action-card">
+                <div class="action-icon add-expense">
+                    <i class="bi bi-plus"></i>
+                </div>
+                <div class="action-title">Add Expense</div>
+                <div class="action-description">Record a new expense</div>
+            </a>
+
+            <a href="{% url 'income' %}" class="action-card">
+                <div class="action-icon add-income">
+                    <i class="bi bi-plus"></i>
+                </div>
+                <div class="action-title">Add Income</div>
+                <div class="action-description">Record a new income</div>
+            </a>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3 class="section-title">Recent Activity</h3>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h5>No recent activity</h5>
+                <p>Start tracking your finances to see your activity here</p>
             </div>
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html> 
+{% endblock %} 

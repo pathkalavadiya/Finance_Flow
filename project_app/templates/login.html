@@ -1,146 +1,235 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'base.html' %}
 
-<head>
-    <title>Login - Clean UI</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="//fonts.googleapis.com/css?family=Nunito:400,700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Nunito', sans-serif;
-            background: linear-gradient(to bottom right, #d9e4f5, #fcfdfd);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+{% block title %}Sign In - Finance Flow{% endblock %}
 
-        .login-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-        }
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
 
-        .login-card {
-            background: white;
-            width: 320px;
-            padding: 40px 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
+    .auth-card {
+        width: 100%;
+        max-width: 420px;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+    }
 
-        .login-icon {
-            font-size: 60px;
-            color: #2e6d75;
-            margin-bottom: 20px;
-        }
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
 
-        .login-title {
-            font-size: 24px;
-            margin-bottom: 30px;
-            color: #2e2e2e;
-        }
+    .logo-section {
+        text-align: center;
+        margin-bottom: 32px;
+    }
 
-        .input-group {
-    display: flex;
-    align-items: center;
-    position: relative;
-    margin-bottom: 20px;
-    width: 100%;
-}
+    .logo-icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        color: white;
+        font-size: 28px;
+    }
 
-.input-group i {
-    position: absolute;
-    left: 12px;
-    color: #2e6d75;
-    font-size: 16px;
-}
+    .auth-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
 
-.input-group input {
-    width: 100%;
-    padding: 10px 15px 10px 38px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    outline: none;
-    font-size: 14px;
-    background: #fff;
-    box-sizing: border-box;
-}
+    .auth-subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+    }
 
+    .form-group {
+        margin-bottom: 20px;
+    }
 
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            background-color: #2e6d75;
-            color: white;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+    .form-label {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        display: block;
+    }
 
-        .login-btn:hover {
-            background-color: #235a63;
-        }
+    .input-wrapper {
+        position: relative;
+    }
 
-        .login-footer {
-            margin-top: 15px;
-        }
+    .input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        z-index: 2;
+    }
 
-        .login-footer a {
-            text-decoration: none;
-            font-size: 13px;
-            color: #2e6d75;
-        }
-    </style>
+    .form-control {
+        padding-left: 48px;
+    }
 
-    {% if login_key_incorrect %}
-    <script>alert('{{ login_key_incorrect }}')</script>
-    {% endif %}
-    {% if login_key %}
-    <script>alert('{{ login_key }}')</script>
-    {% endif %}
-</head>
+    .btn-submit {
+        width: 100%;
+        padding: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 8px;
+    }
 
-<body>
-    <div class="login-wrapper">
-        <div class="login-card">
-            <div class="login-icon">
-                <i class="fa fa-user-circle"></i>
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .auth-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .auth-link:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .shape {
+        position: absolute;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(118, 75, 162, 0.1));
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .shape:nth-child(1) {
+        width: 60px;
+        height: 60px;
+        top: 30%;
+        left: 15%;
+        animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+        width: 40px;
+        height: 40px;
+        top: 70%;
+        right: 15%;
+        animation-delay: 2s;
+    }
+
+    .forgot-password {
+        text-align: right;
+        margin-bottom: 20px;
+    }
+
+    .forgot-password a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="glass-card auth-card floating-card">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        
+        <div class="logo-section">
+            <div class="logo-icon">
+                <i class="bi bi-wallet2"></i>
             </div>
-            <h2 class="login-title">Sign In</h2>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="input-group">
-                    <i class="fa fa-user"></i>
-                    <input type="email" name="email" placeholder="Email " required>
-                </div>
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Sign in to your Finance Flow account</p>
+        </div>
 
-                <div class="input-group">
-                    <i class="fa fa-lock"></i>
-                    <input type="password" name="password" placeholder="Password" required>
-                </div>
+        {% if login_key_incorrect %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ login_key_incorrect }}
+        </div>
+        {% endif %}
 
-                {% if not_register %}
-                <p style="color: red;">{{ not_register }}</p>
-                {% endif %}
+        {% if not_register %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ not_register }}
+        </div>
+        {% endif %}
 
-                <button type="submit" class="login-btn">Login</button>
-                <div class="login-footer">
-                    <a href="{% url 'register' %}">Want to Register?</a>
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-envelope input-icon"></i>
+                    <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
                 </div>
-            </form>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-lock input-icon"></i>
+                    <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+            </div>
+
+            <div class="forgot-password">
+                <a href="#">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-submit">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Sign In
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p class="mb-0">
+                Don't have an account? 
+                <a href="{% url 'register' %}" class="auth-link">Create one here</a>
+            </p>
         </div>
     </div>
-
-    <script src="{% static 'fontawesome.js' %}"></script>
-</body>
-
-</html>
+</div>
+{% endblock %}

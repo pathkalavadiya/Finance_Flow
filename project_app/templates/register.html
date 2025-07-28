@@ -1,144 +1,267 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Register - Modern UI</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/reg.css' %}">
+{% extends 'base.html' %}
 
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-        body {
-            background: linear-gradient(135deg, #fbfcfc 0%, #f6f6f6 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .register-card {
-            background: white;
-            width: 100%;
-            max-width: 500px;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-        }
-        .register-card h1 {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-        .input-group {
-            position: relative;
-            margin-bottom: 16px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #374151;
-        }
-        .input-group input,
-        .input-group textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            background-color: #f9fafb;
-            font-size: 1rem;
-        }
-        .input-group textarea {
-            resize: none;
-            height: 80px;
-        }
-        .checkbox {
-            margin-bottom: 20px;
-        }
-        .checkbox label {
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-        .btn {
-            background-color: #2e6d75;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 999px;
-            font-weight: 600;
-            width: 100%;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn:hover {
-            background-color: #1d4ed8;
-        }
-        .link {
-            display: block;
-            text-align: center;
-            margin-top: 12px;
-            font-size: 0.9rem;
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .link:hover {
-            text-decoration: underline;
-        }
-    </style>
+{% block title %}Create Account - Finance Flow{% endblock %}
 
-    {% if register_key %}
-    <script>alert('{{register_key}}')</script>
-    {% endif %}
-    {% if register_check_key %}
-    <script>alert('{{register_check_key}}')</script>
-    {% endif %}
-    {% if password_mismatch %}
-    <script>alert('{{password_mismatch}}')</script>
-    {% endif %}
-</head>
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
 
-<body>
-    <div class="register-card">
-        <h1>Create Account</h1>
+    .auth-card {
+        width: 100%;
+        max-width: 480px;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+    .logo-section {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .logo-icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        color: white;
+        font-size: 28px;
+    }
+
+    .auth-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .auth-subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        z-index: 2;
+    }
+
+    .form-control {
+        padding-left: 48px;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .auth-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .auth-link:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .shape {
+        position: absolute;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(118, 75, 162, 0.1));
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .shape:nth-child(1) {
+        width: 80px;
+        height: 80px;
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+        width: 60px;
+        height: 60px;
+        top: 60%;
+        right: 10%;
+        animation-delay: 2s;
+    }
+
+    .shape:nth-child(3) {
+        width: 40px;
+        height: 40px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 4s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="glass-card auth-card floating-card">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        
+        <div class="logo-section">
+            <div class="logo-icon">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join Finance Flow to manage your money smarter</p>
+        </div>
+
+        {% if register_key %}
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ register_key }}
+        </div>
+        {% endif %}
+
+        {% if register_check_key %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ register_check_key }}
+        </div>
+        {% endif %}
+
+        {% if password_mismatch %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ password_mismatch }}
+        </div>
+        {% endif %}
+
         <form method="post">
             {% csrf_token %}
-            <div class="input-group">
-                <label>Username</label>
-                <input type="text" name="name" placeholder="Username" required>
+            
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-person input-icon"></i>
+                    <input type="text" name="name" class="form-control" placeholder="Enter your full name" required>
+                </div>
             </div>
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" name="email" placeholder="Email" required>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-envelope input-icon"></i>
+                    <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+                </div>
             </div>
-            <div class="input-group">
-                <label>Mobile</label>
-                <input type="text" name="mob" placeholder="Contact No" maxlength="10" minlength="10" required>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-phone input-icon"></i>
+                    <input type="tel" name="mob" class="form-control" placeholder="Enter your phone number" maxlength="10" minlength="10" required>
+                </div>
             </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Password" required>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-lock input-icon"></i>
+                    <input type="password" name="password" class="form-control" placeholder="Create a strong password" required>
+                </div>
             </div>
-            <div class="input-group">
-                <label>Confirm Password</label>
-                <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-shield-lock input-icon"></i>
+                    <input type="password" name="confirm_password" class="form-control" placeholder="Confirm your password" required>
+                </div>
             </div>
-            <div class="input-group">
-                <label>Address</label>
-                <textarea name="add" placeholder="Address"></textarea>
+
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea name="add" class="form-control" placeholder="Enter your address" rows="3"></textarea>
             </div>
-            <div class="checkbox">
-                <label><input type="checkbox"> Remember me</label>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="terms">
+                <label class="form-check-label" for="terms">
+                    I agree to the <a href="#" class="auth-link">Terms of Service</a> and <a href="#" class="auth-link">Privacy Policy</a>
+                </label>
             </div>
-            <button type="submit" class="btn">Register Now</button>
-            <a href="{% url 'login' %}" class="link">Already registered? Log in</a>
+
+            <button type="submit" class="btn btn-primary btn-submit">
+                <i class="bi bi-person-plus me-2"></i>
+                Create Account
+            </button>
         </form>
+
+        <div class="auth-footer">
+            <p class="mb-0">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="auth-link">Sign in here</a>
+            </p>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

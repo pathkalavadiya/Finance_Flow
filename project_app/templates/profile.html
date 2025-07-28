@@ -1,23 +1,347 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-5">
-    <div class="card mx-auto" style="max-width: 400px;">
-        <div class="card-body text-center">
-            <img src="https://ui-avatars.com/api/?name={{ user.name|default:'User'|urlencode }}&background=0D8ABC&color=fff&size=80" alt="Profile" class="rounded-circle mb-3" width="80" height="80">
-            <h4 class="card-title">{{ user.name|default:'User' }}</h4>
-            <p class="card-text mb-1"><strong>Email:</strong> {{ user.email }}</p>
-            <p class="card-text mb-1"><strong>Phone:</strong> {{ user.phone_no }}</p>
-            <p class="card-text mb-1"><strong>Address:</strong> {{ user.address }}</p>
-            <a href="/dashboard/" class="btn btn-primary mt-3">Back to Dashboard</a>
+{% extends 'base.html' %}
+
+{% block title %}Profile - Finance Flow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .profile-card {
+        width: 100%;
+        max-width: 600px;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin: 0 auto 24px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 48px;
+        font-weight: 600;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .profile-name {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .profile-email {
+        font-size: 18px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+
+    .profile-status {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, var(--accent-color), #059669);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .profile-status i {
+        margin-right: 8px;
+    }
+
+    .profile-info {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .info-section {
+        margin-bottom: 24px;
+    }
+
+    .info-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 16px;
+        font-size: 18px;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+    }
+
+    .info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .profile-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-top: 32px;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn.primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+    }
+
+    .action-btn.secondary {
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--text-primary);
+        border: 2px solid var(--border-color);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        text-decoration: none;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        color: var(--primary-dark);
+        transform: translateX(-4px);
+    }
+
+    .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .shape {
+        position: absolute;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(118, 75, 162, 0.1));
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .shape:nth-child(1) {
+        width: 80px;
+        height: 80px;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+        width: 60px;
+        height: 60px;
+        top: 60%;
+        right: 10%;
+        animation-delay: 2s;
+    }
+
+    .shape:nth-child(3) {
+        width: 40px;
+        height: 40px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 4s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="glass-card profile-card floating-card">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+
+        <a href="{% url 'dashboard' %}" class="back-link">
+            <i class="bi bi-arrow-left me-2"></i>
+            Back to Dashboard
+        </a>
+
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ user.name|default:"U"|first|upper }}
+            </div>
+            <h1 class="profile-name">{{ user.name|default:"User" }}</h1>
+            <div class="profile-email">{{ user.email|default:"user@example.com" }}</div>
+            <div class="profile-status">
+                <i class="bi bi-check-circle"></i>
+                Active Account
+            </div>
+        </div>
+
+        <div class="profile-info">
+            <div class="info-section">
+                <div class="info-title">Personal Information</div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value">{{ user.name|default:"Not provided" }}</div>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="bi bi-envelope"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-value">{{ user.email|default:"Not provided" }}</div>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value">{{ user.phone_no|default:"Not provided" }}</div>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Address</div>
+                        <div class="info-value">{{ user.address|default:"Not provided" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-title">Account Information</div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Member Since</div>
+                        <div class="info-value">January 2024</div>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Account Status</div>
+                        <div class="info-value">Verified</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a href="#" class="action-btn primary">
+                <i class="bi bi-pencil me-2"></i>
+                Edit Profile
+            </a>
+            <a href="#" class="action-btn secondary">
+                <i class="bi bi-gear me-2"></i>
+                Settings
+            </a>
         </div>
     </div>
 </div>
-</body>
-</html> 
+{% endblock %} 

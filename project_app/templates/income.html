@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Add Expense - Finance Flow{% endblock %}
+{% block title %}Add Income - Finance Flow{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -27,7 +27,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        background: linear-gradient(135deg, var(--accent-color), #059669);
     }
 
     .form-header {
@@ -38,7 +38,7 @@
     .form-icon {
         width: 64px;
         height: 64px;
-        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        background: linear-gradient(135deg, var(--accent-color), #059669);
         border-radius: 16px;
         display: flex;
         align-items: center;
@@ -94,11 +94,11 @@
         font-size: 16px;
         font-weight: 600;
         margin-top: 8px;
-        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        background: linear-gradient(135deg, var(--accent-color), #059669);
     }
 
     .btn-submit:hover {
-        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        background: linear-gradient(135deg, #059669, #047857);
     }
 
     .back-link {
@@ -152,7 +152,7 @@
 
     .shape {
         position: absolute;
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
         border-radius: 50%;
         animation: float 6s ease-in-out infinite;
     }
@@ -180,6 +180,40 @@
         left: 20%;
         animation-delay: 4s;
     }
+
+    .file-upload {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-upload input[type=file] {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .file-upload-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        border: 2px dashed var(--border-color);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-label:hover {
+        border-color: var(--accent-color);
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .file-upload-icon {
+        font-size: 24px;
+        color: var(--text-secondary);
+        margin-right: 12px;
+    }
 </style>
 {% endblock %}
 
@@ -199,10 +233,10 @@
 
         <div class="form-header">
             <div class="form-icon">
-                <i class="bi bi-cash-stack"></i>
+                <i class="bi bi-currency-dollar"></i>
             </div>
-            <h1 class="form-title">Add Expense</h1>
-            <p class="form-subtitle">Record a new expense to track your spending</p>
+            <h1 class="form-title">Add Income</h1>
+            <p class="form-subtitle">Record a new income to track your earnings</p>
         </div>
 
         {% if success %}
@@ -210,7 +244,7 @@
             <div class="success-icon">
                 <i class="bi bi-check-circle"></i>
             </div>
-            <div class="success-title">Expense Added Successfully!</div>
+            <div class="success-title">Income Added Successfully!</div>
             <div class="success-details">
                 {{ amount }} {{ currency }} - {{ category }}<br>
                 {{ description }}
@@ -218,7 +252,7 @@
         </div>
         {% endif %}
 
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
             <div class="form-group">
@@ -233,7 +267,7 @@
                 <label class="form-label">Description</label>
                 <div class="input-wrapper">
                     <i class="bi bi-pencil input-icon"></i>
-                    <input type="text" class="form-control" name="description" placeholder="What was this expense for?" required>
+                    <input type="text" class="form-control" name="description" placeholder="What is this income for?" required>
                 </div>
             </div>
 
@@ -258,21 +292,31 @@
                     <i class="bi bi-tags input-icon"></i>
                     <select class="form-select" name="category" required>
                         <option value="">Select category</option>
-                        <option value="Food">🍽️ Food & Dining</option>
-                        <option value="Transport">🚗 Transportation</option>
-                        <option value="Shopping">🛍️ Shopping</option>
-                        <option value="Bills">📄 Bills & Utilities</option>
-                        <option value="Entertainment">🎬 Entertainment</option>
-                        <option value="Healthcare">🏥 Healthcare</option>
-                        <option value="Education">📚 Education</option>
+                        <option value="Salary">💰 Salary</option>
+                        <option value="Bonus">🎁 Bonus</option>
+                        <option value="Business">💼 Business</option>
+                        <option value="Investment">📈 Investment</option>
+                        <option value="Freelance">💻 Freelance</option>
+                        <option value="Gift">🎁 Gift</option>
                         <option value="Other">📦 Other</option>
                     </select>
                 </div>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">Upload Receipt (Optional)</label>
+                <div class="file-upload">
+                    <label class="file-upload-label">
+                        <i class="bi bi-cloud-upload file-upload-icon"></i>
+                        <span>Click to upload receipt or drag and drop</span>
+                    </label>
+                    <input type="file" name="image" accept="image/*">
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary btn-submit">
                 <i class="bi bi-plus-circle me-2"></i>
-                Add Expense
+                Add Income
             </button>
         </form>
     </div>

@@ -20,6 +20,7 @@ from project_app.views import register, login
 from project_app.views import dashboard
 from project_app.views import expense
 from project_app.views import profile
+from project_app.views import income
 from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
@@ -29,6 +30,7 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('expense/', expense, name='expense'),
     path('profile/', profile, name='profile'),
+    path('income/', income, name='income'),
 
     
 ]
