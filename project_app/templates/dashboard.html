@@ -106,21 +106,115 @@
         margin: 0;
     }
 
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    .stats-layout {
+        display: flex;
         gap: 24px;
         margin-bottom: 32px;
+        max-width: 1200px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        flex: 1;
+        max-width: 500px;
+    }
+
+    .debit-card {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        border-radius: 20px;
+        padding: 32px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .card-type {
+        font-size: 14px;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+
+    .bank-name {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .card-number {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
+
+    .card-balance {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .expiry-date {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+
+    .cardholder-name {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .card-brand {
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+
+    .card-icons {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 8px;
+        font-size: 16px;
+        opacity: 0.8;
     }
 
     .stat-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         border-radius: 16px;
-        padding: 24px;
+        padding: 28px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: var(--shadow-md);
         transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-height: 150px;
     }
 
     .stat-card:hover {
@@ -130,45 +224,59 @@
 
     .stat-header {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
         margin-bottom: 16px;
     }
 
+    .stat-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
     .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
+        font-size: 20px;
         color: white;
     }
 
-    .stat-icon.income {
+    .income-card .stat-icon {
         background: linear-gradient(135deg, var(--accent-color), #059669);
     }
 
-    .stat-icon.expense {
+    .expense-card .stat-icon {
         background: linear-gradient(135deg, var(--danger-color), #dc2626);
     }
 
-    .stat-icon.balance {
+    .balance-card .stat-icon {
         background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     }
 
     .stat-value {
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 4px;
+        margin: 0;
+        line-height: 1.2;
     }
 
-    .stat-label {
-        font-size: 14px;
-        color: var(--text-secondary);
-        font-weight: 500;
+    .stat-value.positive {
+        color: var(--accent-color);
+    }
+
+    .stat-value.negative {
+        color: var(--danger-color);
+    }
+
+    .stat-value.balance {
+        color: var(--primary-color);
     }
 
     .quick-actions {
@@ -360,38 +468,46 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon income">
-                        <i class="bi bi-arrow-up-circle"></i>
+        <div class="stats-layout">
+            <div class="stats-grid">
+                <div class="stat-card income-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Income</div>
+                        <div class="stat-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
                     </div>
-                    <div class="stat-change positive">+12.5%</div>
+                    <div class="stat-value positive">+ ${{ total_income|floatformat:2 }}</div>
                 </div>
-                <div class="stat-value">${{ total_income|floatformat:2 }}</div>
-                <div class="stat-label">Total Income</div>
-            </div>
 
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon expense">
-                        <i class="bi bi-arrow-down-circle"></i>
+                <div class="stat-card expense-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Spending</div>
+                        <div class="stat-icon">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
                     </div>
-                    <div class="stat-change negative">-8.2%</div>
+                    <div class="stat-value negative">- ${{ total_expense|floatformat:2 }}</div>
                 </div>
-                <div class="stat-value">${{ total_expense|floatformat:2 }}</div>
-                <div class="stat-label">Total Expenses</div>
             </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon balance">
-                        <i class="bi bi-wallet2"></i>
-                    </div>
-                    <div class="stat-change positive">+4.3%</div>
+            <div class="debit-card">
+                <div class="card-header">
+                    <div class="card-type">Debit</div>
+                    <div class="bank-name">Larana Bank</div>
                 </div>
-                <div class="stat-value">${{ net_balance|floatformat:2 }}</div>
-                <div class="stat-label">Net Balance</div>
+                <div class="card-number">123-456-7890</div>
+                <div class="card-balance">${{ net_balance|floatformat:2 }}</div>
+                <div class="card-footer">
+                    <div class="card-info">
+                        <div class="expiry-date">Expired Date: March 4th, 2024</div>
+                        <div class="cardholder-name">{{ user.name|default:"Olivia Wilson" }}</div>
+                    </div>
+                    <div class="card-brand">Master Card</div>
+                </div>
+                <div class="card-icons">
+                    <i class="bi bi-file-earmark"></i>
+                    <i class="bi bi-wifi"></i>
+                </div>
             </div>
         </div>
 
