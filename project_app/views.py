@@ -43,6 +43,13 @@ def login(request):
     return render(request, 'login.html')
 
 
+# logout
+def logout(request):
+    if 'entry_email' in request.session:
+        del request.session['entry_email']
+    return redirect('login')
+
+
 def dashboard(request):
     user = None
     total_income = 0

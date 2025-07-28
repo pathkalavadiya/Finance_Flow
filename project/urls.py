@@ -21,12 +21,14 @@ from project_app.views import dashboard
 from project_app.views import expense
 from project_app.views import profile
 from project_app.views import income
+from project_app.views import logout
 from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', register, name='register'),
     path('login/', login, name='login'),
+    path('logout/', logout, name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
     path('expense/', expense, name='expense'),
     path('profile/', profile, name='profile'),
