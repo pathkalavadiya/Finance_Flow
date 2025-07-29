@@ -1,0 +1,713 @@
+{% extends 'base.html' %}
+
+{% block title %}Lending - Finance Flow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .sidebar {
+        width: 280px;
+        padding: 24px;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 24px;
+    }
+
+    .user-profile {
+        text-align: center;
+        padding: 24px 0;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        font-weight: 600;
+    }
+
+    .user-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .user-email {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .nav-section {
+        margin-bottom: 32px;
+    }
+
+    .nav-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        padding-left: 16px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 12px;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-item:hover, .nav-item.active {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        transform: translateX(4px);
+    }
+
+    .nav-icon {
+        width: 20px;
+        margin-right: 12px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .stat-icon.lent {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+    }
+
+    .stat-icon.received {
+        background: linear-gradient(135deg, var(--accent-color), #059669);
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .lending-form {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 32px;
+    }
+
+    .form-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 24px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .loans-list {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+    }
+
+    .loan-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .loan-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .loan-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .borrower-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .loan-amount {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .loan-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+        color: white;
+    }
+
+    .status-paid {
+        background: linear-gradient(135deg, var(--accent-color), #059669);
+        color: white;
+    }
+
+    .status-overdue {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        color: white;
+    }
+
+    .status-cancelled {
+        background: linear-gradient(135deg, var(--text-secondary), #6b7280);
+        color: white;
+    }
+
+    .loan-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .auth-buttons {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .welcome-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .welcome-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+    }
+
+    .welcome-description {
+        font-size: 16px;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% if is_logged_in %}
+    <!-- Sidebar for logged in users -->
+    <div class="sidebar glass-card">
+        <div class="user-profile">
+            <div class="user-avatar">
+                {{ user.name|default:"U"|first|upper }}
+            </div>
+            <div class="user-name">{{ user.name|default:"User" }}</div>
+            <div class="user-email">{{ user.email|default:"user@example.com" }}</div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Main Menu</div>
+            <a href="{% url 'dashboard' %}" class="nav-item">
+                <i class="bi bi-house-door nav-icon"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'expense' %}" class="nav-item">
+                <i class="bi bi-cash-stack nav-icon"></i>
+                Expenses
+            </a>
+            <a href="{% url 'income' %}" class="nav-item">
+                <i class="bi bi-currency-dollar nav-icon"></i>
+                Income
+            </a>
+            <a href="{% url 'lending' %}" class="nav-item active">
+                <i class="bi bi-hand-holding-heart nav-icon"></i>
+                Lending
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Tools</div>
+            <a href="#" class="nav-item">
+                <i class="bi bi-graph-up-arrow nav-icon"></i>
+                Analytics
+            </a>
+            <a href="{% url 'reports' %}" class="nav-item">
+                <i class="bi bi-pie-chart nav-icon"></i>
+                Reports
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-calendar-event nav-icon"></i>
+                Budget
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Account</div>
+            <a href="{% url 'profile' %}" class="nav-item">
+                <i class="bi bi-person nav-icon"></i>
+                Profile
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-gear nav-icon"></i>
+                Settings
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-question-circle nav-icon"></i>
+                Help
+            </a>
+            <a href="{% url 'logout' %}" class="nav-item">
+                <i class="bi bi-box-arrow-right nav-icon"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content for logged in users -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">Lending Management</h1>
+            <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newLoanModal">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    New Loan
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon lent">
+                        <i class="bi bi-arrow-up-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">${{ total_lent|floatformat:2 }}</div>
+                <div class="stat-label">Total Lent</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon received">
+                        <i class="bi bi-arrow-down-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">${{ total_received|floatformat:2 }}</div>
+                <div class="stat-label">Total Received</div>
+            </div>
+        </div>
+
+        <!-- New Loan Form -->
+        <div class="lending-form">
+            <h3 class="form-title">Create New Loan</h3>
+            
+            {% if error %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endif %}
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div>
+                        <label for="borrower_name" class="form-label">Borrower Name *</label>
+                        <input type="text" class="form-control" id="borrower_name" name="borrower_name" required>
+                    </div>
+                    <div>
+                        <label for="borrower_phone" class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-control" id="borrower_phone" name="borrower_phone" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label for="borrower_email" class="form-label">Email (Optional)</label>
+                        <input type="email" class="form-control" id="borrower_email" name="borrower_email">
+                    </div>
+                    <div>
+                        <label for="amount" class="form-label">Loan Amount *</label>
+                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label for="currency" class="form-label">Currency</label>
+                        <select class="form-select" id="currency" name="currency">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="INR">INR</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="interest_rate" class="form-label">Interest Rate (%)</label>
+                        <input type="number" class="form-control" id="interest_rate" name="interest_rate" step="0.01" value="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label for="loan_date" class="form-label">Loan Date *</label>
+                        <input type="date" class="form-control" id="loan_date" name="loan_date" required>
+                    </div>
+                    <div>
+                        <label for="due_date" class="form-label">Due Date *</label>
+                        <input type="date" class="form-control" id="due_date" name="due_date" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Optional description of the loan..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Create Loan
+                </button>
+            </form>
+        </div>
+
+        <!-- Loans List -->
+        <div class="loans-list">
+            <h3 class="section-title">Your Loans</h3>
+            
+            {% if loans %}
+                {% for loan in loans %}
+                <div class="loan-card">
+                    <div class="loan-header">
+                        <div class="borrower-name">{{ loan.borrower_name }}</div>
+                        <div class="loan-amount">${{ loan.amount|floatformat:2 }}</div>
+                    </div>
+                    
+                    <div class="loan-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Status</div>
+                            <span class="status-badge status-{{ loan.status }}">{{ loan.status|title }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Interest Rate</div>
+                            <div class="detail-value">{{ loan.interest_rate }}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Due Date</div>
+                            <div class="detail-value">{{ loan.due_date }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Total Amount</div>
+                            <div class="detail-value">${{ loan.get_total_amount|floatformat:2 }}</div>
+                        </div>
+                    </div>
+
+                    {% if loan.description %}
+                    <div class="mb-3">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">{{ loan.description }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="loan-actions">
+                        <form method="POST" action="{% url 'update_loan_status' loan.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <select name="status" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                                <option value="active" {% if loan.status == 'active' %}selected{% endif %}>Active</option>
+                                <option value="paid" {% if loan.status == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="overdue" {% if loan.status == 'overdue' %}selected{% endif %}>Overdue</option>
+                                <option value="cancelled" {% if loan.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-hand-holding-heart"></i>
+                    </div>
+                    <h5>No loans yet</h5>
+                    <p>Start lending money to track your loans here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Content for anonymous users -->
+    <div class="main-content" style="margin-left: 0;">
+        <div class="header">
+            <h1 class="page-title">Finance Flow - Lending Management</h1>
+            <div class="auth-buttons">
+                <a href="{% url 'login' %}" class="btn btn-primary">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Login
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Register
+                </a>
+            </div>
+        </div>
+
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2 class="welcome-title">Welcome to Finance Flow</h2>
+            <p class="welcome-description">
+                Manage your personal finances with ease. Track your income, expenses, and lending activities all in one place. 
+                Get started by creating an account to access all features including expense tracking, income management, and lending tools.
+            </p>
+            <div class="auth-buttons">
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Get Started
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Sign In
+                </a>
+            </div>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon lent">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                </div>
+                <div class="stat-value">Track Expenses</div>
+                <div class="stat-label">Monitor your spending habits</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon received">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+                <div class="stat-value">Manage Income</div>
+                <div class="stat-label">Record all your income sources</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon lent">
+                        <i class="bi bi-hand-holding-heart"></i>
+                    </div>
+                </div>
+                <div class="stat-value">Lending Tools</div>
+                <div class="stat-label">Track loans and payments</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Success Message -->
+{% if success %}
+<div class="alert alert-success alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 1050;" role="alert">
+    <i class="bi bi-check-circle me-2"></i>
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<script>
+// Set default dates
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const loanDateInput = document.getElementById('loan_date');
+    const dueDateInput = document.getElementById('due_date');
+    
+    if (loanDateInput) {
+        loanDateInput.value = today;
+    }
+    
+    if (dueDateInput) {
+        // Set due date to 30 days from today
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30);
+        dueDateInput.value = dueDate.toISOString().split('T')[0];
+    }
+});
+</script>
+{% endblock %} 
