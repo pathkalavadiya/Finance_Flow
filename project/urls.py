@@ -22,21 +22,27 @@ from project_app.views import expense
 from project_app.views import profile
 from project_app.views import income
 from project_app.views import logout
+from project_app.views import lending, update_loan_status
+from project_app.views import reports, export_report
 from project_app.views import analytics, chart_data
 from django.conf import settings
 from django.conf.urls.static import static
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', register, name='register'),
+    path('', lending, name='lending'),
+    path('register/', register, name='register'),
     path('login/', login, name='login'),
     path('logout/', logout, name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
     path('expense/', expense, name='expense'),
     path('profile/', profile, name='profile'),
     path('income/', income, name='income'),
+    path('lending/', lending, name='lending'),
+    path('lending/update-status/<int:loan_id>/', update_loan_status, name='update_loan_status'),
+    path('reports/', reports, name='reports'),
+    path('export-report/', export_report, name='export_report'),
     path('analytics/', analytics, name='analytics'),
     path('chart-data/', chart_data, name='chart_data'),
-
-    
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

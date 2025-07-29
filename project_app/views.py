@@ -1,10 +1,23 @@
+import csv
 from django.shortcuts import render, redirect, redirect
-from django.db.models import Sum
-from django.db.models.functions import TruncMonth, TruncYear
-from django.http import JsonResponse
-from datetime import datetime, timedelta
-from .models import Registration, Expense, Income
+from django.db.models import Sum, Count
+from .models import Registration, Expense, Income, Lending
+from django.http import HttpResponse, JsonResponse
+from django.db.models.functions import TruncMonth, TruncWeek, TruncYear
+from datetime import datetime, date, timedelta
+from functools import wraps
+from django.db import OperationalError
 import json
+
+# Login required decorator
+def login_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if 'entry_email' not in request.session:
+            return redirect('login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 #this is the views file for the Finance Flow project
 # Create your views here.
 # registration
@@ -51,9 +64,10 @@ def login(request):
 def logout(request):
     if 'entry_email' in request.session:
         del request.session['entry_email']
-    return redirect('login')
+    return redirect('lending')
 
 
+@login_required
 def dashboard(request):
     user = None
     total_income = 0
@@ -84,6 +98,7 @@ def dashboard(request):
     return render(request, 'dashboard.html', context)
 
 
+@login_required
 def expense(request):
     user = None
     if 'entry_email' in request.session:
@@ -118,6 +133,7 @@ def expense(request):
     return render(request, 'expense.html')
 
 
+@login_required
 def income(request):
     user = None
     if 'entry_email' in request.session:
@@ -152,11 +168,202 @@ def income(request):
     return render(request, 'income.html')
 
 
+@login_required
 def profile(request):
     user = None
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
     return render(request, 'profile.html', {'user': user})
+
+
+def lending(request):
+    user = None
+    loans = []
+    total_lent = 0
+    total_received = 0
+    is_logged_in = False
+    
+    # Check if user is logged in
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+        is_logged_in = True
+        
+        if user:
+            if request.method == 'POST':
+                # Handle loan creation
+                borrower_name = request.POST.get('borrower_name')
+                borrower_phone = request.POST.get('borrower_phone')
+                borrower_email = request.POST.get('borrower_email')
+                amount = request.POST.get('amount')
+                currency = request.POST.get('currency', 'USD')
+                description = request.POST.get('description')
+                interest_rate = request.POST.get('interest_rate', 0)
+                loan_date = request.POST.get('loan_date')
+                due_date = request.POST.get('due_date')
+                
+                try:
+                    # Create new loan
+                    Lending.objects.create(
+                        user=user,
+                        borrower_name=borrower_name,
+                        borrower_phone=borrower_phone,
+                        borrower_email=borrower_email,
+                        amount=amount,
+                        currency=currency,
+                        description=description,
+                        interest_rate=interest_rate,
+                        loan_date=loan_date,
+                        due_date=due_date
+                    )
+                    
+                    return render(request, 'lending.html', {
+                        'success': True,
+                        'message': 'Loan created successfully!',
+                        'user': user,
+                        'is_logged_in': is_logged_in
+                    })
+                except OperationalError:
+                    return render(request, 'lending.html', {
+                        'error': 'Database table not ready. Please run migrations first.',
+                        'user': user,
+                        'is_logged_in': is_logged_in
+                    })
+            
+            try:
+                # Get all loans for the user
+                loans = Lending.objects.filter(user=user).order_by('-created_at')
+                
+                # Calculate totals
+                active_loans = loans.filter(status='active')
+                paid_loans = loans.filter(status='paid')
+                
+                total_lent = active_loans.aggregate(total=Sum('amount'))['total'] or 0
+                total_received = paid_loans.aggregate(total=Sum('amount'))['total'] or 0
+            except OperationalError:
+                # Database table doesn't exist yet
+                loans = []
+                total_lent = 0
+                total_received = 0
+    
+    context = {
+        'user': user,
+        'loans': loans,
+        'total_lent': total_lent,
+        'total_received': total_received,
+        'today': date.today(),
+        'is_logged_in': is_logged_in
+    }
+    return render(request, 'lending.html', context)
+
+
+@login_required
+def update_loan_status(request, loan_id):
+    if 'entry_email' not in request.session:
+        return redirect('login')
+    
+    user = Registration.objects.filter(email=request.session['entry_email']).first()
+    if not user:
+        return redirect('login')
+    
+    try:
+        loan = Lending.objects.get(id=loan_id, user=user)
+        new_status = request.POST.get('status')
+        if new_status in ['active', 'paid', 'overdue', 'cancelled']:
+            loan.status = new_status
+            loan.save()
+    except (Lending.DoesNotExist, OperationalError):
+        pass
+    
+    return redirect('lending')
+
+
+@login_required
+def reports(request):
+    user = None
+    expenses = []
+    incomes = []
+    total_income = 0
+    total_expense = 0
+    net_balance = 0
+    
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+        
+        if user:
+            # Get all expenses and incomes for the user
+            expenses = Expense.objects.filter(user=user).order_by('-created_at')
+            incomes = Income.objects.filter(user=user).order_by('-created_at')
+            
+            # Calculate totals
+            total_income = incomes.aggregate(total=Sum('amount'))['total'] or 0
+            total_expense = expenses.aggregate(total=Sum('amount'))['total'] or 0
+            net_balance = total_income - total_expense
+            
+            # Get category-wise breakdowns
+            expense_categories = expenses.values('category').annotate(
+                total=Sum('amount'),
+                count=Count('id')
+            ).order_by('-total')
+            
+            income_categories = incomes.values('category').annotate(
+                total=Sum('amount'),
+                count=Count('id')
+            ).order_by('-total')
+    
+    context = {
+        'user': user,
+        'expenses': expenses,
+        'incomes': incomes,
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'net_balance': net_balance,
+        'expense_categories': expense_categories,
+        'income_categories': income_categories,
+    }
+    return render(request, 'reports.html', context)
+
+
+@login_required
+def export_report(request):
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    if not user:
+        return HttpResponse('Unauthorized', status=401)
+
+    # Prepare CSV
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="finance_report.csv"'
+    writer = csv.writer(response)
+
+    # Write headers
+    writer.writerow(['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'])
+
+    # Write incomes
+    incomes = Income.objects.filter(user=user).order_by('-created_at')
+    for income in incomes:
+        writer.writerow([
+            'Income',
+            income.amount,
+            income.category,
+            income.description,
+            income.currency,
+            income.created_at.strftime('%Y-%m-%d %H:%M')
+        ])
+
+    # Write expenses
+    expenses = Expense.objects.filter(user=user).order_by('-created_at')
+    for expense in expenses:
+        writer.writerow([
+            'Expense',
+            expense.amount,
+            expense.category,
+            expense.description,
+            expense.currency,
+            expense.created_at.strftime('%Y-%m-%d %H:%M')
+        ])
+
+    return response
 
 
 def analytics(request):
