@@ -1,13 +1,14 @@
 import csv
 from django.shortcuts import render, redirect, redirect
 from django.db.models import Sum, Count
-from .models import Registration, Expense, Income, Lending
+from .models import Registration, Expense, Income, Lending, Group, GroupMember, GroupExpense, GroupExpenseSplit
 from django.http import HttpResponse, JsonResponse
 from django.db.models.functions import TruncMonth, TruncWeek, TruncYear
 from datetime import datetime, date, timedelta
 from functools import wraps
 from django.db import OperationalError
 import json
+from decimal import Decimal
 
 # Login required decorator
 def login_required(view_func):
@@ -540,4 +541,261 @@ def chart_data(request):
         })
     
     return JsonResponse({'error': 'Invalid chart type'}, status=400)
+
+# Group Split Money Views
+@login_required
+def groups(request):
+    """Main groups page - shows user's groups"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    # Get user's groups
+    user_groups = Group.objects.filter(members=user)
+    created_groups = Group.objects.filter(created_by=user)
+    
+    context = {
+        'user': user,
+        'user_groups': user_groups,
+        'created_groups': created_groups,
+    }
+    return render(request, 'groups.html', context)
+
+@login_required
+def create_group(request):
+    """Create a new group"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        if name:
+            # Create the group
+            group = Group.objects.create(
+                name=name,
+                description=description,
+                created_by=user
+            )
+            
+            # Add creator as admin member
+            GroupMember.objects.create(
+                group=group,
+                user=user,
+                role='admin'
+            )
+            
+            return redirect('group_detail', group_id=group.id)
+    
+    return render(request, 'create_group.html', {'user': user})
+
+@login_required
+def group_detail(request, group_id):
+    """Show group details and expenses"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    try:
+        group = Group.objects.get(id=group_id, members=user)
+    except Group.DoesNotExist:
+        return redirect('groups')
+    
+    # Get group expenses
+    expenses = GroupExpense.objects.filter(group=group).order_by('-created_at')
+    
+    # Calculate group balances
+    balances = {}
+    for member in group.members.all():
+        # Calculate what this member owes/gets back
+        paid_expenses = GroupExpense.objects.filter(group=group, paid_by=member)
+        total_paid = paid_expenses.aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Calculate what this member owes
+        member_splits = GroupExpenseSplit.objects.filter(
+            expense__group=group,
+            user=member
+        )
+        total_owes = member_splits.aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Net balance
+        balance = total_paid - total_owes
+        balances[member] = balance
+    
+    context = {
+        'user': user,
+        'group': group,
+        'expenses': expenses,
+        'balances': balances,
+    }
+    return render(request, 'group_detail.html', context)
+
+@login_required
+def add_group_expense(request, group_id):
+    """Add a new expense to a group"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    try:
+        group = Group.objects.get(id=group_id, members=user)
+    except Group.DoesNotExist:
+        return redirect('groups')
+    
+    if request.method == 'POST':
+        description = request.POST.get('description')
+        amount = request.POST.get('amount')
+        currency = request.POST.get('currency', 'USD')
+        category = request.POST.get('category', '')
+        split_type = request.POST.get('split_type', 'equal')
+        expense_date = request.POST.get('expense_date')
+        notes = request.POST.get('notes', '')
+        
+        if description and amount and expense_date:
+            # Create the expense
+            expense = GroupExpense.objects.create(
+                group=group,
+                paid_by=user,
+                description=description,
+                amount=amount,
+                currency=currency,
+                category=category,
+                split_type=split_type,
+                expense_date=expense_date,
+                notes=notes
+            )
+            
+            # Create splits for all group members
+            members = group.members.all()
+            member_count = members.count()
+            
+            if split_type == 'equal' and member_count > 0:
+                per_person_amount = Decimal(amount) / member_count
+                
+                for member in members:
+                    # If member is the payer, they get money back
+                    if member == user:
+                        split_amount = per_person_amount - Decimal(amount)
+                    else:
+                        split_amount = per_person_amount
+                    
+                    GroupExpenseSplit.objects.create(
+                        expense=expense,
+                        user=member,
+                        amount=split_amount
+                    )
+            
+            return redirect('group_detail', group_id=group.id)
+    
+    context = {
+        'user': user,
+        'group': group,
+    }
+    return render(request, 'add_group_expense.html', context)
+
+@login_required
+def group_balances(request, group_id):
+    """Show detailed group balances"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    try:
+        group = Group.objects.get(id=group_id, members=user)
+    except Group.DoesNotExist:
+        return redirect('groups')
+    
+    # Calculate detailed balances
+    balances = {}
+    for member in group.members.all():
+        # Calculate what this member paid
+        paid_expenses = GroupExpense.objects.filter(group=group, paid_by=member)
+        total_paid = paid_expenses.aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Calculate what this member owes
+        member_splits = GroupExpenseSplit.objects.filter(
+            expense__group=group,
+            user=member
+        )
+        total_owes = member_splits.aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Net balance
+        balance = total_paid - total_owes
+        balances[member] = {
+            'total_paid': total_paid,
+            'total_owes': total_owes,
+            'balance': balance
+        }
+    
+    context = {
+        'user': user,
+        'group': group,
+        'balances': balances,
+    }
+    return render(request, 'group_balances.html', context)
+
+@login_required
+def add_group_member(request, group_id):
+    """Add a new member to a group"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    try:
+        group = Group.objects.get(id=group_id, members=user)
+    except Group.DoesNotExist:
+        return redirect('groups')
+    
+    if request.method == 'POST':
+        member_email = request.POST.get('member_email')
+        
+        if member_email:
+            try:
+                member = Registration.objects.get(email=member_email)
+                
+                # Check if already a member
+                if not GroupMember.objects.filter(group=group, user=member).exists():
+                    GroupMember.objects.create(
+                        group=group,
+                        user=member,
+                        role='member'
+                    )
+                    return redirect('group_detail', group_id=group.id)
+                else:
+                    return render(request, 'add_group_member.html', {
+                        'user': user,
+                        'group': group,
+                        'error': 'User is already a member of this group'
+                    })
+            except Registration.DoesNotExist:
+                return render(request, 'add_group_member.html', {
+                    'user': user,
+                    'group': group,
+                    'error': 'User not found'
+                })
+    
+    return render(request, 'add_group_member.html', {
+        'user': user,
+        'group': group,
+    })
 

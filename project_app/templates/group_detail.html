@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load math_filters %}
+
+{% block title %}{{ group.name }} - Finance Flow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar p-4">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-wallet2 fs-3 me-2 text-primary"></i>
+                <h4 class="mb-0 gradient-text">Finance Flow</h4>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{% url 'dashboard' %}">
+                    <i class="bi bi-house-door me-2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'expense' %}">
+                    <i class="bi bi-cash-stack me-2"></i>Expenses
+                </a>
+                <a class="nav-link" href="{% url 'income' %}">
+                    <i class="bi bi-currency-dollar me-2"></i>Income
+                </a>
+                <a class="nav-link active" href="{% url 'groups' %}">
+                    <i class="bi bi-people me-2"></i>Groups
+                </a>
+                <a class="nav-link" href="{% url 'lending' %}">
+                    <i class="bi bi-bank me-2"></i>Lending
+                </a>
+                <a class="nav-link" href="{% url 'reports' %}">
+                    <i class="bi bi-graph-up me-2"></i>Reports
+                </a>
+                <a class="nav-link" href="{% url 'analytics' %}">
+                    <i class="bi bi-bar-chart me-2"></i>Analytics
+                </a>
+                <a class="nav-link" href="{% url 'profile' %}">
+                    <i class="bi bi-person me-2"></i>Profile
+                </a>
+                <a class="nav-link" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'groups' %}" class="btn btn-outline-secondary me-3">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Groups
+                    </a>
+                    <div>
+                        <h2 class="gradient-text mb-0">
+                            <i class="bi bi-people me-2"></i>{{ group.name }}
+                        </h2>
+                        <p class="text-muted mb-0">{{ group.get_member_count }} people</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'add_group_expense' group.id %}" class="btn btn-warning">
+                        <i class="bi bi-plus-circle me-2"></i>Add an expense
+                    </a>
+                    <a href="{% url 'group_balances' group.id %}" class="btn btn-success">
+                        <i class="bi bi-calculator me-2"></i>Settle up
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column - Expenses -->
+                <div class="col-lg-8">
+                    <div class="glass-card p-4 mb-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-list-ul me-2"></i>Recent Expenses
+                        </h5>
+                        
+                        {% if expenses %}
+                            {% for expense in expenses %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="icon-circle me-3" style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-receipt text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">{{ expense.description }}</h6>
+                                                    <small class="text-muted">{{ expense.expense_date|date:"M d" }}</small>
+                                                </div>
+                                            </div>
+                                            <p class="text-muted small mb-0">
+                                                Paid by <strong>{{ expense.paid_by.name }}</strong> • Split {{ expense.split_type }}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <h5 class="text-success mb-0">${{ expense.amount }}</h5>
+                                            <small class="text-muted">${{ expense.get_per_person_amount|floatformat:2 }}/person</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-receipt fs-1 text-muted mb-3"></i>
+                                <h6 class="text-muted">No expenses yet</h6>
+                                <p class="text-muted small">Add your first expense to start tracking shared costs!</p>
+                                <a href="{% url 'add_group_expense' group.id %}" class="btn btn-warning">
+                                    <i class="bi bi-plus-circle me-2"></i>Add an expense
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="glass-card p-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-graph-up me-2"></i>Summary
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="stats-card mb-3">
+                                    <h3 class="mb-0">${{ group.get_total_expenses }}</h3>
+                                    <small>Total Expenses</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="stats-card mb-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                    <h3 class="mb-0">{{ expenses.count }}</h3>
+                                    <small>Total Transactions</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="stats-card mb-3" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                    <h3 class="mb-0">{{ group.get_member_count }}</h3>
+                                    <small>Group Members</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Balances -->
+                <div class="col-lg-4">
+                    <div class="glass-card p-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-calculator me-2"></i>Group Balances
+                        </h5>
+                        
+                        {% for member, balance in balances.items %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-circle me-3" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-person-circle text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ member.name }}</h6>
+                                            <small class="text-muted">{{ member.email }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        {% if balance > 0 %}
+                                            <span class="badge bg-success">Gets back ${{ balance|floatformat:2 }}</span>
+                                        {% elif balance < 0 %}
+                                            <span class="badge bg-danger">Owes ${{ balance|abs_value|floatformat:2 }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Settled up</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="text-center mt-3">
+                            <a href="{% url 'group_balances' group.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-eye me-2"></i>View details
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Group Info -->
+                    <div class="glass-card p-4 mt-4">
+                        <h6 class="mb-3">
+                            <i class="bi bi-info-circle me-2"></i>Group Information
+                        </h6>
+                        
+                        <div class="mb-3">
+                            <strong>Created by:</strong>
+                            <p class="text-muted mb-0">{{ group.created_by.name }}</p>
+                        </div>
+                        
+                        {% if group.description %}
+                        <div class="mb-3">
+                            <strong>Description:</strong>
+                            <p class="text-muted mb-0">{{ group.description }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <strong>Created:</strong>
+                            <p class="text-muted mb-0">{{ group.created_at|date:"M d, Y" }}</p>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'add_group_member' group.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-person-plus me-2"></i>Add Member
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

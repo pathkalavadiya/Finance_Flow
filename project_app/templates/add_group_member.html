@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Member - {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar p-4">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-wallet2 fs-3 me-2 text-primary"></i>
+                <h4 class="mb-0 gradient-text">Finance Flow</h4>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{% url 'dashboard' %}">
+                    <i class="bi bi-house-door me-2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'expense' %}">
+                    <i class="bi bi-cash-stack me-2"></i>Expenses
+                </a>
+                <a class="nav-link" href="{% url 'income' %}">
+                    <i class="bi bi-currency-dollar me-2"></i>Income
+                </a>
+                <a class="nav-link active" href="{% url 'groups' %}">
+                    <i class="bi bi-people me-2"></i>Groups
+                </a>
+                <a class="nav-link" href="{% url 'lending' %}">
+                    <i class="bi bi-bank me-2"></i>Lending
+                </a>
+                <a class="nav-link" href="{% url 'reports' %}">
+                    <i class="bi bi-graph-up me-2"></i>Reports
+                </a>
+                <a class="nav-link" href="{% url 'analytics' %}">
+                    <i class="bi bi-bar-chart me-2"></i>Analytics
+                </a>
+                <a class="nav-link" href="{% url 'profile' %}">
+                    <i class="bi bi-person me-2"></i>Profile
+                </a>
+                <a class="nav-link" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left me-2"></i>Back to {{ group.name }}
+                </a>
+                <h2 class="gradient-text mb-0">
+                    <i class="bi bi-person-plus me-2"></i>Add Member
+                </h2>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="glass-card p-4">
+                        <div class="text-center mb-4">
+                            <div class="icon-circle mx-auto mb-3" style="width: 80px; height: 80px;">
+                                <i class="bi bi-person-plus-fill fs-1 text-primary"></i>
+                            </div>
+                            <h5>Add New Member</h5>
+                            <p class="text-muted">Invite someone to join {{ group.name }}</p>
+                        </div>
+
+                        {% if error %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+                        </div>
+                        {% endif %}
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <!-- Member Email -->
+                            <div class="mb-4">
+                                <label for="member_email" class="form-label">
+                                    <i class="bi bi-envelope me-2"></i>Member Email
+                                </label>
+                                <input type="email" class="form-control" id="member_email" name="member_email" 
+                                       placeholder="Enter the email address of the person you want to add" required>
+                                <div class="form-text">The person must have a Finance Flow account</div>
+                            </div>
+
+                            <!-- Current Members -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="bi bi-people me-2"></i>Current Members
+                                </label>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        {% for member in group.members.all %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="icon-circle me-2" style="width: 30px; height: 30px;">
+                                                <i class="bi bi-person-circle text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <small class="fw-bold">{{ member.name }}</small>
+                                                <br>
+                                                <small class="text-muted">{{ member.email }}</small>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-check-circle me-2"></i>Add Member
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="glass-card p-4 mt-4">
+                        <h6 class="mb-3">
+                            <i class="bi bi-lightbulb me-2 text-warning"></i>Tips for adding members
+                        </h6>
+                        
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <strong>Use their email address</strong> - they must have a Finance Flow account
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <strong>They'll be notified</strong> when added to the group
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <strong>They can start adding expenses</strong> immediately
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <strong>Balances will update</strong> automatically when they join
+                            </li>
+                        </ul>
+
+                        <hr>
+
+                        <h6 class="mb-3">
+                            <i class="bi bi-info-circle me-2 text-info"></i>Group Information
+                        </h6>
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="stats-card mb-3">
+                                    <h4 class="mb-0">{{ group.get_member_count }}</h4>
+                                    <small>Current Members</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-card mb-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                    <h4 class="mb-0">${{ group.get_total_expenses }}</h4>
+                                    <small>Total Expenses</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

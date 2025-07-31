@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Expense - {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar p-4">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-wallet2 fs-3 me-2 text-primary"></i>
+                <h4 class="mb-0 gradient-text">Finance Flow</h4>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{% url 'dashboard' %}">
+                    <i class="bi bi-house-door me-2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="{% url 'expense' %}">
+                    <i class="bi bi-cash-stack me-2"></i>Expenses
+                </a>
+                <a class="nav-link" href="{% url 'income' %}">
+                    <i class="bi bi-currency-dollar me-2"></i>Income
+                </a>
+                <a class="nav-link active" href="{% url 'groups' %}">
+                    <i class="bi bi-people me-2"></i>Groups
+                </a>
+                <a class="nav-link" href="{% url 'lending' %}">
+                    <i class="bi bi-bank me-2"></i>Lending
+                </a>
+                <a class="nav-link" href="{% url 'reports' %}">
+                    <i class="bi bi-graph-up me-2"></i>Reports
+                </a>
+                <a class="nav-link" href="{% url 'analytics' %}">
+                    <i class="bi bi-bar-chart me-2"></i>Analytics
+                </a>
+                <a class="nav-link" href="{% url 'profile' %}">
+                    <i class="bi bi-person me-2"></i>Profile
+                </a>
+                <a class="nav-link" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left me-2"></i>Back to {{ group.name }}
+                </a>
+                <h2 class="gradient-text mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>Add an expense
+                </h2>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="glass-card p-4">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <!-- Participants -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="bi bi-people me-2"></i>With you and:
+                                </label>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-success me-2">All of {{ group.name }}</span>
+                                            <small class="text-muted">{{ group.get_member_count }} people</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Expense Details -->
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <!-- Description -->
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">
+                                            <i class="bi bi-receipt me-2"></i>Enter a description
+                                        </label>
+                                        <input type="text" class="form-control" id="description" name="description" 
+                                               placeholder="e.g., Dinner, Gas, Rent" required>
+                                    </div>
+
+                                    <!-- Amount -->
+                                    <div class="mb-3">
+                                        <label for="amount" class="form-label">
+                                            <i class="bi bi-currency-dollar me-2"></i>Amount
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="amount" name="amount" 
+                                                   step="0.01" min="0" placeholder="0.00" required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Split Summary -->
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <p class="mb-1">Paid by <strong>you</strong> and split <strong>equally</strong>.</p>
+                                            <p class="mb-0 text-muted" id="per-person-amount">($0.00/person)</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <!-- Category -->
+                                    <div class="mb-3">
+                                        <label for="category" class="form-label">
+                                            <i class="bi bi-tag me-2"></i>Category
+                                        </label>
+                                        <select class="form-select" id="category" name="category">
+                                            <option value="">Select category</option>
+                                            <option value="Food & Dining">Food & Dining</option>
+                                            <option value="Transportation">Transportation</option>
+                                            <option value="Housing">Housing</option>
+                                            <option value="Entertainment">Entertainment</option>
+                                            <option value="Shopping">Shopping</option>
+                                            <option value="Utilities">Utilities</option>
+                                            <option value="Travel">Travel</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Date -->
+                                    <div class="mb-3">
+                                        <label for="expense_date" class="form-label">
+                                            <i class="bi bi-calendar me-2"></i>Date
+                                        </label>
+                                        <input type="date" class="form-control" id="expense_date" name="expense_date" 
+                                               value="{{ today|date:'Y-m-d' }}" required>
+                                    </div>
+
+                                    <!-- Currency -->
+                                    <div class="mb-3">
+                                        <label for="currency" class="form-label">
+                                            <i class="bi bi-currency-exchange me-2"></i>Currency
+                                        </label>
+                                        <select class="form-select" id="currency" name="currency">
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                            <option value="INR">INR (₹)</option>
+                                            <option value="CAD">CAD (C$)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Split Type -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="bi bi-share me-2"></i>Split Type
+                                </label>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <input type="radio" class="btn-check" name="split_type" id="equal" value="equal" checked>
+                                                <label class="btn btn-outline-primary w-100" for="equal">
+                                                    <i class="bi bi-equals fs-4 d-block mb-2"></i>
+                                                    Equal
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <input type="radio" class="btn-check" name="split_type" id="percentage" value="percentage" disabled>
+                                                <label class="btn btn-outline-secondary w-100" for="percentage">
+                                                    <i class="bi bi-percent fs-4 d-block mb-2"></i>
+                                                    Percentage
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <input type="radio" class="btn-check" name="split_type" id="custom" value="custom" disabled>
+                                                <label class="btn btn-outline-secondary w-100" for="custom">
+                                                    <i class="bi bi-sliders fs-4 d-block mb-2"></i>
+                                                    Custom
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="mb-4">
+                                <label for="notes" class="form-label">
+                                    <i class="bi bi-card-text me-2"></i>Notes (Optional)
+                                </label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3"
+                                          placeholder="Add any additional notes about this expense..."></textarea>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-2"></i>Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculate per-person amount when amount changes
+document.getElementById('amount').addEventListener('input', function() {
+    const amount = parseFloat(this.value) || 0;
+    const memberCount = {{ group.get_member_count }};
+    const perPerson = memberCount > 0 ? amount / memberCount : 0;
+    
+    document.getElementById('per-person-amount').textContent = `($${perPerson.toFixed(2)}/person)`;
+});
+
+// Initialize per-person amount on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const memberCount = {{ group.get_member_count }};
+    const perPerson = memberCount > 0 ? amount / memberCount : 0;
+    
+    document.getElementById('per-person-amount').textContent = `($${perPerson.toFixed(2)}/person)`;
+});
+</script>
+{% endblock %}
