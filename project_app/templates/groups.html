@@ -2,217 +2,384 @@
 
 {% block title %}Groups - Finance Flow{% endblock %}
 
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .sidebar {
+        width: 280px;
+        padding: 24px;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 24px;
+    }
+
+    .user-profile {
+        text-align: center;
+        padding: 24px 0;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        font-weight: 600;
+    }
+
+    .user-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .user-email {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .nav-section {
+        margin-bottom: 32px;
+    }
+
+    .nav-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        padding-left: 16px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 12px;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-item:hover, .nav-item.active {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        transform: translateX(4px);
+    }
+
+    .nav-icon {
+        width: 20px;
+        margin-right: 12px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stats-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 16px;
+    }
+
+    .group-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .group-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 sidebar p-4">
-            <div class="d-flex align-items-center mb-4">
-                <i class="bi bi-wallet2 fs-3 me-2 text-primary"></i>
-                <h4 class="mb-0 gradient-text">Finance Flow</h4>
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar glass-card">
+        <div class="user-profile">
+            <div class="user-avatar">
+                {{ user.name|default:"U"|first|upper }}
             </div>
-            
-            <nav class="nav flex-column">
-                <a class="nav-link" href="{% url 'dashboard' %}">
-                    <i class="bi bi-house-door me-2"></i>Dashboard
-                </a>
-                <a class="nav-link" href="{% url 'expense' %}">
-                    <i class="bi bi-cash-stack me-2"></i>Expenses
-                </a>
-                <a class="nav-link" href="{% url 'income' %}">
-                    <i class="bi bi-currency-dollar me-2"></i>Income
-                </a>
-                <a class="nav-link active" href="{% url 'groups' %}">
-                    <i class="bi bi-people me-2"></i>Groups
-                </a>
-                <a class="nav-link" href="{% url 'lending' %}">
-                    <i class="bi bi-bank me-2"></i>Lending
-                </a>
-                <a class="nav-link" href="{% url 'reports' %}">
-                    <i class="bi bi-graph-up me-2"></i>Reports
-                </a>
-                <a class="nav-link" href="{% url 'analytics' %}">
-                    <i class="bi bi-bar-chart me-2"></i>Analytics
-                </a>
-                <a class="nav-link" href="{% url 'profile' %}">
-                    <i class="bi bi-person me-2"></i>Profile
-                </a>
-                <a class="nav-link" href="{% url 'logout' %}">
-                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                </a>
-            </nav>
+            <div class="user-name">{{ user.name|default:"User" }}</div>
+            <div class="user-email">{{ user.email|default:"user@example.com" }}</div>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="gradient-text mb-0">
-                    <i class="bi bi-people me-2"></i>Groups
-                </h2>
-                <a href="{% url 'create_group' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-2"></i>Create New Group
-                </a>
-            </div>
+        <div class="nav-section">
+            <div class="nav-title">Main Menu</div>
+            <a href="{% url 'dashboard' %}" class="nav-item">
+                <i class="bi bi-house-door nav-icon"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'expense' %}" class="nav-item">
+                <i class="bi bi-cash-stack nav-icon"></i>
+                Expenses
+            </a>
+            <a href="{% url 'income' %}" class="nav-item">
+                <i class="bi bi-currency-dollar nav-icon"></i>
+                Income
+            </a>
+            <a href="{% url 'groups' %}" class="nav-item active">
+                <i class="bi bi-people nav-icon"></i>
+                Groups
+            </a>
+            <a href="{% url 'analytics' %}" class="nav-item">
+                <i class="bi bi-graph-up-arrow nav-icon"></i>
+                Analytics
+            </a>
+        </div>
 
-            <!-- Welcome Message -->
-            <div class="glass-card p-4 mb-4">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h4 class="mb-2">Welcome back, {{ user.name }}!</h4>
-                        <p class="text-muted mb-0">Manage your shared expenses and split money with friends and family.</p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <div class="stats-card">
-                            <div class="d-flex align-items-center">
-                                <div class="icon-circle">
-                                    <i class="bi bi-people-fill fs-4"></i>
-                                </div>
-                                <div>
-                                    <h3 class="mb-0">{{ user_groups.count|add:created_groups.count }}</h3>
-                                    <small>Total Groups</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="nav-section">
+            <div class="nav-title">Tools</div>
+            <a href="{% url 'reports' %}" class="nav-item">
+                <i class="bi bi-pie-chart nav-icon"></i>
+                Reports
+            </a>
+            <a href="{% url 'lending' %}" class="nav-item">
+                <i class="bi bi-bank nav-icon"></i>
+                Lending
+            </a>
+        </div>
 
-            <!-- Groups Section -->
-            <div class="row">
-                <!-- Groups You Created -->
-                {% if created_groups %}
-                <div class="col-lg-6 mb-4">
-                    <div class="glass-card p-4 h-100">
-                        <h5 class="mb-3">
-                            <i class="bi bi-crown me-2 text-warning"></i>Groups You Created
-                        </h5>
-                        {% for group in created_groups %}
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="card-title mb-1">{{ group.name }}</h6>
-                                        <p class="text-muted small mb-2">{{ group.description|default:"No description" }}</p>
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-primary me-2">{{ group.get_member_count }} members</span>
-                                            <span class="badge bg-success">${{ group.get_total_expenses }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="{% url 'group_detail' group.id %}">
-                                                <i class="bi bi-eye me-2"></i>View Details
-                                            </a></li>
-                                            <li><a class="dropdown-item" href="{% url 'add_group_member' group.id %}">
-                                                <i class="bi bi-person-plus me-2"></i>Add Member
-                                            </a></li>
-                                            <li><a class="dropdown-item" href="{% url 'add_group_expense' group.id %}">
-                                                <i class="bi bi-plus-circle me-2"></i>Add Expense
-                                            </a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Groups You're In -->
-                <div class="col-lg-{% if created_groups %}6{% else %}12{% endif %} mb-4">
-                    <div class="glass-card p-4 h-100">
-                        <h5 class="mb-3">
-                            <i class="bi bi-people me-2 text-primary"></i>Groups You're In
-                        </h5>
-                        {% if user_groups %}
-                            {% for group in user_groups %}
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="card-title mb-1">{{ group.name }}</h6>
-                                            <p class="text-muted small mb-2">Created by {{ group.created_by.name }}</p>
-                                            <div class="d-flex align-items-center">
-                                                <span class="badge bg-primary me-2">{{ group.get_member_count }} members</span>
-                                                <span class="badge bg-success">${{ group.get_total_expenses }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                <i class="bi bi-three-dots"></i>
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="{% url 'group_detail' group.id %}">
-                                                    <i class="bi bi-eye me-2"></i>View Details
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="{% url 'add_group_expense' group.id %}">
-                                                    <i class="bi bi-plus-circle me-2"></i>Add Expense
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="{% url 'group_balances' group.id %}">
-                                                    <i class="bi bi-calculator me-2"></i>View Balances
-                                                </a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="text-center py-4">
-                                <i class="bi bi-people fs-1 text-muted mb-3"></i>
-                                <h6 class="text-muted">No groups yet</h6>
-                                <p class="text-muted small">Join a group or create one to start splitting expenses!</p>
-                                <a href="{% url 'create_group' %}" class="btn btn-primary">
-                                    <i class="bi bi-plus-circle me-2"></i>Create Your First Group
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="glass-card p-4">
-                <h5 class="mb-3">
-                    <i class="bi bi-lightning me-2 text-warning"></i>Quick Actions
-                </h5>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <a href="{% url 'create_group' %}" class="card text-decoration-none">
-                            <div class="card-body text-center">
-                                <i class="bi bi-plus-circle fs-1 text-primary mb-3"></i>
-                                <h6>Create New Group</h6>
-                                <p class="text-muted small">Start a new group for shared expenses</p>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <i class="bi bi-search fs-1 text-info mb-3"></i>
-                                <h6>Find Groups</h6>
-                                <p class="text-muted small">Search for existing groups to join</p>
-                                <button class="btn btn-outline-info btn-sm" disabled>Coming Soon</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <i class="bi bi-share fs-1 text-success mb-3"></i>
-                                <h6>Invite Friends</h6>
-                                <p class="text-muted small">Share group links with friends</p>
-                                <button class="btn btn-outline-success btn-sm" disabled>Coming Soon</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="nav-section">
+            <div class="nav-title">Account</div>
+            <a href="{% url 'profile' %}" class="nav-item">
+                <i class="bi bi-person nav-icon"></i>
+                Profile
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-gear nav-icon"></i>
+                Settings
+            </a>
+            <a href="#" class="nav-item">
+                <i class="bi bi-question-circle nav-icon"></i>
+                Help
+            </a>
+            <a href="{% url 'logout' %}" class="nav-item">
+                <i class="bi bi-box-arrow-right nav-icon"></i>
+                Logout
+            </a>
         </div>
     </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">Groups</h1>
+            <div>
+                <a href="{% url 'create_group' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Create New Group
+                </a>
+            </div>
+        </div>
+
+        <!-- Welcome Message -->
+        <div class="glass-card p-4 mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="mb-2">Welcome back, {{ user.name }}!</h4>
+                    <p class="text-muted mb-0">Manage your shared expenses and split money with friends and family.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="stats-card">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle">
+                                <i class="bi bi-people-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">{{ user_groups.count|add:created_groups.count }}</h3>
+                                <small>Total Groups</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Groups Section -->
+        <div class="row">
+            <!-- Groups You Created -->
+            {% if created_groups %}
+            <div class="col-lg-6 mb-4">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="mb-3">
+                        <i class="bi bi-crown me-2 text-warning"></i>Groups You Created
+                    </h5>
+                    {% for group in created_groups %}
+                    <div class="group-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title mb-1">{{ group.name }}</h6>
+                                <p class="text-muted small mb-2">{{ group.description|default:"No description" }}</p>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">{{ group.get_member_count }} members</span>
+                                    <span class="badge bg-success">${{ group.get_total_expenses }}</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <a href="{% url 'group_detail' group.id %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger ms-1" 
+                                        onclick="confirmDelete({{ group.id }}, '{{ group.name }}')">
+                                    <i class="bi bi-trash me-1"></i>Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Groups You're a Member Of -->
+            {% if user_groups %}
+            <div class="col-lg-6 mb-4">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="mb-3">
+                        <i class="bi bi-people me-2 text-info"></i>Groups You're In
+                    </h5>
+                    {% for group in user_groups %}
+                    <div class="group-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title mb-1">{{ group.name }}</h6>
+                                <p class="text-muted small mb-2">{{ group.description|default:"No description" }}</p>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">{{ group.get_member_count }} members</span>
+                                    <span class="badge bg-success">${{ group.get_total_expenses }}</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <a href="{% url 'group_detail' group.id %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye me-1"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Empty State -->
+        {% if not created_groups and not user_groups %}
+        <div class="glass-card p-5 text-center">
+            <div class="mb-4">
+                <i class="bi bi-people fs-1 text-muted"></i>
+            </div>
+            <h4 class="mb-3">No Groups Yet</h4>
+            <p class="text-muted mb-4">Start creating groups to manage shared expenses with friends and family.</p>
+            <a href="{% url 'create_group' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>
+                Create Your First Group
+            </a>
+        </div>
+        {% endif %}
+    </div>
 </div>
+
+<script>
+function confirmDelete(groupId, groupName) {
+    if (confirm(`Are you sure you want to delete the group "${groupName}"? This action cannot be undone and will remove all group data including expenses and member information.`)) {
+        window.location.href = `/groups/${groupId}/delete/`;
+    }
+}
+</script>
 {% endblock %}

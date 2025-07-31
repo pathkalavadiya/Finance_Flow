@@ -63,7 +63,7 @@
                             <!-- Participants -->
                             <div class="mb-4">
                                 <label class="form-label">
-                                    <i class="bi bi-people me-2"></i>With you and:
+                                    <i class="bi bi-people me-2"></i>Group Members
                                 </label>
                                 <div class="card bg-light">
                                     <div class="card-body">
@@ -73,6 +73,21 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Who Paid -->
+                            <div class="mb-4">
+                                <label for="paid_by" class="form-label">
+                                    <i class="bi bi-person-check me-2"></i>Who paid for this expense?
+                                </label>
+                                <select class="form-select" id="paid_by" name="paid_by" required>
+                                    <option value="">Select who paid</option>
+                                    {% for member in group.members.all %}
+                                    <option value="{{ member.id }}" {% if member == user %}selected{% endif %}>
+                                        {{ member.name }} ({{ member.email }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
                             </div>
 
                             <!-- Expense Details -->
@@ -157,7 +172,7 @@
                                 <label class="form-label">
                                     <i class="bi bi-share me-2"></i>Split Type
                                 </label>
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-md-4">
                                         <div class="card">
                                             <div class="card-body text-center">
@@ -172,7 +187,7 @@
                                     <div class="col-md-4">
                                         <div class="card">
                                             <div class="card-body text-center">
-                                                <input type="radio" class="btn-check" name="split_type" id="percentage" value="percentage" disabled>
+                                                <input type="radio" class="btn-check" name="split_type" id="percentage" value="percentage">
                                                 <label class="btn btn-outline-secondary w-100" for="percentage">
                                                     <i class="bi bi-percent fs-4 d-block mb-2"></i>
                                                     Percentage
@@ -183,11 +198,79 @@
                                     <div class="col-md-4">
                                         <div class="card">
                                             <div class="card-body text-center">
-                                                <input type="radio" class="btn-check" name="split_type" id="custom" value="custom" disabled>
+                                                <input type="radio" class="btn-check" name="split_type" id="custom" value="custom">
                                                 <label class="btn btn-outline-secondary w-100" for="custom">
                                                     <i class="bi bi-sliders fs-4 d-block mb-2"></i>
                                                     Custom
                                                 </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Member-wise Split -->
+                                <div id="member-splits" class="card bg-light">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="bi bi-people me-2"></i>Split Details
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="equal-split" class="split-section">
+                                            <p class="text-muted mb-3">Amount will be split equally among all members.</p>
+                                            <div class="row">
+                                                {% for member in group.members.all %}
+                                                <div class="col-md-6 mb-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>{{ member.name }}</span>
+                                                        <span class="badge bg-primary" id="equal-amount-{{ member.id }}">$0.00</span>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <div id="percentage-split" class="split-section" style="display: none;">
+                                            <p class="text-muted mb-3">Enter percentage for each member (total should be 100%).</p>
+                                            {% for member in group.members.all %}
+                                            <div class="row mb-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">{{ member.name }}</label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control percentage-input" 
+                                                               name="percentage_{{ member.id }}" 
+                                                               placeholder="0" min="0" max="100" step="0.01">
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                            <div class="alert alert-info mt-2">
+                                                <small>Total: <span id="total-percentage">0</span>%</small>
+                                            </div>
+                                        </div>
+
+                                        <div id="custom-split" class="split-section" style="display: none;">
+                                            <p class="text-muted mb-3">Enter custom amount for each member.</p>
+                                            {% for member in group.members.all %}
+                                            <div class="row mb-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">{{ member.name }}</label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" class="form-control custom-amount-input" 
+                                                               name="custom_amount_{{ member.id }}" 
+                                                               placeholder="0.00" min="0" step="0.01">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                            <div class="alert alert-info mt-2">
+                                                <small>Total: $<span id="total-custom">0.00</span></small>
                                             </div>
                                         </div>
                                     </div>
@@ -223,20 +306,105 @@
 <script>
 // Calculate per-person amount when amount changes
 document.getElementById('amount').addEventListener('input', function() {
-    const amount = parseFloat(this.value) || 0;
-    const memberCount = {{ group.get_member_count }};
-    const perPerson = memberCount > 0 ? amount / memberCount : 0;
-    
-    document.getElementById('per-person-amount').textContent = `($${perPerson.toFixed(2)}/person)`;
+    updateSplitDisplay();
 });
 
-// Initialize per-person amount on page load
-document.addEventListener('DOMContentLoaded', function() {
+// Handle split type changes
+document.querySelectorAll('input[name="split_type"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        updateSplitDisplay();
+    });
+});
+
+// Handle percentage inputs
+document.querySelectorAll('.percentage-input').forEach(function(input) {
+    input.addEventListener('input', function() {
+        updatePercentageTotal();
+    });
+});
+
+// Handle custom amount inputs
+document.querySelectorAll('.custom-amount-input').forEach(function(input) {
+    input.addEventListener('input', function() {
+        updateCustomTotal();
+    });
+});
+
+function updateSplitDisplay() {
     const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const splitType = document.querySelector('input[name="split_type"]:checked').value;
     const memberCount = {{ group.get_member_count }};
-    const perPerson = memberCount > 0 ? amount / memberCount : 0;
     
-    document.getElementById('per-person-amount').textContent = `($${perPerson.toFixed(2)}/person)`;
+    // Hide all split sections
+    document.querySelectorAll('.split-section').forEach(function(section) {
+        section.style.display = 'none';
+    });
+    
+    if (splitType === 'equal') {
+        document.getElementById('equal-split').style.display = 'block';
+        const perPerson = memberCount > 0 ? amount / memberCount : 0;
+        
+        // Update equal split amounts
+        {% for member in group.members.all %}
+        document.getElementById('equal-amount-{{ member.id }}').textContent = `$${perPerson.toFixed(2)}`;
+        {% endfor %}
+        
+        document.getElementById('per-person-amount').textContent = `($${perPerson.toFixed(2)}/person)`;
+    } else if (splitType === 'percentage') {
+        document.getElementById('percentage-split').style.display = 'block';
+        updatePercentageTotal();
+    } else if (splitType === 'custom') {
+        document.getElementById('custom-split').style.display = 'block';
+        updateCustomTotal();
+    }
+}
+
+function updatePercentageTotal() {
+    const percentageInputs = document.querySelectorAll('.percentage-input');
+    let total = 0;
+    
+    percentageInputs.forEach(function(input) {
+        total += parseFloat(input.value) || 0;
+    });
+    
+    document.getElementById('total-percentage').textContent = total.toFixed(2);
+    
+    // Change color based on total
+    const totalElement = document.getElementById('total-percentage');
+    if (total === 100) {
+        totalElement.style.color = 'green';
+    } else if (total > 100) {
+        totalElement.style.color = 'red';
+    } else {
+        totalElement.style.color = 'orange';
+    }
+}
+
+function updateCustomTotal() {
+    const customInputs = document.querySelectorAll('.custom-amount-input');
+    const totalAmount = parseFloat(document.getElementById('amount').value) || 0;
+    let total = 0;
+    
+    customInputs.forEach(function(input) {
+        total += parseFloat(input.value) || 0;
+    });
+    
+    document.getElementById('total-custom').textContent = total.toFixed(2);
+    
+    // Change color based on total
+    const totalElement = document.getElementById('total-custom');
+    if (Math.abs(total - totalAmount) < 0.01) {
+        totalElement.style.color = 'green';
+    } else if (total > totalAmount) {
+        totalElement.style.color = 'red';
+    } else {
+        totalElement.style.color = 'orange';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateSplitDisplay();
 });
 </script>
 {% endblock %}

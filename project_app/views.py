@@ -65,7 +65,7 @@ def login(request):
 def logout(request):
     if 'entry_email' in request.session:
         del request.session['entry_email']
-    return redirect('lending')
+    return redirect('dashboard')
 
 
 @login_required
@@ -367,13 +367,11 @@ def export_report(request):
     return response
 
 
+@login_required
 def analytics(request):
     user = None
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
-    
-    if not user:
-        return redirect('login')
     
     # Get date range (last 12 months)
     end_date = datetime.now()
@@ -664,42 +662,112 @@ def add_group_expense(request, group_id):
         split_type = request.POST.get('split_type', 'equal')
         expense_date = request.POST.get('expense_date')
         notes = request.POST.get('notes', '')
+        paid_by_id = request.POST.get('paid_by')
         
-        if description and amount and expense_date:
-            # Create the expense
-            expense = GroupExpense.objects.create(
-                group=group,
-                paid_by=user,
-                description=description,
-                amount=amount,
-                currency=currency,
-                category=category,
-                split_type=split_type,
-                expense_date=expense_date,
-                notes=notes
-            )
-            
-            # Create splits for all group members
-            members = group.members.all()
-            member_count = members.count()
-            
-            if split_type == 'equal' and member_count > 0:
-                per_person_amount = Decimal(amount) / member_count
+        if description and amount and expense_date and paid_by_id:
+            try:
+                paid_by = Registration.objects.get(id=paid_by_id)
                 
-                for member in members:
-                    # If member is the payer, they get money back
-                    if member == user:
-                        split_amount = per_person_amount - Decimal(amount)
-                    else:
-                        split_amount = per_person_amount
+                # Create the expense
+                expense = GroupExpense.objects.create(
+                    group=group,
+                    paid_by=paid_by,
+                    description=description,
+                    amount=amount,
+                    currency=currency,
+                    category=category,
+                    split_type=split_type,
+                    expense_date=expense_date,
+                    notes=notes
+                )
+                
+                # Create splits based on split type
+                members = group.members.all()
+                total_amount = Decimal(amount)
+                
+                if split_type == 'equal':
+                    # Equal split among all members
+                    member_count = members.count()
+                    if member_count > 0:
+                        per_person_amount = total_amount / member_count
+                        
+                        for member in members:
+                            # If member is the payer, they get money back
+                            if member == paid_by:
+                                split_amount = per_person_amount - total_amount
+                            else:
+                                split_amount = per_person_amount
+                            
+                            GroupExpenseSplit.objects.create(
+                                expense=expense,
+                                user=member,
+                                amount=split_amount
+                            )
+                
+                elif split_type == 'percentage':
+                    # Percentage-based split
+                    total_percentage = 0
+                    member_percentages = {}
                     
-                    GroupExpenseSplit.objects.create(
-                        expense=expense,
-                        user=member,
-                        amount=split_amount
-                    )
-            
-            return redirect('group_detail', group_id=group.id)
+                    # Calculate total percentage and store individual percentages
+                    for member in members:
+                        percentage_key = f'percentage_{member.id}'
+                        percentage = Decimal(request.POST.get(percentage_key, 0))
+                        member_percentages[member] = percentage
+                        total_percentage += percentage
+                    
+                    # Create splits based on percentages
+                    if total_percentage > 0:
+                        for member in members:
+                            percentage = member_percentages[member]
+                            member_amount = (total_amount * percentage) / 100
+                            
+                            # If member is the payer, they get money back
+                            if member == paid_by:
+                                split_amount = member_amount - total_amount
+                            else:
+                                split_amount = member_amount
+                            
+                            GroupExpenseSplit.objects.create(
+                                expense=expense,
+                                user=member,
+                                amount=split_amount
+                            )
+                
+                elif split_type == 'custom':
+                    # Custom amount split
+                    total_custom = 0
+                    member_amounts = {}
+                    
+                    # Calculate total custom amount and store individual amounts
+                    for member in members:
+                        custom_key = f'custom_amount_{member.id}'
+                        custom_amount = Decimal(request.POST.get(custom_key, 0))
+                        member_amounts[member] = custom_amount
+                        total_custom += custom_amount
+                    
+                    # Create splits based on custom amounts
+                    if total_custom > 0:
+                        for member in members:
+                            member_amount = member_amounts[member]
+                            
+                            # If member is the payer, they get money back
+                            if member == paid_by:
+                                split_amount = member_amount - total_amount
+                            else:
+                                split_amount = member_amount
+                            
+                            GroupExpenseSplit.objects.create(
+                                expense=expense,
+                                user=member,
+                                amount=split_amount
+                            )
+                
+                return redirect('group_detail', group_id=group.id)
+                
+            except Registration.DoesNotExist:
+                # Handle case where paid_by user doesn't exist
+                pass
     
     context = {
         'user': user,
@@ -753,7 +821,7 @@ def group_balances(request, group_id):
 
 @login_required
 def add_group_member(request, group_id):
-    """Add a new member to a group"""
+    """Add new members to a group"""
     user = None
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
@@ -767,35 +835,92 @@ def add_group_member(request, group_id):
         return redirect('groups')
     
     if request.method == 'POST':
-        member_email = request.POST.get('member_email')
+        success_count = 0
+        error_messages = []
         
-        if member_email:
-            try:
-                member = Registration.objects.get(email=member_email)
-                
-                # Check if already a member
-                if not GroupMember.objects.filter(group=group, user=member).exists():
-                    GroupMember.objects.create(
-                        group=group,
-                        user=member,
-                        role='member'
-                    )
-                    return redirect('group_detail', group_id=group.id)
-                else:
-                    return render(request, 'add_group_member.html', {
-                        'user': user,
-                        'group': group,
-                        'error': 'User is already a member of this group'
-                    })
-            except Registration.DoesNotExist:
+        # Process individual member emails
+        member_emails = request.POST.getlist('member_emails[]')
+        for email in member_emails:
+            if email.strip():  # Only process non-empty emails
+                try:
+                    member = Registration.objects.get(email=email.strip())
+                    
+                    # Check if already a member
+                    if not GroupMember.objects.filter(group=group, user=member).exists():
+                        GroupMember.objects.create(
+                            group=group,
+                            user=member,
+                            role='member'
+                        )
+                        success_count += 1
+                    else:
+                        error_messages.append(f"{email} is already a member of this group")
+                except Registration.DoesNotExist:
+                    error_messages.append(f"User with email {email} not found")
+        
+        # Process bulk emails
+        bulk_emails = request.POST.get('bulk_emails', '').strip()
+        if bulk_emails:
+            email_list = [email.strip() for email in bulk_emails.split('\n') if email.strip()]
+            for email in email_list:
+                try:
+                    member = Registration.objects.get(email=email)
+                    
+                    # Check if already a member
+                    if not GroupMember.objects.filter(group=group, user=member).exists():
+                        GroupMember.objects.create(
+                            group=group,
+                            user=member,
+                            role='member'
+                        )
+                        success_count += 1
+                    else:
+                        error_messages.append(f"{email} is already a member of this group")
+                except Registration.DoesNotExist:
+                    error_messages.append(f"User with email {email} not found")
+        
+        # Prepare response
+        if success_count > 0:
+            if error_messages:
                 return render(request, 'add_group_member.html', {
                     'user': user,
                     'group': group,
-                    'error': 'User not found'
+                    'success': f"Successfully added {success_count} member(s)",
+                    'errors': error_messages
                 })
+            else:
+                return redirect('group_detail', group_id=group.id)
+        else:
+            return render(request, 'add_group_member.html', {
+                'user': user,
+                'group': group,
+                'error': 'No members were added. Please check the email addresses.',
+                'errors': error_messages
+            })
     
     return render(request, 'add_group_member.html', {
         'user': user,
         'group': group,
     })
+
+@login_required
+def delete_group(request, group_id):
+    """Delete a group (only group creator can delete)"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    try:
+        # Only allow deletion if user is the creator of the group
+        group = Group.objects.get(id=group_id, created_by=user)
+        
+        # Delete the group (this will cascade delete related data)
+        group.delete()
+        
+        return redirect('groups')
+    except Group.DoesNotExist:
+        return redirect('groups')
 

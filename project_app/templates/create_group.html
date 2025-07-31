@@ -55,145 +55,231 @@
             </div>
 
             <div class="row justify-content-center">
-                <div class="col-lg-8">
+                <div class="col-lg-10">
                     <div class="glass-card p-4">
-                        <div class="row">
-                            <!-- Left Side - Group Info -->
-                            <div class="col-md-6">
-                                <div class="text-center mb-4">
-                                    <div class="icon-circle mx-auto mb-3" style="width: 80px; height: 80px;">
-                                        <i class="bi bi-people-fill fs-1 text-primary"></i>
-                                    </div>
-                                    <h5>Group Information</h5>
-                                    <p class="text-muted">Set up your new group for shared expenses</p>
-                                </div>
+                        <!-- Header Section -->
+                        <div class="text-center mb-5">
+                            <h3 class="gradient-text mb-3">Create a New Group</h3>
+                            <p class="text-muted fs-5">
+                                Organize your shared expenses with ease. Whether you're planning a trip, managing a flat, 
+                                or sharing monthly costs with friends — this group helps everyone stay on track.
+                            </p>
+                        </div>
 
-                                <form method="post">
-                                    {% csrf_token %}
-                                    
-                                    <!-- Group Name -->
-                                    <div class="mb-3">
-                                        <label for="name" class="form-label">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <!-- Section 1: Group Information -->
+                            <div class="mb-5">
+                                <h4 class="mb-4">
+                                    <i class="bi bi-info-circle me-2 text-primary"></i>
+                                    Group Information
+                                </h4>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label fw-bold">
                                             <i class="bi bi-tag me-2"></i>Group Name
                                         </label>
-                                        <input type="text" class="form-control" id="name" name="name" 
-                                               placeholder="e.g., Roommates, Trip to Paris, Office Lunch" required>
-                                        <div class="form-text">Choose a memorable name for your group</div>
+                                        <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                               placeholder="What would you like to name your group?" required>
+                                        <div class="form-text">
+                                            <i class="bi bi-lightbulb me-1"></i>
+                                            Examples: Goa Trip, Flatmates, Office Snacks, Birthday Party
+                                        </div>
                                     </div>
-
-                                    <!-- Group Description -->
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">
-                                            <i class="bi bi-card-text me-2"></i>Description (Optional)
-                                        </label>
-                                        <textarea class="form-control" id="description" name="description" rows="3"
-                                                  placeholder="Describe what this group is for..."></textarea>
-                                        <div class="form-text">Help members understand the group's purpose</div>
-                                    </div>
-
-                                    <!-- Group Type -->
-                                    <div class="mb-3">
-                                        <label for="group_type" class="form-label">
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="group_type" class="form-label fw-bold">
                                             <i class="bi bi-list-ul me-2"></i>Group Type
                                         </label>
-                                        <select class="form-select" id="group_type">
-                                            <option value="general">General</option>
-                                            <option value="trip">Trip</option>
-                                            <option value="roommates">Roommates</option>
-                                            <option value="office">Office</option>
-                                            <option value="family">Family</option>
+                                        <select class="form-select form-select-lg" id="group_type" name="group_type">
+                                            <option value="">Choose the type of group to help categorize your expenses.</option>
+                                            <option value="travel">Travel</option>
+                                            <option value="home">Home</option>
+                                            <option value="couple">Couple</option>
                                             <option value="friends">Friends</option>
+                                            <option value="work">Work</option>
+                                            <option value="other">Other</option>
                                         </select>
-                                        <div class="form-text">This helps categorize your group</div>
-                                    </div>
-
-                                    <!-- Submit Button -->
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-primary btn-lg">
-                                            <i class="bi bi-check-circle me-2"></i>Create Group
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- Right Side - Features & Tips -->
-                            <div class="col-md-6">
-                                <div class="card border-0 bg-light">
-                                    <div class="card-body">
-                                        <h6 class="card-title mb-3">
-                                            <i class="bi bi-lightbulb me-2 text-warning"></i>What you can do with groups:
-                                        </h6>
-                                        
-                                        <ul class="list-unstyled">
-                                            <li class="mb-2">
-                                                <i class="bi bi-check-circle text-success me-2"></i>
-                                                <strong>Split expenses equally</strong> or custom amounts
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-check-circle text-success me-2"></i>
-                                                <strong>Track who owes what</strong> in real-time
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-check-circle text-success me-2"></i>
-                                                <strong>Add multiple members</strong> to your group
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-check-circle text-success me-2"></i>
-                                                <strong>View detailed balances</strong> and payment history
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-check-circle text-success me-2"></i>
-                                                <strong>Export reports</strong> for record keeping
-                                            </li>
-                                        </ul>
-
-                                        <hr>
-
-                                        <h6 class="card-title mb-3">
-                                            <i class="bi bi-info-circle me-2 text-info"></i>Tips for great groups:
-                                        </h6>
-                                        
-                                        <ul class="list-unstyled">
-                                            <li class="mb-2">
-                                                <i class="bi bi-star text-warning me-2"></i>
-                                                Use clear, descriptive names
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-star text-warning me-2"></i>
-                                                Add a helpful description
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-star text-warning me-2"></i>
-                                                Invite members with their email addresses
-                                            </li>
-                                            <li class="mb-2">
-                                                <i class="bi bi-star text-warning me-2"></i>
-                                                Set up the group before adding expenses
-                                            </li>
-                                        </ul>
                                     </div>
                                 </div>
-
-                                <!-- Next Steps -->
-                                <div class="card mt-3 border-0 bg-primary text-white">
-                                    <div class="card-body">
-                                        <h6 class="card-title mb-2">
-                                            <i class="bi bi-arrow-right-circle me-2"></i>Next Steps
-                                        </h6>
-                                        <ol class="mb-0 small">
-                                            <li>Create your group</li>
-                                            <li>Add members by email</li>
-                                            <li>Start adding shared expenses</li>
-                                            <li>Track balances and settle up</li>
-                                        </ol>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="currency" class="form-label fw-bold">
+                                            <i class="bi bi-currency-exchange me-2"></i>Currency
+                                        </label>
+                                        <select class="form-select form-select-lg" id="currency" name="currency">
+                                            <option value="">Select the currency for all expenses in this group.</option>
+                                            <option value="INR">₹ INR</option>
+                                            <option value="USD">$ USD</option>
+                                            <option value="EUR">€ EUR</option>
+                                            <option value="GBP">£ GBP</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+
+                            <!-- Section 2: Add Members -->
+                            <div class="mb-5">
+                                <h4 class="mb-4">
+                                    <i class="bi bi-people me-2 text-primary"></i>
+                                    Add Members
+                                </h4>
+                                <p class="text-muted mb-4">
+                                    Invite the people with whom you'll share expenses. You can add them by name or email.
+                                </p>
+                                
+                                <div id="members-container">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-person me-2"></i>Member 1
+                                            </label>
+                                            <input type="text" class="form-control" name="member_1" 
+                                                   placeholder="Enter name or email">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-person me-2"></i>Member 2
+                                            </label>
+                                            <input type="text" class="form-control" name="member_2" 
+                                                   placeholder="Enter name or email">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" class="btn btn-outline-primary" id="add-member-btn">
+                                    <i class="bi bi-plus-circle me-2"></i>+ Add another member
+                                </button>
+                                <div class="form-text mt-2">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    You can invite members later too.
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Group Settings -->
+                            <div class="mb-5">
+                                <h4 class="mb-4">
+                                    <i class="bi bi-gear me-2 text-primary"></i>
+                                    Group Settings (Optional)
+                                </h4>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label fw-bold">
+                                            <i class="bi bi-arrow-repeat me-2"></i>Split Type
+                                        </label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="split_type" 
+                                                   id="equal_split" value="equal" checked>
+                                            <label class="form-check-label" for="equal_split">
+                                                Equal Split
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="split_type" 
+                                                   id="custom_split" value="custom">
+                                            <label class="form-check-label" for="custom_split">
+                                                Custom Percentages
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label fw-bold">
+                                            <i class="bi bi-bell me-2"></i>Send Reminders for Settling Up?
+                                        </label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reminders" 
+                                                   id="weekly" value="weekly">
+                                            <label class="form-check-label" for="weekly">
+                                                Weekly
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reminders" 
+                                                   id="monthly" value="monthly">
+                                            <label class="form-check-label" for="monthly">
+                                                Monthly
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reminders" 
+                                                   id="never" value="never" checked>
+                                            <label class="form-check-label" for="never">
+                                                Never
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label fw-bold">
+                                            <i class="bi bi-arrow-clockwise me-2"></i>Allow Recurring Expenses?
+                                        </label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="recurring_expenses" 
+                                                   id="recurring_yes" value="yes" checked>
+                                            <label class="form-check-label" for="recurring_yes">
+                                                Yes
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="recurring_expenses" 
+                                                   id="recurring_no" value="no">
+                                            <label class="form-check-label" for="recurring_no">
+                                                No
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Create Group Button -->
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
+                                    <i class="bi bi-check-circle me-2"></i>Create Group
+                                </button>
+                                <div class="form-text mt-2">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Click to set up your group and start adding expenses!
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addMemberBtn = document.getElementById('add-member-btn');
+    const membersContainer = document.getElementById('members-container');
+    let memberCount = 2;
+
+    addMemberBtn.addEventListener('click', function() {
+        memberCount++;
+        const newMemberDiv = document.createElement('div');
+        newMemberDiv.className = 'row mb-3';
+        newMemberDiv.innerHTML = `
+            <div class="col-md-6">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-person me-2"></i>Member ${memberCount}
+                </label>
+                <input type="text" class="form-control" name="member_${memberCount}" 
+                       placeholder="Enter name or email">
+            </div>
+        `;
+        membersContainer.appendChild(newMemberDiv);
+    });
+});
+</script>
 {% endblock %}

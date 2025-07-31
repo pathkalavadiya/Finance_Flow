@@ -71,17 +71,52 @@
                         </div>
                         {% endif %}
 
+                        {% if success %}
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle me-2"></i>{{ success }}
+                        </div>
+                        {% endif %}
+
+                        {% if errors %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Some issues occurred:</strong>
+                            <ul class="mb-0 mt-2">
+                                {% for error in errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
                         <form method="post">
                             {% csrf_token %}
                             
-                            <!-- Member Email -->
+                            <!-- Add Multiple Members -->
                             <div class="mb-4">
-                                <label for="member_email" class="form-label">
-                                    <i class="bi bi-envelope me-2"></i>Member Email
+                                <label class="form-label">
+                                    <i class="bi bi-people me-2"></i>Add Members
                                 </label>
-                                <input type="email" class="form-control" id="member_email" name="member_email" 
-                                       placeholder="Enter the email address of the person you want to add" required>
-                                <div class="form-text">The person must have a Finance Flow account</div>
+                                <p class="text-muted mb-3">Add one or more members to {{ group.name }}</p>
+                                
+                                <div id="members-container">
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <input type="email" class="form-control member-email" 
+                                                   name="member_emails[]" 
+                                                   placeholder="Enter email address" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-outline-danger btn-sm remove-member" style="display: none;">
+                                                <i class="bi bi-trash me-1"></i>Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="add-member-btn">
+                                    <i class="bi bi-plus-circle me-2"></i>+ Add Another Member
+                                </button>
                             </div>
 
                             <!-- Current Members -->
@@ -107,10 +142,25 @@
                                 </div>
                             </div>
 
+                            <!-- Bulk Add Section -->
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="bi bi-upload me-2"></i>Bulk Add Members
+                                </label>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <p class="text-muted mb-3">Add multiple members at once by entering their email addresses (one per line)</p>
+                                        <textarea class="form-control" id="bulk-emails" name="bulk_emails" 
+                                                  rows="4" placeholder="email1@example.com&#10;email2@example.com&#10;email3@example.com"></textarea>
+                                        <div class="form-text">Enter one email address per line</div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Submit Button -->
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-check-circle me-2"></i>Add Member
+                                    <i class="bi bi-check-circle me-2"></i>Add Members
                                 </button>
                             </div>
                         </form>
@@ -125,7 +175,11 @@
                         <ul class="list-unstyled">
                             <li class="mb-2">
                                 <i class="bi bi-check-circle text-success me-2"></i>
-                                <strong>Use their email address</strong> - they must have a Finance Flow account
+                                <strong>Use their email addresses</strong> - they must have a Finance Flow account
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <strong>Add multiple members</strong> at once using the bulk add feature
                             </li>
                             <li class="mb-2">
                                 <i class="bi bi-check-circle text-success me-2"></i>
@@ -134,10 +188,6 @@
                             <li class="mb-2">
                                 <i class="bi bi-check-circle text-success me-2"></i>
                                 <strong>They can start adding expenses</strong> immediately
-                            </li>
-                            <li class="mb-2">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                <strong>Balances will update</strong> automatically when they join
                             </li>
                         </ul>
 
@@ -167,4 +217,51 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addMemberBtn = document.getElementById('add-member-btn');
+    const membersContainer = document.getElementById('members-container');
+    let memberCount = 1;
+
+    // Add new member input field
+    addMemberBtn.addEventListener('click', function() {
+        memberCount++;
+        const newMemberDiv = document.createElement('div');
+        newMemberDiv.className = 'row mb-3';
+        newMemberDiv.innerHTML = `
+            <div class="col-md-8">
+                <input type="email" class="form-control member-email" 
+                       name="member_emails[]" 
+                       placeholder="Enter email address" required>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-member">
+                    <i class="bi bi-trash me-1"></i>Remove
+                </button>
+            </div>
+        `;
+        membersContainer.appendChild(newMemberDiv);
+        
+        // Show remove button for the first field if we have more than one
+        if (memberCount > 1) {
+            document.querySelector('.remove-member').style.display = 'block';
+        }
+    });
+
+    // Remove member input field
+    membersContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-member') || e.target.closest('.remove-member')) {
+            const memberRow = e.target.closest('.row');
+            memberRow.remove();
+            memberCount--;
+            
+            // Hide remove button for the first field if we only have one left
+            if (memberCount === 1) {
+                document.querySelector('.remove-member').style.display = 'none';
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -434,6 +434,22 @@
 
     <!-- Main Content for logged in users -->
     <div class="main-content">
+    {% else %}
+    <!-- Main Content for non-logged in users -->
+    <div class="main-content" style="margin-left: 0;">
+        <div class="header">
+            <div class="auth-buttons">
+                <a href="{% url 'login' %}" class="btn btn-primary">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Login
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Register
+                </a>
+            </div>
+        </div>
+    {% endif %}
         <div class="header">
             <h1 class="page-title">Lending Management</h1>
             <div>
@@ -606,76 +622,7 @@
         </div>
     </div>
 
-    {% else %}
-    <!-- Content for anonymous users -->
-    <div class="main-content" style="margin-left: 0;">
-        <div class="header">
-            <h1 class="page-title">Finance Flow - Lending Management</h1>
-            <div class="auth-buttons">
-                <a href="{% url 'login' %}" class="btn btn-primary">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>
-                    Login
-                </a>
-                <a href="{% url 'register' %}" class="btn btn-outline-primary">
-                    <i class="bi bi-person-plus me-2"></i>
-                    Register
-                </a>
-            </div>
-        </div>
 
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h2 class="welcome-title">Welcome to Finance Flow</h2>
-            <p class="welcome-description">
-                Manage your personal finances with ease. Track your income, expenses, and lending activities all in one place. 
-                Get started by creating an account to access all features including expense tracking, income management, and lending tools.
-            </p>
-            <div class="auth-buttons">
-                <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-person-plus me-2"></i>
-                    Get Started
-                </a>
-                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>
-                    Sign In
-                </a>
-            </div>
-        </div>
-
-        <!-- Feature Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon lent">
-                        <i class="bi bi-cash-stack"></i>
-                    </div>
-                </div>
-                <div class="stat-value">Track Expenses</div>
-                <div class="stat-label">Monitor your spending habits</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon received">
-                        <i class="bi bi-currency-dollar"></i>
-                    </div>
-                </div>
-                <div class="stat-value">Manage Income</div>
-                <div class="stat-label">Record all your income sources</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon lent">
-                        <i class="bi bi-hand-holding-heart"></i>
-                    </div>
-                </div>
-                <div class="stat-value">Lending Tools</div>
-                <div class="stat-label">Track loans and payments</div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 </div>
 
 <!-- Success Message -->
