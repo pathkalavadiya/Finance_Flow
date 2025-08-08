@@ -22,10 +22,10 @@ from project_app.views import expense
 from project_app.views import profile
 from project_app.views import income
 from project_app.views import logout
-from project_app.views import lending, update_loan_status
+
 from project_app.views import reports, export_report
 from project_app.views import analytics, chart_data
-from project_app.views import groups, create_group, group_detail, add_group_expense, group_balances, add_group_member, delete_group
+from project_app.views import groups, create_group, group_detail, add_group_expense, group_balances, add_group_member, delete_group, lending
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -39,8 +39,7 @@ urlpatterns = [
     path('expense/', expense, name='expense'),
     path('profile/', profile, name='profile'),
     path('income/', income, name='income'),
-    path('lending/', lending, name='lending'),
-    path('lending/update-status/<int:loan_id>/', update_loan_status, name='update_loan_status'),
+
     path('reports/', reports, name='reports'),
     path('export-report/', export_report, name='export_report'),
     path('analytics/', analytics, name='analytics'),
@@ -54,5 +53,8 @@ urlpatterns = [
     path('groups/<int:group_id>/balances/', group_balances, name='group_balances'),
     path('groups/<int:group_id>/add-member/', add_group_member, name='add_group_member'),
     path('groups/<int:group_id>/delete/', delete_group, name='delete_group'),
+    
+    # Lending URLs
+    path('lending/', lending, name='lending'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

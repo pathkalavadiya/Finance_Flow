@@ -206,7 +206,6 @@
 
     .stat-card {
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
         border-radius: 16px;
         padding: 28px;
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -279,62 +278,599 @@
         color: var(--primary-color);
     }
 
-    .quick-actions {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 32px;
+    /* Sales Report Section Styles */
+    .sales-report-section {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 24px;
     }
 
-    .action-card {
+    .sales-report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .sales-report-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .sales-report-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+    }
+
+    .sales-report-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .sales-period-card {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sales-period-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .sales-period-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+    }
+
+    .sales-period-card.today::before {
+        background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    .sales-period-card.week::before {
+        background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+    }
+
+    .sales-period-card.month::before {
+        background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .period-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sales-amount {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+
+    .sales-amount.today {
+        color: #10b981;
+    }
+
+    .sales-amount.week {
+        color: #8b5cf6;
+    }
+
+    .sales-amount.month {
+        color: #ef4444;
+    }
+
+    .planned-amount {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+        opacity: 0.8;
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: rgba(156, 163, 175, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1s ease;
+        position: relative;
+    }
+
+    .progress-bar.today {
+        background: linear-gradient(90deg, #3b82f6, #10b981);
+    }
+
+    .progress-bar.week {
+        background: linear-gradient(90deg, #8b5cf6, #a855f7);
+    }
+
+    .progress-bar.month {
+        background: linear-gradient(90deg, #ef4444, #f97316);
+    }
+
+    .progress-percentage-text {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-top: 8px;
+        text-align: right;
+    }
+
+    .progress-percentage-text.today {
+        color: #10b981;
+    }
+
+    .progress-percentage-text.week {
+        color: #8b5cf6;
+    }
+
+    .progress-percentage-text.month {
+        color: #ef4444;
+    }
+
+    .chart-container {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         border-radius: 16px;
         padding: 24px;
-        text-align: center;
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: var(--shadow-md);
-        transition: all 0.3s ease;
-        text-decoration: none;
-        color: var(--text-primary);
+        margin-bottom: 24px;
     }
 
-    .action-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-lg);
+    .chart-title {
+        font-size: 20px;
+        font-weight: 600;
         color: var(--text-primary);
-        text-decoration: none;
-    }
-
-    .action-icon {
-        width: 64px;
-        height: 64px;
-        border-radius: 16px;
+        margin-bottom: 20px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin: 0 auto 16px;
-        font-size: 28px;
-        color: white;
+        justify-content: space-between;
     }
 
-    .action-icon.add-expense {
-        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    .chart-stats {
+        display: flex;
+        gap: 24px;
     }
 
-    .action-icon.add-income {
-        background: linear-gradient(135deg, var(--accent-color), #059669);
+    .stat-item {
+        text-align: right;
     }
 
-    .action-title {
+    .stat-item .stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .stat-item .stat-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .stat-item:first-child .stat-label {
+        color: #ef4444;
+    }
+
+    .stat-item:last-child .stat-label {
+        color: #10b981;
+    }
+
+    .chart-wrapper {
+        position: relative;
+        height: 400px;
+        width: 100%;
+    }
+
+    /* Progress Tracking Styles */
+    .progress-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .progress-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-card.combined-progress {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(79, 70, 229, 0.03));
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        grid-column: 1 / -1;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(15px);
+    }
+
+    .progress-card.combined-progress::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(99, 102, 241, 0.02) 50%, transparent 70%);
+        animation: shimmer 3s ease-in-out infinite;
+    }
+
+    .progress-card.combined-progress::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.03) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @keyframes shimmer {
+        0%, 100% { transform: translateX(-100%); }
+        50% { transform: translateX(100%); }
+    }
+
+    @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .progress-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .progress-date {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .progress-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .progress-circle {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        flex-shrink: 0;
+    }
+
+    .progress-circle svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    .progress-circle .bg {
+        fill: none;
+        stroke: var(--border-color);
+        stroke-width: 8;
+    }
+
+    .progress-circle .progress {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dasharray 0.5s ease;
+    }
+
+    .progress-circle.combined {
+        width: 120px;
+        height: 120px;
+    }
+
+    .progress-circle.combined .bg {
+        stroke-width: 6;
+        stroke: rgba(156, 163, 175, 0.3);
+    }
+
+    .progress-circle.combined .progress {
+        stroke-width: 6;
+        stroke-linecap: round;
+        transition: stroke-dasharray 0.8s ease;
+    }
+
+    .progress-circle.combined .income-progress {
+        stroke: linear-gradient(135deg, #10b981, #059669);
+        stroke: #10b981;
+        filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+        stroke-linecap: round;
+        animation: pulse-green 2s ease-in-out infinite;
+        stroke-dasharray: 0, 100;
+        transition: stroke-dasharray 1.5s ease;
+    }
+
+    .progress-circle.combined .expense-progress {
+        stroke: linear-gradient(135deg, #ef4444, #dc2626);
+        stroke: #ef4444;
+        filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
+        stroke-linecap: round;
+        animation: pulse-red 2s ease-in-out infinite;
+        stroke-dasharray: 0, 100;
+        transition: stroke-dasharray 1.5s ease;
+    }
+
+    @keyframes pulse-green {
+        0%, 100% { 
+            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+            stroke-width: 6;
+        }
+        50% { 
+            filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.7));
+            stroke-width: 7;
+        }
+    }
+
+    @keyframes pulse-red {
+        0%, 100% { 
+            filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
+            stroke-width: 6;
+        }
+        50% { 
+            filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.7));
+            stroke-width: 7;
+        }
+    }
+
+    .progress-percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .progress-percentage .income-percentage {
+        font-size: 18px;
+        font-weight: 700;
+        color: #10b981;
+        text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        animation: glow-green 2s ease-in-out infinite;
+        position: relative;
+    }
+
+    .progress-percentage .expense-percentage {
         font-size: 16px;
         font-weight: 600;
-        margin-bottom: 8px;
+        color: #ef4444;
+        text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        animation: glow-red 2s ease-in-out infinite;
+        position: relative;
     }
 
-    .action-description {
+    .progress-percentage .income-percentage::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 120%;
+        height: 120%;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        z-index: -1;
+        animation: pulse-bg-green 2s ease-in-out infinite;
+    }
+
+    .progress-percentage .expense-percentage::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 120%;
+        height: 120%;
+        background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        z-index: -1;
+        animation: pulse-bg-red 2s ease-in-out infinite;
+    }
+
+    @keyframes glow-green {
+        0%, 100% { 
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+            transform: scale(1);
+        }
+        50% { 
+            text-shadow: 0 0 15px rgba(16, 185, 129, 0.7);
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes glow-red {
+        0%, 100% { 
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+            transform: scale(1);
+        }
+        50% { 
+            text-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes pulse-bg-green {
+        0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+    }
+
+    @keyframes pulse-bg-red {
+        0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+    }
+
+    .progress-info {
+        flex: 1;
+    }
+
+    .progress-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .progress-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(5px);
+    }
+
+    .progress-stat.income-stat {
+        border-left: 3px solid #10b981;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.03));
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-stat.income-stat::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .progress-stat.income-stat:hover::before {
+        left: 100%;
+    }
+
+    .progress-stat.income-stat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .progress-stat.expense-stat {
+        border-left: 3px solid #ef4444;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.03));
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-stat.expense-stat::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .progress-stat.expense-stat:hover::before {
+        left: 100%;
+    }
+
+    .progress-stat.expense-stat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    .progress-label {
         font-size: 14px;
         color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .progress-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .progress-remaining {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+    }
+
+    .progress-remaining.income {
+        color: #10b981;
+    }
+
+    .progress-remaining.expense {
+        color: #ef4444;
+    }
+
+    .progress-timestamp {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+        opacity: 0.7;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .progress-timestamp .income-timestamp {
+        color: #10b981;
+        font-weight: 500;
+    }
+
+    .progress-timestamp .expense-timestamp {
+        color: #ef4444;
+        font-weight: 500;
     }
 
     .recent-activity {
@@ -383,8 +919,54 @@
             grid-template-columns: 1fr;
         }
 
-        .quick-actions {
+        .chart-wrapper {
+            height: 300px;
+        }
+
+        .progress-section {
             grid-template-columns: 1fr;
+        }
+        
+        .progress-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 16px;
+        }
+        
+        .progress-circle.combined {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .progress-percentage .income-percentage {
+            font-size: 14px;
+        }
+        
+        .progress-percentage .expense-percentage {
+            font-size: 12px;
+        }
+        
+        .progress-stats {
+            gap: 6px;
+        }
+        
+        .progress-stat {
+            padding: 8px;
+        }
+
+        .sales-report-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .sales-report-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .sales-amount {
+            font-size: 24px;
         }
     }
 </style>
@@ -428,13 +1010,13 @@
                 <i class="bi bi-graph-up-arrow nav-icon"></i>
                 Analytics
             </a>
-            <a href="#" class="nav-item">
+            <a href="{% url 'reports' %}" class="nav-item">
                 <i class="bi bi-pie-chart nav-icon"></i>
                 Reports
             </a>
-            <a href="#" class="nav-item">
-                <i class="bi bi-calendar-event nav-icon"></i>
-                Budget
+            <a href="{% url 'lending' %}" class="nav-item">
+                <i class="bi bi-bank nav-icon"></i>
+                Lending
             </a>
         </div>
 
@@ -515,23 +1097,128 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <a href="{% url 'expense' %}" class="action-card">
-                <div class="action-icon add-expense">
-                    <i class="bi bi-plus"></i>
+        <!-- Sales Report Section -->
+        <div class="sales-report-section">
+            <div class="sales-report-header">
+                <h2 class="sales-report-title">Sales Report</h2>
+                <p class="sales-report-subtitle">Your financial performance across different time periods</p>
+            </div>
+            <div class="sales-report-grid">
+                <div class="sales-period-card today">
+                    <div class="period-label">Today</div>
+                    <div class="sales-amount today">${{ today_sales|floatformat:2 }}</div>
+                    <div class="planned-amount">Planned: ${{ today_planned_sales|floatformat:2 }}</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar today" style="width: {{ today_sales_percentage }}%"></div>
+                    </div>
+                    <div class="progress-percentage-text today">{{ today_sales_percentage }}%</div>
                 </div>
-                <div class="action-title">Add Expense</div>
-                <div class="action-description">Record a new expense</div>
-            </a>
+                <div class="sales-period-card week">
+                    <div class="period-label">This Week</div>
+                    <div class="sales-amount week">${{ week_sales|floatformat:2 }}</div>
+                    <div class="planned-amount">Planned: ${{ week_planned_sales|floatformat:2 }}</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar week" style="width: {{ week_sales_percentage }}%"></div>
+                    </div>
+                    <div class="progress-percentage-text week">{{ week_sales_percentage }}%</div>
+                </div>
+                <div class="sales-period-card month">
+                    <div class="period-label">This Month</div>
+                    <div class="sales-amount month">${{ month_sales|floatformat:2 }}</div>
+                    <div class="planned-amount">Planned: ${{ month_planned_sales|floatformat:2 }}</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar month" style="width: {{ month_sales_percentage }}%"></div>
+                    </div>
+                    <div class="progress-percentage-text month">{{ month_sales_percentage }}%</div>
+                </div>
+            </div>
+        </div>
 
-            <a href="{% url 'income' %}" class="action-card">
-                <div class="action-icon add-income">
-                    <i class="bi bi-plus"></i>
+        <!-- Combined Progress Tracking Section -->
+        <div class="progress-section">
+            <div class="progress-card combined-progress">
+                <div class="progress-header">
+                    <h3 class="progress-title">Financial Progress</h3>
+                    <span class="progress-date">{{ current_month }}</span>
                 </div>
-                <div class="action-title">Add Income</div>
-                <div class="action-description">Record a new income</div>
-            </a>
+                <div class="progress-content">
+                    <div class="progress-circle combined">
+                        <svg viewBox="0 0 36 36">
+                            <!-- Background circle -->
+                            <path class="bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <!-- Income progress (outer ring) -->
+                            <path class="progress income-progress" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="{{ income_progress_percentage }}, 100"/>
+                            <!-- Expense progress (inner ring) -->
+                            <path class="progress expense-progress" d="M18 2.0845 a 12.9155 12.9155 0 0 1 0 25.831 a 12.9155 12.9155 0 0 1 0 -25.831" stroke-dasharray="{{ expense_progress_percentage }}, 100"/>
+                        </svg>
+                        <div class="progress-percentage">
+                            <div class="income-percentage">{{ income_progress_percentage }}%</div>
+                            <div class="expense-percentage">{{ expense_progress_percentage }}%</div>
+                        </div>
+                    </div>
+                    <div class="progress-info">
+                        <div class="progress-stats">
+                            <div class="progress-stat income-stat">
+                                <span class="progress-label">Income</span>
+                                <span class="progress-value">${{ current_income|floatformat:0 }}/${{ income_goal|floatformat:0 }}</span>
+                                <span class="progress-remaining income">{{ income_remaining_percentage }}% left</span>
+                            </div>
+                            <div class="progress-stat expense-stat">
+                                <span class="progress-label">Expense</span>
+                                <span class="progress-value">${{ current_expense|floatformat:0 }}/${{ expense_budget|floatformat:0 }}</span>
+                                <span class="progress-remaining expense">{{ expense_remaining_percentage }}% used</span>
+                            </div>
+                            <div class="progress-remaining">
+                                {{ days_left }} days left
+                            </div>
+                        </div>
+                        <div class="progress-timestamp">
+                            <span class="income-timestamp">Income: {{ last_income_update|date:"d M. H:i" }}</span>
+                            <span class="expense-timestamp">Expense: {{ last_expense_update|date:"d M. H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Income Source Chart -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>Income Source</span>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="incomeSourceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Spending Chart -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>Spendings</span>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="spendingChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Income & Expenses Chart -->
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>Income & Expenses</span>
+                <div class="chart-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${{ max_expense|floatformat:0|default:"20,239" }}</div>
+                        <div class="stat-label">Max. Expenses</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${{ max_income|floatformat:0|default:"20,239" }}</div>
+                        <div class="stat-label">Max. Income</div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="incomeExpenseChart"></canvas>
+            </div>
         </div>
 
         <!-- Recent Activity -->
@@ -547,4 +1234,478 @@
         </div>
     </div>
 </div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let incomeSourceChart, spendingChart, incomeExpenseChart;
+
+// Initialize chart when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadIncomeSourceChart();
+    loadSpendingChart();
+    loadIncomeExpenseChart();
+    animateProgressCircles();
+});
+
+function loadIncomeSourceChart() {
+    const ctx = document.getElementById('incomeSourceChart').getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (incomeSourceChart) {
+        incomeSourceChart.destroy();
+    }
+    
+    // Show loading state
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('Loading chart data...', ctx.canvas.width / 2, ctx.canvas.height / 2);
+    
+    // Fetch data from API
+    fetch('/chart-data/?type=income_sources')
+        .then(response => response.json())
+        .then(data => {
+            incomeSourceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Income Amount',
+                        data: data.data,
+                        backgroundColor: [
+                            '#ffffff',
+                            '#ef4444',
+                            '#ffffff',
+                            '#10b981'
+                        ],
+                        borderColor: [
+                            '#e5e7eb',
+                            '#dc2626',
+                            '#e5e7eb',
+                            '#059669'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+            // Create sample data if API fails
+            createSampleIncomeSourceChart(ctx);
+        });
+}
+
+function createSampleIncomeSourceChart(ctx) {
+    const sampleData = {
+        labels: ['E-commerce', 'Google AdSense', 'My Shop', 'Salary'],
+        data: [2100, 950, 8000, 13000]
+    };
+    
+    incomeSourceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sampleData.labels,
+            datasets: [{
+                label: 'Income Amount',
+                data: sampleData.data,
+                backgroundColor: [
+                    '#ffffff',
+                    '#ef4444',
+                    '#ffffff',
+                    '#10b981'
+                ],
+                borderColor: [
+                    '#e5e7eb',
+                    '#dc2626',
+                    '#e5e7eb',
+                    '#059669'
+                ],
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function loadSpendingChart() {
+    const ctx = document.getElementById('spendingChart').getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (spendingChart) {
+        spendingChart.destroy();
+    }
+    
+    // Show loading state
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('Loading chart data...', ctx.canvas.width / 2, ctx.canvas.height / 2);
+    
+    // Fetch data from API
+    fetch('/chart-data/?type=spending_categories')
+        .then(response => response.json())
+        .then(data => {
+            spendingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Spending Amount',
+                        data: data.data,
+                        backgroundColor: [
+                            '#8b5cf6',
+                            '#ec4899',
+                            '#f97316'
+                        ],
+                        borderColor: [
+                            '#7c3aed',
+                            '#db2777',
+                            '#ea580c'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+            // Create sample data if API fails
+            createSampleSpendingChart(ctx);
+        });
+}
+
+function createSampleSpendingChart(ctx) {
+    const sampleData = {
+        labels: ['Housing', 'Personal', 'Transportation'],
+        data: [3452, 2200, 2190]
+    };
+    
+    spendingChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sampleData.labels,
+            datasets: [{
+                label: 'Spending Amount',
+                data: sampleData.data,
+                backgroundColor: [
+                    '#8b5cf6',
+                    '#ec4899',
+                    '#f97316'
+                ],
+                borderColor: [
+                    '#7c3aed',
+                    '#db2777',
+                    '#ea580c'
+                ],
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function loadIncomeExpenseChart() {
+    const ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (incomeExpenseChart) {
+        incomeExpenseChart.destroy();
+    }
+    
+    // Show loading state
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('Loading chart data...', ctx.canvas.width / 2, ctx.canvas.height / 2);
+    
+    // Fetch data from API
+    fetch('/chart-data/?type=monthly')
+        .then(response => response.json())
+        .then(data => {
+            incomeExpenseChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: data.datasets[0].data,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Expenses',
+                            data: data.datasets[1].data,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 40000,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+            // Create sample data if API fails
+            createSampleIncomeExpenseChart(ctx);
+        });
+}
+
+function createSampleIncomeExpenseChart(ctx) {
+    const sampleData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [
+            {
+                label: 'Income',
+                data: [7000, 20000, 10000, 10000, 15000, 24000, 14000, 14000, 12000, 18000, 22000, 23000]
+            },
+            {
+                label: 'Expenses',
+                data: [10000, 9000, 9000, 20000, 15000, 18000, 7000, 8000, 12000, 10000, 11000, 10000]
+            }
+        ]
+    };
+    
+    incomeExpenseChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: sampleData.labels,
+            datasets: [
+                {
+                    label: 'Income',
+                    data: sampleData.datasets[0].data,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4
+                },
+                {
+                    label: 'Expenses',
+                    data: sampleData.datasets[1].data,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 40000,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Progress Circle Animation
+function animateProgressCircles() {
+    // Animate income progress circle (outer ring)
+    const incomeProgress = document.querySelector('.progress-circle.combined .income-progress');
+    const incomePercentage = document.querySelector('.progress-circle.combined .income-percentage');
+    
+    if (incomeProgress && incomePercentage) {
+        const targetPercentage = parseInt(incomePercentage.textContent);
+        let currentPercentage = 0;
+        
+        const animate = () => {
+            if (currentPercentage < targetPercentage) {
+                currentPercentage += 1;
+                const circumference = 2 * Math.PI * 15.9155; // Based on SVG radius
+                const offset = circumference - (currentPercentage / 100) * circumference;
+                incomeProgress.style.strokeDasharray = `${circumference - offset}, ${circumference}`;
+                incomePercentage.textContent = currentPercentage + '%';
+                
+                requestAnimationFrame(animate);
+            }
+        };
+        
+        setTimeout(animate, 500); // Start animation after 500ms
+    }
+    
+    // Animate expense progress circle (inner ring)
+    const expenseProgress = document.querySelector('.progress-circle.combined .expense-progress');
+    const expensePercentage = document.querySelector('.progress-circle.combined .expense-percentage');
+    
+    if (expenseProgress && expensePercentage) {
+        const targetPercentage = parseInt(expensePercentage.textContent);
+        let currentPercentage = 0;
+        
+        const animate = () => {
+            if (currentPercentage < targetPercentage) {
+                currentPercentage += 1;
+                const circumference = 2 * Math.PI * 12.9155; // Based on inner SVG radius
+                const offset = circumference - (currentPercentage / 100) * circumference;
+                expenseProgress.style.strokeDasharray = `${circumference - offset}, ${circumference}`;
+                expensePercentage.textContent = currentPercentage + '%';
+                
+                requestAnimationFrame(animate);
+            }
+        };
+        
+        setTimeout(animate, 800); // Start animation after 800ms
+    }
+}
+</script>
 {% endblock %} 

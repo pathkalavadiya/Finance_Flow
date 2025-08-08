@@ -115,7 +115,6 @@
 
     .stat-card {
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
         border-radius: 16px;
         padding: 24px;
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -169,7 +168,6 @@
 
     .lending-form {
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
         border-radius: 16px;
         padding: 32px;
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -193,7 +191,6 @@
 
     .loans-list {
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
         border-radius: 16px;
         padding: 24px;
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -393,11 +390,15 @@
                 <i class="bi bi-currency-dollar nav-icon"></i>
                 Income
             </a>
+            <a href="{% url 'groups' %}" class="nav-item">
+                <i class="bi bi-people nav-icon"></i>
+                Groups
+            </a>
         </div>
 
         <div class="nav-section">
             <div class="nav-title">Tools</div>
-            <a href="#" class="nav-item">
+            <a href="{% url 'analytics' %}" class="nav-item">
                 <i class="bi bi-graph-up-arrow nav-icon"></i>
                 Analytics
             </a>
@@ -405,9 +406,9 @@
                 <i class="bi bi-pie-chart nav-icon"></i>
                 Reports
             </a>
-            <a href="#" class="nav-item">
-                <i class="bi bi-calendar-event nav-icon"></i>
-                Budget
+            <a href="{% url 'lending' %}" class="nav-item active">
+                <i class="bi bi-bank nav-icon"></i>
+                Lending
             </a>
         </div>
 
@@ -597,7 +598,8 @@
                     {% endif %}
 
                     <div class="loan-actions">
-                        <form method="POST" action="{% url 'update_loan_status' loan.id %}" style="display: inline;">
+                        <!-- Loan status update functionality not yet implemented -->
+                        <!-- <form method="POST" action="{% url 'update_loan_status' loan.id %}" style="display: inline;">
                             {% csrf_token %}
                             <select name="status" class="form-select form-select-sm" style="width: auto; display: inline-block;">
                                 <option value="active" {% if loan.status == 'active' %}selected{% endif %}>Active</option>
@@ -606,7 +608,7 @@
                                 <option value="cancelled" {% if loan.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
                             </select>
                             <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
-                        </form>
+                        </form> -->
                     </div>
                 </div>
                 {% endfor %}

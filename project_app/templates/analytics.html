@@ -206,7 +206,6 @@
 
     .stat-card {
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
         border-radius: 16px;
         padding: 28px;
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -281,7 +280,6 @@
 
     .chart-container {
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
         border-radius: 16px;
         padding: 24px;
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -468,14 +466,18 @@
                 <i class="bi bi-currency-dollar nav-icon"></i>
                 Income
             </a>
-            <a href="{% url 'analytics' %}" class="nav-item active">
-                <i class="bi bi-graph-up-arrow nav-icon"></i>
-                Analytics
+            <a href="{% url 'groups' %}" class="nav-item">
+                <i class="bi bi-people nav-icon"></i>
+                Groups
             </a>
         </div>
 
         <div class="nav-section">
             <div class="nav-title">Tools</div>
+            <a href="{% url 'analytics' %}" class="nav-item active">
+                <i class="bi bi-graph-up-arrow nav-icon"></i>
+                Analytics
+            </a>
             <a href="{% url 'reports' %}" class="nav-item">
                 <i class="bi bi-pie-chart nav-icon"></i>
                 Reports

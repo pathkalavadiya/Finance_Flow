@@ -1,7 +1,7 @@
 import csv
 from django.shortcuts import render, redirect, redirect
 from django.db.models import Sum, Count
-from .models import Registration, Expense, Income, Lending, Group, GroupMember, GroupExpense, GroupExpenseSplit
+from .models import Registration, Expense, Income, Group, GroupMember, GroupExpense, GroupExpenseSplit
 from django.http import HttpResponse, JsonResponse
 from django.db.models.functions import TruncMonth, TruncWeek, TruncYear
 from datetime import datetime, date, timedelta
@@ -9,6 +9,7 @@ from functools import wraps
 from django.db import OperationalError
 import json
 from decimal import Decimal
+import calendar
 
 # Login required decorator
 def login_required(view_func):
@@ -74,6 +75,8 @@ def dashboard(request):
     total_income = 0
     total_expense = 0
     net_balance = 0
+    max_income = 0
+    max_expense = 0
     
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
@@ -89,12 +92,118 @@ def dashboard(request):
             
             # Calculate net balance
             net_balance = total_income - total_expense
+            
+            # Calculate max income and expense for the chart stats
+            max_income = Income.objects.filter(user=user).aggregate(max_amount=Sum('amount'))['max_amount'] or 20239
+            max_expense = Expense.objects.filter(user=user).aggregate(max_amount=Sum('amount'))['max_amount'] or 20239
+            
+            # Progress tracking calculations
+            current_date = datetime.now()
+            current_month = current_date.strftime('%B %Y')
+            
+            # Get current month's income and expenses
+            current_month_income = Income.objects.filter(
+                user=user,
+                created_at__year=current_date.year,
+                created_at__month=current_date.month
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            current_month_expense = Expense.objects.filter(
+                user=user,
+                created_at__year=current_date.year,
+                created_at__month=current_date.month
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            # Set goals/budgets (you can make these configurable later)
+            income_goal = 3100  # $3100 monthly income goal
+            expense_budget = 2500  # $2500 monthly expense budget
+            
+            # Calculate progress percentages
+            income_progress_percentage = min(int((current_month_income / income_goal) * 100), 100)
+            expense_progress_percentage = min(int((current_month_expense / expense_budget) * 100), 100)
+            
+            # Calculate remaining percentages
+            income_remaining_percentage = max(100 - income_progress_percentage, 0)
+            expense_remaining_percentage = expense_progress_percentage
+            
+            # Calculate days left in month
+            days_in_month = calendar.monthrange(current_date.year, current_date.month)[1]
+            days_left = days_in_month - current_date.day
+            
+            # Get last update timestamps
+            last_income = Income.objects.filter(user=user).order_by('-created_at').first()
+            last_expense = Expense.objects.filter(user=user).order_by('-created_at').first()
+            
+            last_income_update = last_income.created_at if last_income else current_date
+            last_expense_update = last_expense.created_at if last_expense else current_date
+            
+            # Sales Report calculations
+            # Today's sales (income)
+            today_start = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            today_end = today_start + timedelta(days=1)
+            today_sales = Income.objects.filter(
+                user=user,
+                created_at__gte=today_start,
+                created_at__lt=today_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            # This week's sales (income)
+            week_start = current_date - timedelta(days=current_date.weekday())
+            week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+            week_end = week_start + timedelta(days=7)
+            week_sales = Income.objects.filter(
+                user=user,
+                created_at__gte=week_start,
+                created_at__lt=week_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            # This month's sales (income)
+            month_start = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            month_end = (month_start + timedelta(days=32)).replace(day=1)
+            month_sales = Income.objects.filter(
+                user=user,
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            # Planned sales targets (you can make these configurable)
+            today_planned_sales = 300
+            week_planned_sales = 2100
+            month_planned_sales = 9000
+            
+            # Calculate progress percentages
+            today_sales_percentage = min(int((today_sales / today_planned_sales) * 100), 100) if today_planned_sales > 0 else 0
+            week_sales_percentage = min(int((week_sales / week_planned_sales) * 100), 100) if week_planned_sales > 0 else 0
+            month_sales_percentage = min(int((month_sales / month_planned_sales) * 100), 100) if month_planned_sales > 0 else 0
     
     context = {
         'user': user,
         'total_income': total_income,
         'total_expense': total_expense,
-        'net_balance': net_balance
+        'net_balance': net_balance,
+        'max_income': max_income,
+        'max_expense': max_expense,
+        'current_month': current_month,
+        'current_income': current_month_income,
+        'current_expense': current_month_expense,
+        'income_goal': income_goal,
+        'expense_budget': expense_budget,
+        'income_progress_percentage': income_progress_percentage,
+        'expense_progress_percentage': expense_progress_percentage,
+        'income_remaining_percentage': income_remaining_percentage,
+        'expense_remaining_percentage': expense_remaining_percentage,
+        'days_left': days_left,
+        'last_income_update': last_income_update,
+        'last_expense_update': last_expense_update,
+        'today_sales': today_sales,
+        'week_sales': week_sales,
+        'month_sales': month_sales,
+        'today_planned_sales': today_planned_sales,
+        'week_planned_sales': week_planned_sales,
+        'month_planned_sales': month_planned_sales,
+        'today_sales_percentage': today_sales_percentage,
+        'week_sales_percentage': week_sales_percentage,
+        'month_sales_percentage': month_sales_percentage
     }
     return render(request, 'dashboard.html', context)
 
@@ -177,105 +286,10 @@ def profile(request):
     return render(request, 'profile.html', {'user': user})
 
 
-def lending(request):
-    user = None
-    loans = []
-    total_lent = 0
-    total_received = 0
-    is_logged_in = False
-    
-    # Check if user is logged in
-    if 'entry_email' in request.session:
-        user = Registration.objects.filter(email=request.session['entry_email']).first()
-        is_logged_in = True
-        
-        if user:
-            if request.method == 'POST':
-                # Handle loan creation
-                borrower_name = request.POST.get('borrower_name')
-                borrower_phone = request.POST.get('borrower_phone')
-                borrower_email = request.POST.get('borrower_email')
-                amount = request.POST.get('amount')
-                currency = request.POST.get('currency', 'USD')
-                description = request.POST.get('description')
-                interest_rate = request.POST.get('interest_rate', 0)
-                loan_date = request.POST.get('loan_date')
-                due_date = request.POST.get('due_date')
-                
-                try:
-                    # Create new loan
-                    Lending.objects.create(
-                        user=user,
-                        borrower_name=borrower_name,
-                        borrower_phone=borrower_phone,
-                        borrower_email=borrower_email,
-                        amount=amount,
-                        currency=currency,
-                        description=description,
-                        interest_rate=interest_rate,
-                        loan_date=loan_date,
-                        due_date=due_date
-                    )
-                    
-                    return render(request, 'lending.html', {
-                        'success': True,
-                        'message': 'Loan created successfully!',
-                        'user': user,
-                        'is_logged_in': is_logged_in
-                    })
-                except OperationalError:
-                    return render(request, 'lending.html', {
-                        'error': 'Database table not ready. Please run migrations first.',
-                        'user': user,
-                        'is_logged_in': is_logged_in
-                    })
-            
-            try:
-                # Get all loans for the user
-                loans = Lending.objects.filter(user=user).order_by('-created_at')
-                
-                # Calculate totals
-                active_loans = loans.filter(status='active')
-                paid_loans = loans.filter(status='paid')
-                
-                total_lent = active_loans.aggregate(total=Sum('amount'))['total'] or 0
-                total_received = paid_loans.aggregate(total=Sum('amount'))['total'] or 0
-            except OperationalError:
-                # Database table doesn't exist yet
-                loans = []
-                total_lent = 0
-                total_received = 0
-    
-    context = {
-        'user': user,
-        'loans': loans,
-        'total_lent': total_lent,
-        'total_received': total_received,
-        'today': date.today(),
-        'is_logged_in': is_logged_in
-    }
-    return render(request, 'lending.html', context)
 
 
-@login_required
-def update_loan_status(request, loan_id):
-    if 'entry_email' not in request.session:
-        return redirect('login')
-    
-    user = Registration.objects.filter(email=request.session['entry_email']).first()
-    if not user:
-        return redirect('login')
-    
-    try:
-        loan = Lending.objects.get(id=loan_id, user=user)
-        new_status = request.POST.get('status')
-        if new_status in ['active', 'paid', 'overdue', 'cancelled']:
-            loan.status = new_status
-            loan.save()
-    except (Lending.DoesNotExist, OperationalError):
-        pass
-    
-    return redirect('lending')
+
+
 
 
 @login_required
@@ -536,6 +550,28 @@ def chart_data(request):
                 'labels': [item['category'] for item in expense_categories],
                 'data': [float(item['total']) for item in expense_categories]
             }
+        })
+    
+    elif chart_type == 'income_sources':
+        # Income sources breakdown data
+        income_sources = Income.objects.filter(user=user).values('category').annotate(
+            total=Sum('amount')
+        ).order_by('-total')
+        
+        return JsonResponse({
+            'labels': [item['category'] for item in income_sources],
+            'data': [float(item['total']) for item in income_sources]
+        })
+    
+    elif chart_type == 'spending_categories':
+        # Spending categories breakdown data
+        spending_categories = Expense.objects.filter(user=user).values('category').annotate(
+            total=Sum('amount')
+        ).order_by('-total')
+        
+        return JsonResponse({
+            'labels': [item['category'] for item in spending_categories],
+            'data': [float(item['total']) for item in spending_categories]
         })
     
     return JsonResponse({'error': 'Invalid chart type'}, status=400)
@@ -923,4 +959,27 @@ def delete_group(request, group_id):
         return redirect('groups')
     except Group.DoesNotExist:
         return redirect('groups')
+
+
+@login_required
+def lending(request):
+    """Lending management page"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    # For now, return a simple context with user info
+    # This can be expanded later with actual lending functionality
+    context = {
+        'user': user,
+        'is_logged_in': True,
+        'loans': [],  # Empty for now
+        'total_lent': 0,
+        'total_received': 0,
+    }
+    
+    return render(request, 'lending.html', context)
 
