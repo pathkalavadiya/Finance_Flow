@@ -25,7 +25,10 @@ from project_app.views import logout
 
 from project_app.views import reports, export_report
 from project_app.views import analytics, chart_data
-from project_app.views import groups, create_group, group_detail, add_group_expense, group_balances, add_group_member, delete_group, lending
+
+# Group Split Money Views
+from project_app.views import groups, create_group, group_detail, add_group_expense, group_balances, add_group_member, delete_group
+
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -47,14 +50,15 @@ urlpatterns = [
     
     # Group Split Money URLs
     path('groups/', groups, name='groups'),
-    path('groups/create/', create_group, name='create_group'),
-    path('groups/<int:group_id>/', group_detail, name='group_detail'),
-    path('groups/<int:group_id>/add-expense/', add_group_expense, name='add_group_expense'),
-    path('groups/<int:group_id>/balances/', group_balances, name='group_balances'),
-    path('groups/<int:group_id>/add-member/', add_group_member, name='add_group_member'),
-    path('groups/<int:group_id>/delete/', delete_group, name='delete_group'),
+    path('create-group/', create_group, name='create_group'),
+    path('group/<int:group_id>/', group_detail, name='group_detail'),
+    path('group/<int:group_id>/add-expense/', add_group_expense, name='add_group_expense'),
+    path('group/<int:group_id>/balances/', group_balances, name='group_balances'),
+    path('group/<int:group_id>/add-member/', add_group_member, name='add_group_member'),
+    path('group/<int:group_id>/delete/', delete_group, name='delete_group'),
     
-    # Lending URLs
-    path('lending/', lending, name='lending'),
+
+    
+
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

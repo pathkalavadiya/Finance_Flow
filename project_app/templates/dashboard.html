@@ -510,8 +510,8 @@
     }
 
     .progress-card.combined-progress {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(79, 70, 229, 0.03));
-        border: 1px solid rgba(99, 102, 241, 0.15);
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.1);
         grid-column: 1 / -1;
         position: relative;
         overflow: hidden;
@@ -525,8 +525,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(45deg, transparent 30%, rgba(99, 102, 241, 0.02) 50%, transparent 70%);
-        animation: shimmer 3s ease-in-out infinite;
+        background: transparent;
     }
 
     .progress-card.combined-progress::after {
@@ -536,8 +535,7 @@
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(99, 102, 241, 0.03) 0%, transparent 70%);
-        animation: rotate 20s linear infinite;
+        background: transparent;
     }
 
     @keyframes shimmer {
@@ -1002,6 +1000,7 @@
                 <i class="bi bi-people nav-icon"></i>
                 Groups
             </a>
+
         </div>
 
         <div class="nav-section">
@@ -1013,10 +1012,6 @@
             <a href="{% url 'reports' %}" class="nav-item">
                 <i class="bi bi-pie-chart nav-icon"></i>
                 Reports
-            </a>
-            <a href="{% url 'lending' %}" class="nav-item">
-                <i class="bi bi-bank nav-icon"></i>
-                Lending
             </a>
         </div>
 

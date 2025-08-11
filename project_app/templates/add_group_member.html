@@ -1,264 +1,124 @@
 {% extends 'base.html' %}
 
-{% block title %}Add Member - {{ group.name }}{% endblock %}
+{% block title %}Add Member - {{ group.name }} - FinanceFlow{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 sidebar p-4">
-            <div class="d-flex align-items-center mb-4">
-                <i class="bi bi-wallet2 fs-3 me-2 text-primary"></i>
-                <h4 class="mb-0 gradient-text">Finance Flow</h4>
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'expense' %}">
+                            <i class="fas fa-credit-card"></i> Expenses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'income' %}">
+                            <i class="fas fa-money-bill-wave"></i> Income
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'groups' %}">
+                            <i class="fas fa-users"></i> Groups
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'analytics' %}">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'reports' %}">
+                            <i class="fas fa-file-alt"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
             </div>
-            
-            <nav class="nav flex-column">
-                <a class="nav-link" href="{% url 'dashboard' %}">
-                    <i class="bi bi-house-door me-2"></i>Dashboard
-                </a>
-                <a class="nav-link" href="{% url 'expense' %}">
-                    <i class="bi bi-cash-stack me-2"></i>Expenses
-                </a>
-                <a class="nav-link" href="{% url 'income' %}">
-                    <i class="bi bi-currency-dollar me-2"></i>Income
-                </a>
-                <a class="nav-link active" href="{% url 'groups' %}">
-                    <i class="bi bi-people me-2"></i>Groups
-                </a>
-                <a class="nav-link" href="{% url 'reports' %}">
-                    <i class="bi bi-graph-up me-2"></i>Reports
-                </a>
-                <a class="nav-link" href="{% url 'analytics' %}">
-                    <i class="bi bi-bar-chart me-2"></i>Analytics
-                </a>
-                <a class="nav-link" href="{% url 'profile' %}">
-                    <i class="bi bi-person me-2"></i>Profile
-                </a>
-                <a class="nav-link" href="{% url 'logout' %}">
-                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                </a>
-            </nav>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 p-4">
-            <div class="d-flex align-items-center mb-4">
-                <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary me-3">
-                    <i class="bi bi-arrow-left me-2"></i>Back to {{ group.name }}
-                </a>
-                <h2 class="gradient-text mb-0">
-                    <i class="bi bi-person-plus me-2"></i>Add Member
-                </h2>
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Add Member to {{ group.name }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Group
+                    </a>
+                </div>
             </div>
 
             <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <div class="glass-card p-4">
-                        <div class="text-center mb-4">
-                            <div class="icon-circle mx-auto mb-3" style="width: 80px; height: 80px;">
-                                <i class="bi bi-person-plus-fill fs-1 text-primary"></i>
-                            </div>
-                            <h5>Add New Member</h5>
-                            <p class="text-muted">Invite someone to join {{ group.name }}</p>
-                        </div>
-
-                        {% if error %}
-                        <div class="alert alert-danger">
-                            <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
-                        </div>
-                        {% endif %}
-
-                        {% if success %}
-                        <div class="alert alert-success">
-                            <i class="bi bi-check-circle me-2"></i>{{ success }}
-                        </div>
-                        {% endif %}
-
-                        {% if errors %}
-                        <div class="alert alert-warning">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            <strong>Some issues occurred:</strong>
-                            <ul class="mb-0 mt-2">
-                                {% for error in errors %}
-                                <li>{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% endif %}
-
-                        <form method="post">
-                            {% csrf_token %}
-                            
-                            <!-- Add Multiple Members -->
-                            <div class="mb-4">
-                                <label class="form-label">
-                                    <i class="bi bi-people me-2"></i>Add Members
-                                </label>
-                                <p class="text-muted mb-3">Add one or more members to {{ group.name }}</p>
-                                
-                                <div id="members-container">
-                                    <div class="row mb-3">
-                                        <div class="col-md-8">
-                                            <input type="email" class="form-control member-email" 
-                                                   name="member_emails[]" 
-                                                   placeholder="Enter email address" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button type="button" class="btn btn-outline-danger btn-sm remove-member" style="display: none;">
-                                                <i class="bi bi-trash me-1"></i>Remove
-                                            </button>
-                                        </div>
-                                    </div>
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
                                 </div>
-                                
-                                <button type="button" class="btn btn-outline-primary btn-sm" id="add-member-btn">
-                                    <i class="bi bi-plus-circle me-2"></i>+ Add Another Member
-                                </button>
-                            </div>
+                            {% endif %}
 
-                            <!-- Current Members -->
-                            <div class="mb-4">
-                                <label class="form-label">
-                                    <i class="bi bi-people me-2"></i>Current Members
-                                </label>
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        {% for member in group.members.all %}
-                                        <div class="d-flex align-items-center mb-2">
-                                            <div class="icon-circle me-2" style="width: 30px; height: 30px;">
-                                                <i class="bi bi-person-circle text-primary"></i>
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="member_email" class="form-label">Member Email *</label>
+                                    <input type="email" class="form-control" id="member_email" name="member_email" required 
+                                           placeholder="Enter the email address of the person you want to add">
+                                    <div class="form-text">The person must have an account on FinanceFlow to be added to the group.</div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-user-plus"></i> Add Member
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Current Members -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Current Members</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for member in group.members.all %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                {{ member.name|first|upper }}
                                             </div>
                                             <div>
-                                                <small class="fw-bold">{{ member.name }}</small>
-                                                <br>
+                                                <div class="fw-medium">{{ member.name }}</div>
                                                 <small class="text-muted">{{ member.email }}</small>
                                             </div>
                                         </div>
-                                        {% endfor %}
                                     </div>
-                                </div>
-                            </div>
-
-                            <!-- Bulk Add Section -->
-                            <div class="mb-4">
-                                <label class="form-label">
-                                    <i class="bi bi-upload me-2"></i>Bulk Add Members
-                                </label>
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <p class="text-muted mb-3">Add multiple members at once by entering their email addresses (one per line)</p>
-                                        <textarea class="form-control" id="bulk-emails" name="bulk_emails" 
-                                                  rows="4" placeholder="email1@example.com&#10;email2@example.com&#10;email3@example.com"></textarea>
-                                        <div class="form-text">Enter one email address per line</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Submit Button -->
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-check-circle me-2"></i>Add Members
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Tips -->
-                    <div class="glass-card p-4 mt-4">
-                        <h6 class="mb-3">
-                            <i class="bi bi-lightbulb me-2 text-warning"></i>Tips for adding members
-                        </h6>
-                        
-                        <ul class="list-unstyled">
-                            <li class="mb-2">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                <strong>Use their email addresses</strong> - they must have a Finance Flow account
-                            </li>
-                            <li class="mb-2">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                <strong>Add multiple members</strong> at once using the bulk add feature
-                            </li>
-                            <li class="mb-2">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                <strong>They'll be notified</strong> when added to the group
-                            </li>
-                            <li class="mb-2">
-                                <i class="bi bi-check-circle text-success me-2"></i>
-                                <strong>They can start adding expenses</strong> immediately
-                            </li>
-                        </ul>
-
-                        <hr>
-
-                        <h6 class="mb-3">
-                            <i class="bi bi-info-circle me-2 text-info"></i>Group Information
-                        </h6>
-                        
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="stats-card mb-3">
-                                    <h4 class="mb-0">{{ group.get_member_count }}</h4>
-                                    <small>Current Members</small>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="stats-card mb-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                                    <h4 class="mb-0">${{ group.get_total_expenses }}</h4>
-                                    <small>Total Expenses</small>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const addMemberBtn = document.getElementById('add-member-btn');
-    const membersContainer = document.getElementById('members-container');
-    let memberCount = 1;
-
-    // Add new member input field
-    addMemberBtn.addEventListener('click', function() {
-        memberCount++;
-        const newMemberDiv = document.createElement('div');
-        newMemberDiv.className = 'row mb-3';
-        newMemberDiv.innerHTML = `
-            <div class="col-md-8">
-                <input type="email" class="form-control member-email" 
-                       name="member_emails[]" 
-                       placeholder="Enter email address" required>
-            </div>
-            <div class="col-md-4">
-                <button type="button" class="btn btn-outline-danger btn-sm remove-member">
-                    <i class="bi bi-trash me-1"></i>Remove
-                </button>
-            </div>
-        `;
-        membersContainer.appendChild(newMemberDiv);
-        
-        // Show remove button for the first field if we have more than one
-        if (memberCount > 1) {
-            document.querySelector('.remove-member').style.display = 'block';
-        }
-    });
-
-    // Remove member input field
-    membersContainer.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-member') || e.target.closest('.remove-member')) {
-            const memberRow = e.target.closest('.row');
-            memberRow.remove();
-            memberCount--;
-            
-            // Hide remove button for the first field if we only have one left
-            if (memberCount === 1) {
-                document.querySelector('.remove-member').style.display = 'none';
-            }
-        }
-    });
-});
-</script>
 {% endblock %}

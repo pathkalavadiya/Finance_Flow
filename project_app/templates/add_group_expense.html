@@ -1,407 +1,162 @@
 {% extends 'base.html' %}
 
-{% block title %}Add Expense - {{ group.name }}{% endblock %}
+{% block title %}Add Expense - {{ group.name }} - FinanceFlow{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 sidebar p-4">
-            <div class="d-flex align-items-center mb-4">
-                <i class="bi bi-wallet2 fs-3 me-2 text-primary"></i>
-                <h4 class="mb-0 gradient-text">Finance Flow</h4>
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'expense' %}">
+                            <i class="fas fa-credit-card"></i> Expenses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'income' %}">
+                            <i class="fas fa-money-bill-wave"></i> Income
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'groups' %}">
+                            <i class="fas fa-users"></i> Groups
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'analytics' %}">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'reports' %}">
+                            <i class="fas fa-file-alt"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
             </div>
-            
-            <nav class="nav flex-column">
-                <a class="nav-link" href="{% url 'dashboard' %}">
-                    <i class="bi bi-house-door me-2"></i>Dashboard
-                </a>
-                <a class="nav-link" href="{% url 'expense' %}">
-                    <i class="bi bi-cash-stack me-2"></i>Expenses
-                </a>
-                <a class="nav-link" href="{% url 'income' %}">
-                    <i class="bi bi-currency-dollar me-2"></i>Income
-                </a>
-                <a class="nav-link active" href="{% url 'groups' %}">
-                    <i class="bi bi-people me-2"></i>Groups
-                </a>
-                <a class="nav-link" href="{% url 'reports' %}">
-                    <i class="bi bi-graph-up me-2"></i>Reports
-                </a>
-                <a class="nav-link" href="{% url 'analytics' %}">
-                    <i class="bi bi-bar-chart me-2"></i>Analytics
-                </a>
-                <a class="nav-link" href="{% url 'profile' %}">
-                    <i class="bi bi-person me-2"></i>Profile
-                </a>
-                <a class="nav-link" href="{% url 'logout' %}">
-                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                </a>
-            </nav>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 p-4">
-            <div class="d-flex align-items-center mb-4">
-                <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary me-3">
-                    <i class="bi bi-arrow-left me-2"></i>Back to {{ group.name }}
-                </a>
-                <h2 class="gradient-text mb-0">
-                    <i class="bi bi-plus-circle me-2"></i>Add an expense
-                </h2>
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Add Expense to {{ group.name }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Group
+                    </a>
+                </div>
             </div>
 
             <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="glass-card p-4">
-                        <form method="post">
-                            {% csrf_token %}
-                            
-                            <!-- Participants -->
-                            <div class="mb-4">
-                                <label class="form-label">
-                                    <i class="bi bi-people me-2"></i>Group Members
-                                </label>
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-success me-2">All of {{ group.name }}</span>
-                                            <small class="text-muted">{{ group.get_member_count }} people</small>
-                                        </div>
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </div>
+                            {% endif %}
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description *</label>
+                                    <input type="text" class="form-control" id="description" name="description" value="{{ form_values.description }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Amount *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" value="{{ form_values.amount }}" required>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Who Paid -->
-                            <div class="mb-4">
-                                <label for="paid_by" class="form-label">
-                                    <i class="bi bi-person-check me-2"></i>Who paid for this expense?
-                                </label>
-                                <select class="form-select" id="paid_by" name="paid_by" required>
-                                    <option value="">Select who paid</option>
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">Date *</label>
+                                    <input type="date" class="form-control" id="date" name="date" value="{{ form_values.date }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="payer" class="form-label">Paid By *</label>
+                                    <select class="form-select" id="payer" name="payer" required>
+                                        <option value="">Select who paid</option>
+                                        {% for member in group.members.all %}
+                                            <option value="{{ member.id }}" {% if form_values.payer == member.id|stringformat:"s" %}selected{% endif %}>{{ member.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Split Between *</label>
+                                    <p class="text-muted small">Select the members who should split this expense equally.</p>
+                                    
                                     {% for member in group.members.all %}
-                                    <option value="{{ member.id }}" {% if member == user %}selected{% endif %}>
-                                        {{ member.name }} ({{ member.email }})
-                                    </option>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="included_members" value="{{ member.id }}" id="member_{{ member.id }}" {% if form_values.included_members and member.id|stringformat:"s" in form_values.included_members %}checked{% endif %}>
+                                            <label class="form-check-label" for="member_{{ member.id }}">
+                                                {{ member.name }}
+                                            </label>
+                                        </div>
                                     {% endfor %}
-                                </select>
-                            </div>
-
-                            <!-- Expense Details -->
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <!-- Description -->
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">
-                                            <i class="bi bi-receipt me-2"></i>Enter a description
-                                        </label>
-                                        <input type="text" class="form-control" id="description" name="description" 
-                                               placeholder="e.g., Dinner, Gas, Rent" required>
-                                    </div>
-
-                                    <!-- Amount -->
-                                    <div class="mb-3">
-                                        <label for="amount" class="form-label">
-                                            <i class="bi bi-currency-dollar me-2"></i>Amount
-                                        </label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">$</span>
-                                            <input type="number" class="form-control" id="amount" name="amount" 
-                                                   step="0.01" min="0" placeholder="0.00" required>
-                                        </div>
-                                    </div>
-
-                                    <!-- Split Summary -->
-                                    <div class="card bg-light mb-3">
-                                        <div class="card-body">
-                                            <p class="mb-1">Paid by <strong>you</strong> and split <strong>equally</strong>.</p>
-                                            <p class="mb-0 text-muted" id="per-person-amount">($0.00/person)</p>
-                                        </div>
-                                    </div>
                                 </div>
 
-                                <div class="col-md-4">
-                                    <!-- Category -->
-                                    <div class="mb-3">
-                                        <label for="category" class="form-label">
-                                            <i class="bi bi-tag me-2"></i>Category
-                                        </label>
-                                        <select class="form-select" id="category" name="category">
-                                            <option value="">Select category</option>
-                                            <option value="Food & Dining">Food & Dining</option>
-                                            <option value="Transportation">Transportation</option>
-                                            <option value="Housing">Housing</option>
-                                            <option value="Entertainment">Entertainment</option>
-                                            <option value="Shopping">Shopping</option>
-                                            <option value="Utilities">Utilities</option>
-                                            <option value="Travel">Travel</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Date -->
-                                    <div class="mb-3">
-                                        <label for="expense_date" class="form-label">
-                                            <i class="bi bi-calendar me-2"></i>Date
-                                        </label>
-                                        <input type="date" class="form-control" id="expense_date" name="expense_date" 
-                                               value="{{ today|date:'Y-m-d' }}" required>
-                                    </div>
-
-                                    <!-- Currency -->
-                                    <div class="mb-3">
-                                        <label for="currency" class="form-label">
-                                            <i class="bi bi-currency-exchange me-2"></i>Currency
-                                        </label>
-                                        <select class="form-select" id="currency" name="currency">
-                                            <option value="USD">USD ($)</option>
-                                            <option value="EUR">EUR (€)</option>
-                                            <option value="GBP">GBP (£)</option>
-                                            <option value="INR">INR (₹)</option>
-                                            <option value="CAD">CAD (C$)</option>
-                                        </select>
-                                    </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Add Expense
+                                    </button>
                                 </div>
-                            </div>
-
-                            <!-- Split Type -->
-                            <div class="mb-4">
-                                <label class="form-label">
-                                    <i class="bi bi-share me-2"></i>Split Type
-                                </label>
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-body text-center">
-                                                <input type="radio" class="btn-check" name="split_type" id="equal" value="equal" checked>
-                                                <label class="btn btn-outline-primary w-100" for="equal">
-                                                    <i class="bi bi-equals fs-4 d-block mb-2"></i>
-                                                    Equal
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-body text-center">
-                                                <input type="radio" class="btn-check" name="split_type" id="percentage" value="percentage">
-                                                <label class="btn btn-outline-secondary w-100" for="percentage">
-                                                    <i class="bi bi-percent fs-4 d-block mb-2"></i>
-                                                    Percentage
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-body text-center">
-                                                <input type="radio" class="btn-check" name="split_type" id="custom" value="custom">
-                                                <label class="btn btn-outline-secondary w-100" for="custom">
-                                                    <i class="bi bi-sliders fs-4 d-block mb-2"></i>
-                                                    Custom
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Member-wise Split -->
-                                <div id="member-splits" class="card bg-light">
-                                    <div class="card-header">
-                                        <h6 class="mb-0">
-                                            <i class="bi bi-people me-2"></i>Split Details
-                                        </h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="equal-split" class="split-section">
-                                            <p class="text-muted mb-3">Amount will be split equally among all members.</p>
-                                            <div class="row">
-                                                {% for member in group.members.all %}
-                                                <div class="col-md-6 mb-2">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <span>{{ member.name }}</span>
-                                                        <span class="badge bg-primary" id="equal-amount-{{ member.id }}">$0.00</span>
-                                                    </div>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-
-                                        <div id="percentage-split" class="split-section" style="display: none;">
-                                            <p class="text-muted mb-3">Enter percentage for each member (total should be 100%).</p>
-                                            {% for member in group.members.all %}
-                                            <div class="row mb-2">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">{{ member.name }}</label>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="input-group">
-                                                        <input type="number" class="form-control percentage-input" 
-                                                               name="percentage_{{ member.id }}" 
-                                                               placeholder="0" min="0" max="100" step="0.01">
-                                                        <span class="input-group-text">%</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                            <div class="alert alert-info mt-2">
-                                                <small>Total: <span id="total-percentage">0</span>%</small>
-                                            </div>
-                                        </div>
-
-                                        <div id="custom-split" class="split-section" style="display: none;">
-                                            <p class="text-muted mb-3">Enter custom amount for each member.</p>
-                                            {% for member in group.members.all %}
-                                            <div class="row mb-2">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">{{ member.name }}</label>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" class="form-control custom-amount-input" 
-                                                               name="custom_amount_{{ member.id }}" 
-                                                               placeholder="0.00" min="0" step="0.01">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                            <div class="alert alert-info mt-2">
-                                                <small>Total: $<span id="total-custom">0.00</span></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notes -->
-                            <div class="mb-4">
-                                <label for="notes" class="form-label">
-                                    <i class="bi bi-card-text me-2"></i>Notes (Optional)
-                                </label>
-                                <textarea class="form-control" id="notes" name="notes" rows="3"
-                                          placeholder="Add any additional notes about this expense..."></textarea>
-                            </div>
-
-                            <!-- Action Buttons -->
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">
-                                    <i class="bi bi-x-circle me-2"></i>Cancel
-                                </a>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-check-circle me-2"></i>Save
-                                </button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 </div>
 
 <script>
-// Calculate per-person amount when amount changes
-document.getElementById('amount').addEventListener('input', function() {
-    updateSplitDisplay();
-});
-
-// Handle split type changes
-document.querySelectorAll('input[name="split_type"]').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-        updateSplitDisplay();
-    });
-});
-
-// Handle percentage inputs
-document.querySelectorAll('.percentage-input').forEach(function(input) {
-    input.addEventListener('input', function() {
-        updatePercentageTotal();
-    });
-});
-
-// Handle custom amount inputs
-document.querySelectorAll('.custom-amount-input').forEach(function(input) {
-    input.addEventListener('input', function() {
-        updateCustomTotal();
-    });
-});
-
-function updateSplitDisplay() {
-    const amount = parseFloat(document.getElementById('amount').value) || 0;
-    const splitType = document.querySelector('input[name="split_type"]:checked').value;
-    const memberCount = {{ group.get_member_count }};
-    
-    // Hide all split sections
-    document.querySelectorAll('.split-section').forEach(function(section) {
-        section.style.display = 'none';
-    });
-    
-    if (splitType === 'equal') {
-        document.getElementById('equal-split').style.display = 'block';
-        const perPerson = memberCount > 0 ? amount / memberCount : 0;
-        
-        // Update equal split amounts
-        {% for member in group.members.all %}
-        document.getElementById('equal-amount-{{ member.id }}').textContent = `$${perPerson.toFixed(2)}`;
-        {% endfor %}
-        
-        document.getElementById('per-person-amount').textContent = `($${perPerson.toFixed(2)}/person)`;
-    } else if (splitType === 'percentage') {
-        document.getElementById('percentage-split').style.display = 'block';
-        updatePercentageTotal();
-    } else if (splitType === 'custom') {
-        document.getElementById('custom-split').style.display = 'block';
-        updateCustomTotal();
-    }
-}
-
-function updatePercentageTotal() {
-    const percentageInputs = document.querySelectorAll('.percentage-input');
-    let total = 0;
-    
-    percentageInputs.forEach(function(input) {
-        total += parseFloat(input.value) || 0;
-    });
-    
-    document.getElementById('total-percentage').textContent = total.toFixed(2);
-    
-    // Change color based on total
-    const totalElement = document.getElementById('total-percentage');
-    if (total === 100) {
-        totalElement.style.color = 'green';
-    } else if (total > 100) {
-        totalElement.style.color = 'red';
-    } else {
-        totalElement.style.color = 'orange';
-    }
-}
-
-function updateCustomTotal() {
-    const customInputs = document.querySelectorAll('.custom-amount-input');
-    const totalAmount = parseFloat(document.getElementById('amount').value) || 0;
-    let total = 0;
-    
-    customInputs.forEach(function(input) {
-        total += parseFloat(input.value) || 0;
-    });
-    
-    document.getElementById('total-custom').textContent = total.toFixed(2);
-    
-    // Change color based on total
-    const totalElement = document.getElementById('total-custom');
-    if (Math.abs(total - totalAmount) < 0.01) {
-        totalElement.style.color = 'green';
-    } else if (total > totalAmount) {
-        totalElement.style.color = 'red';
-    } else {
-        totalElement.style.color = 'orange';
-    }
-}
-
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    updateSplitDisplay();
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    if (!document.getElementById('date').value) {
+        document.getElementById('date').value = today;
+    }
+    
+    // Set current user as default payer if they're a member
+    const currentUser = '{{ user.id }}';
+    const payerSelect = document.getElementById('payer');
+    if (!payerSelect.value) {
+        for (let option of payerSelect.options) {
+            if (option.value === currentUser) {
+                option.selected = true;
+                break;
+            }
+        }
+    }
+    
+    // Check current user by default in included members
+    const currentUserCheckbox = document.getElementById('member_{{ user.id }}');
+    if (currentUserCheckbox && !currentUserCheckbox.checked) {
+        currentUserCheckbox.checked = true;
+    }
 });
 </script>
 {% endblock %}

@@ -28,3 +28,11 @@ def divide(value, arg):
         return float(value) / float(arg)
     except (ValueError, TypeError, ZeroDivisionError):
         return value
+
+@register.filter
+def dict_get(mapping, key):
+    """Safely get a value from a dict-like object by key"""
+    try:
+        return mapping.get(key, '')
+    except Exception:
+        return ''
