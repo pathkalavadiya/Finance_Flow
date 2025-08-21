@@ -70,6 +70,13 @@ def logout(request):
     return redirect('dashboard')
 
 
+def landing(request):
+    # If logged in, go to dashboard; otherwise show public landing page
+    if 'entry_email' in request.session:
+        return redirect('dashboard')
+    return render(request, 'landing.html')
+
+
 @login_required
 def dashboard(request):
     user = None

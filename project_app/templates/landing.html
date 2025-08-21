@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome - Finance Flow{% endblock %}
+
+{% block extra_css %}
+<style>
+	/* Full-bleed hero with background image */
+	.landing-hero {
+		position: relative;
+		min-height: 100vh;
+		background: url('{% static 'images/landing.jpg' %}') center center / cover no-repeat;
+		display: flex;
+		align-items: center;
+	}
+	.landing-hero::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: rgba(0,0,0,0.45);
+	}
+	.landing-content { position: relative; z-index: 1; }
+	.hero-heading {
+		font-size: 56px;
+		line-height: 1.1;
+		font-weight: 800;
+		color: #fff;
+	}
+	.hero-subtitle { color: #e5e7eb; font-size: 22px; }
+	.cta-btn { padding: 16px 26px; border-radius: 12px; font-weight: 700; }
+	.cta-secondary { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.35); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="landing-hero">
+	<div class="container landing-content py-5">
+		<div class="col-lg-9 col-xl-8">
+			<h1 class="hero-heading mb-3">Grow Your Wealth<br/>with Smart Finance</h1>
+			<p class="hero-subtitle mb-4">Analytics, Investments, and<br/>Secure Financial Management</p>
+			<div class="d-flex gap-3">
+				<a href="{% url 'register' %}" class="btn btn-primary cta-btn">Get Started</a>
+				<a href="{% url 'login' %}" class="btn cta-btn cta-secondary">Sign In</a>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}
+
+

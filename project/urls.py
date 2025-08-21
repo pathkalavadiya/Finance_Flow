@@ -25,6 +25,7 @@ from project_app.views import logout
 
 from project_app.views import reports, export_report
 from project_app.views import analytics, chart_data
+from project_app.views import landing
 
 # Group Split Money Views
 from project_app.views import groups, create_group, group_detail, add_group_expense, group_balances, add_group_member, delete_group
@@ -34,7 +35,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', dashboard, name='dashboard'),
+    path('', landing, name='landing'),
     path('register/', register, name='register'),
     path('login/', login, name='login'),
     path('logout/', logout, name='logout'),
