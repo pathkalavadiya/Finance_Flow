@@ -1,4 +1,5 @@
 import csv
+import json
 from django.shortcuts import render, redirect, redirect
 from django.db.models import Sum, Count
 from .models import Registration, Expense, Income, Group, GroupMember, GroupExpense, GroupExpenseSplit
@@ -8,7 +9,6 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from datetime import datetime, date, timedelta
 from functools import wraps
 from django.db import OperationalError
-import json
 from decimal import Decimal
 import calendar
 
@@ -376,14 +376,36 @@ def reports(request):
                 total=Sum('amount'),
                 count=Count('id')
             ).order_by('-total')
+            
+            # Calculate previous period data for comparison
+            end_date = datetime.now()
+            previous_period_start = end_date - timedelta(days=30)
+            previous_period_end = end_date - timedelta(days=1)
+            
+            previous_income = Income.objects.filter(
+                user=user,
+                created_at__range=[previous_period_start, previous_period_end]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            previous_expenses = Expense.objects.filter(
+                user=user,
+                created_at__range=[previous_period_start, previous_period_end]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            # Calculate balance for comparison
+            balance = net_balance
     
     context = {
         'user': user,
         'expenses': expenses,
         'incomes': incomes,
         'total_income': total_income,
+        'total_expenses': total_expense,  # Changed to match template
         'total_expense': total_expense,
         'net_balance': net_balance,
+        'previous_income': previous_income,
+        'previous_expenses': previous_expenses,
+        'balance': balance,
         'expense_categories': expense_categories,
         'income_categories': income_categories,
     }
@@ -480,9 +502,54 @@ def analytics(request):
     total_expense = Expense.objects.filter(user=user).aggregate(total=Sum('amount'))['total'] or 0
     net_balance = total_income - total_expense
     
+    # Previous month data for comparison
+    previous_month = end_date.replace(day=1) - timedelta(days=1)
+    previous_month_start = previous_month.replace(day=1)
+    
+    previous_income = Income.objects.filter(
+        user=user,
+        created_at__range=[previous_month_start, previous_month]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    previous_expenses = Expense.objects.filter(
+        user=user,
+        created_at__range=[previous_month_start, previous_month]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    previous_balance = previous_income - previous_expenses
+    
+    # Current month data
+    current_month_start = end_date.replace(day=1)
+    current_income = Income.objects.filter(
+        user=user,
+        created_at__range=[current_month_start, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    current_expenses = Expense.objects.filter(
+        user=user,
+        created_at__range=[current_month_start, end_date]
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    balance = current_income - current_expenses
+    
     # Average monthly income and expense
     avg_monthly_income = total_income / 12 if total_income > 0 else 0
     avg_monthly_expense = total_expense / 12 if total_expense > 0 else 0
+    
+    # Convert Decimal objects to float for JSON serialization
+    expense_categories_for_json = []
+    for category in expense_categories:
+        expense_categories_for_json.append({
+            'category': category['category'],
+            'total': float(category['total'])
+        })
+    
+    income_categories_for_json = []
+    for category in income_categories:
+        income_categories_for_json.append({
+            'category': category['category'],
+            'total': float(category['total'])
+        })
     
     context = {
         'user': user,
@@ -493,10 +560,17 @@ def analytics(request):
         'recent_income': recent_income,
         'recent_expense': recent_expense,
         'total_income': total_income,
+        'total_expenses': total_expense,  # Changed to match template
         'total_expense': total_expense,
         'net_balance': net_balance,
+        'previous_income': previous_income,
+        'previous_expenses': previous_expenses,
+        'previous_balance': previous_balance,
+        'balance': balance,
         'avg_monthly_income': avg_monthly_income,
         'avg_monthly_expense': avg_monthly_expense,
+        'expense_categories_json': json.dumps(expense_categories_for_json),
+        'income_categories_json': json.dumps(income_categories_for_json),
     }
     
     return render(request, 'analytics/analytics.html', context)

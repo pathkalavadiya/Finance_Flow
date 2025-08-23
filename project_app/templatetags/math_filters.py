@@ -30,6 +30,24 @@ def divide(value, arg):
         return value
 
 @register.filter
+def subtract(value, arg):
+    """Subtract the argument from the value"""
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return value
+
+@register.filter
+def percentage_change(current, previous):
+    """Calculate percentage change between current and previous values"""
+    try:
+        if float(previous) == 0:
+            return 0.0
+        return ((float(current) - float(previous)) / float(previous)) * 100
+    except (ValueError, TypeError, ZeroDivisionError):
+        return 0.0
+
+@register.filter
 def dict_get(mapping, key):
     """Safely get a value from a dict-like object by key"""
     try:

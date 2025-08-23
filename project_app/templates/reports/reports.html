@@ -1,4 +1,5 @@
 {% extends '../base.html' %}
+{% load math_filters %}
 
 {% block title %}Reports - Finance Flow{% endblock %}
 
@@ -81,7 +82,7 @@
                 <div class="stat-change positive">
                     <i class="bi bi-arrow-up"></i>
                     {% if total_income and previous_income and previous_income > 0 %}
-                        {{ ((total_income - previous_income) / previous_income * 100)|floatformat:1 }}%
+                        {{ total_income|percentage_change:previous_income|floatformat:1 }}%
                     {% else %}
                         0.0%
                     {% endif %}
@@ -91,7 +92,7 @@
             <div class="stat-label">Total Income</div>
             <div class="stat-comparison">
                 {% if total_income and previous_income %}
-                    {% if total_income > previous_income %}+{% endif %}₹{{ total_income|add:"-"|add:previous_income }} vs last period
+                    {% if total_income > previous_income %}+{% endif %}₹{{ total_income|subtract:previous_income }} vs last period
                 {% else %}
                     No previous data
                 {% endif %}
@@ -106,7 +107,7 @@
                 <div class="stat-change negative">
                     <i class="bi bi-arrow-down"></i>
                     {% if total_expenses and previous_expenses and previous_expenses > 0 %}
-                        {{ ((total_expenses - previous_expenses) / previous_expenses * 100)|floatformat:1 }}%
+                        {{ total_expenses|percentage_change:previous_expenses|floatformat:1 }}%
                     {% else %}
                         0.0%
                     {% endif %}

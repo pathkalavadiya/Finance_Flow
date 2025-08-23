@@ -1,4 +1,5 @@
 {% extends '../base.html' %}
+{% load math_filters %}
 
 {% block title %}Analytics - Finance Flow{% endblock %}
 
@@ -32,7 +33,7 @@
                 <div class="stat-change positive">
                     <i class="bi bi-arrow-up"></i>
                     {% if total_income and previous_income and previous_income > 0 %}
-                        {{ ((total_income - previous_income) / previous_income * 100)|floatformat:1 }}%
+                        {{ total_income|percentage_change:previous_income|floatformat:1 }}%
                     {% else %}
                         0.0%
                     {% endif %}
@@ -42,7 +43,7 @@
             <div class="stat-label">Total Income</div>
             <div class="stat-comparison">
                 {% if total_income and previous_income %}
-                    {% if total_income > previous_income %}+{% endif %}₹{{ total_income|add:"-"|add:previous_income }} vs last month
+                    {% if total_income > previous_income %}+{% endif %}₹{{ total_income|subtract:previous_income }} vs last month
                 {% else %}
                     No previous data
                 {% endif %}
@@ -57,7 +58,7 @@
                 <div class="stat-change negative">
                     <i class="bi bi-arrow-down"></i>
                     {% if total_expenses and previous_expenses and previous_expenses > 0 %}
-                        {{ ((total_expenses - previous_expenses) / previous_expenses * 100)|floatformat:1 }}%
+                        {{ total_expenses|percentage_change:previous_expenses|floatformat:1 }}%
                     {% else %}
                         0.0%
                     {% endif %}
@@ -67,7 +68,7 @@
             <div class="stat-label">Total Expenses</div>
             <div class="stat-comparison">
                 {% if total_expenses and previous_expenses %}
-                    {% if total_expenses < previous_expenses %}-{% endif %}₹{{ total_expenses|add:"-"|add:previous_expenses }} vs last month
+                    {% if total_expenses < previous_expenses %}-{% endif %}₹{{ total_expenses|subtract:previous_expenses }} vs last month
                 {% else %}
                     No previous data
                 {% endif %}
@@ -82,7 +83,7 @@
                 <div class="stat-change positive">
                     <i class="bi bi-arrow-up"></i>
                     {% if balance and previous_balance and previous_balance > 0 %}
-                        {{ ((balance - previous_balance) / previous_balance * 100)|floatformat:1 }}%
+                        {{ balance|percentage_change:previous_balance|floatformat:1 }}%
                     {% else %}
                         0.0%
                     {% endif %}
@@ -92,7 +93,7 @@
             <div class="stat-label">Net Savings</div>
             <div class="stat-comparison">
                 {% if balance and previous_balance %}
-                    {% if balance > previous_balance %}+{% endif %}₹{{ balance|add:"-"|add:previous_balance }} vs last month
+                    {% if balance > previous_balance %}+{% endif %}₹{{ balance|subtract:previous_balance }} vs last month
                 {% else %}
                     No previous data
                 {% endif %}
@@ -107,7 +108,7 @@
                 <div class="stat-change positive">
                     <i class="bi bi-arrow-up"></i>
                     {% if total_income and total_expenses and total_income > 0 %}
-                        {{ ((total_income - total_expenses) / total_income * 100)|floatformat:1 }}%
+                        {{ total_income|subtract:total_expenses|divide:total_income|multiply:100|floatformat:1 }}%
                     {% else %}
                         0.0%
                     {% endif %}
@@ -115,7 +116,7 @@
             </div>
             <div class="stat-value">
                 {% if total_income and total_expenses and total_income > 0 %}
-                    {{ ((total_income - total_expenses) / total_income * 100)|floatformat:1 }}%
+                    {{ total_income|subtract:total_expenses|divide:total_income|multiply:100|floatformat:1 }}%
                 {% else %}
                     0.0%
                 {% endif %}
@@ -184,60 +185,20 @@
                     <h5 class="mb-0">Top Spending Areas</h5>
                 </div>
                 <div class="card-body">
+                    {% for category in expense_categories|slice:":5" %}
                     <div class="d-flex align-items-center mb-3">
                         <div class="stat-icon expense me-3" style="width: 40px; height: 40px; font-size: 1rem;">
-                            <i class="bi bi-house"></i>
+                            <i class="bi bi-tag"></i>
                         </div>
                         <div class="flex-grow-1">
-                            <div class="fw-semibold">Housing</div>
-                            <small class="text-muted">Rent & utilities</small>
+                            <div class="fw-semibold">{{ category.category|title }}</div>
+                            <small class="text-muted">Category</small>
                         </div>
-                        <div class="text-danger fw-bold">₹8,000</div>
+                        <div class="text-danger fw-bold">₹{{ category.total|floatformat:0 }}</div>
                     </div>
-                    
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="stat-icon warning me-3" style="width: 40px; height: 40px; font-size: 1rem;">
-                            <i class="bi bi-cart"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">Food & Dining</div>
-                            <small class="text-muted">Groceries & restaurants</small>
-                        </div>
-                        <div class="text-danger fw-bold">₹4,680</div>
-                    </div>
-                    
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="stat-icon danger me-3" style="width: 40px; height: 40px; font-size: 1rem;">
-                            <i class="bi bi-car-front"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">Transportation</div>
-                            <small class="text-muted">Gas & maintenance</small>
-                        </div>
-                        <div class="text-danger fw-bold">₹3,370</div>
-                    </div>
-                    
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="stat-icon info me-3" style="width: 40px; height: 40px; font-size: 1rem;">
-                            <i class="bi bi-bag"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">Shopping</div>
-                            <small class="text-muted">Clothing & goods</small>
-                        </div>
-                        <div class="text-danger fw-bold">₹1,680</div>
-                    </div>
-                    
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon success me-3" style="width: 40px; height: 40px; font-size: 1rem;">
-                            <i class="bi bi-controller"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">Entertainment</div>
-                            <small class="text-muted">Movies & activities</small>
-                        </div>
-                        <div class="text-danger fw-bold">₹1,000</div>
-                    </div>
+                    {% empty %}
+                    <div class="text-muted text-center">No expense categories found</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -472,13 +433,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Expense Category Chart
     const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+    const expenseCategories = {{ expense_categories_json|safe }};
+    
     new Chart(expenseCategoryCtx, {
         type: 'bar',
         data: {
-            labels: ['Housing', 'Food', 'Transport', 'Shopping', 'Entertainment'],
+            labels: expenseCategories.map(item => item.category),
             datasets: [{
                 label: 'Amount (₹)',
-                data: [8000, 4680, 3370, 1680, 1000],
+                data: expenseCategories.map(item => parseFloat(item.total)),
                 backgroundColor: [
                     '#EF4444',
                     '#F97316',
@@ -504,9 +467,9 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(pieCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Housing', 'Food', 'Transport', 'Shopping', 'Entertainment'],
+            labels: expenseCategories.map(item => item.category),
             datasets: [{
-                data: [35, 25, 18, 9, 5],
+                data: expenseCategories.map(item => parseFloat(item.total)),
                 backgroundColor: [
                     '#EF4444',
                     '#F97316',
@@ -529,14 +492,14 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(barCtx, {
         type: 'bar',
         data: {
-            labels: ['Housing', 'Food', 'Transport', 'Shopping', 'Entertainment'],
+            labels: expenseCategories.map(item => item.category),
             datasets: [{
-                label: 'Percentage (%)',
-                data: [35, 25, 18, 9, 5],
+                label: 'Amount (₹)',
+                data: expenseCategories.map(item => parseFloat(item.total)),
                 backgroundColor: [
                     '#EF4444',
                     '#F97316',
-                    '#8B5CF6',
+                    '#8B6CF6',
                     '#F59E0B',
                     '#06B6D4'
                 ]
@@ -549,8 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             scales: {
                 y: { 
-                    beginAtZero: true,
-                    max: 40
+                    beginAtZero: true
                 }
             }
         }
@@ -590,5 +552,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %}
 {% endblock %}
