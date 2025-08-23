@@ -1,0 +1,136 @@
+{% extends '../base.html' %}
+
+{% block title %}Add Income - Finance Flow{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+<div class="content-header">
+    <h1 class="page-title">Add Income</h1>
+    <div class="header-actions">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Dashboard
+        </a>
+        <div class="user-profile">
+            <div class="user-avatar">{{ user.name|first|upper }}</div>
+            <div class="user-name">{{ user.name }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Body -->
+<div class="content-body">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <!-- Income Form Card -->
+            <div class="card fade-in-up">
+                <div class="card-header text-center">
+                    <div class="stat-icon income mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.5rem;">
+                        <i class="bi bi-plus-circle"></i>
+                    </div>
+                    <h2 class="text-gradient mb-2">Track Your Earnings</h2>
+                    <p class="text-muted mb-0">Add your income to grow your wealth</p>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" class="slide-in-left">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="amount" class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success text-white">
+                                        <i class="bi bi-currency-dollar"></i>
+                                    </span>
+                                    <input type="number" id="amount" name="amount" step="0.01" required 
+                                           class="form-control" placeholder="0.00">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="currency" class="form-label">Currency</label>
+                                <select id="currency" name="currency" required class="form-select">
+                                    <option value="">Select currency</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="INR">INR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="JPY">JPY</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="description" class="form-label">Description</label>
+                                <input type="text" id="description" name="description" required 
+                                       class="form-control" placeholder="e.g., Monthly salary, Freelance project">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category</label>
+                                <select id="category" name="category" required class="form-select">
+                                    <option value="">Select a category</option>
+                                    <option value="salary">Salary</option>
+                                    <option value="freelance">Freelance</option>
+                                    <option value="business">Business</option>
+                                    <option value="investment">Investment</option>
+                                    <option value="gift">Gift</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="date" class="form-label">Date</label>
+                                <input type="date" id="date" name="date" required class="form-control">
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success w-100 btn-lg">
+                                    <i class="bi bi-plus-circle"></i>
+                                    Add Income
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row mt-4 g-3">
+                <div class="col-md-6">
+                    <div class="stat-card income fade-in-up stagger-1">
+                        <div class="stat-header">
+                            <div class="stat-icon income">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-up"></i>
+                                This Month
+                            </div>
+                        </div>
+                        <div class="stat-value">${{ total_income|default:"0" }}</div>
+                        <div class="stat-label">Monthly Income</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="stat-card profit fade-in-up stagger-2">
+                        <div class="stat-header">
+                            <div class="stat-icon profit">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-up"></i>
+                                Total
+                            </div>
+                        </div>
+                        <div class="stat-value">${{ total_income|default:"0" }}</div>
+                        <div class="stat-label">Total Income</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

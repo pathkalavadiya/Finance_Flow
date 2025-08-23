@@ -1,0 +1,249 @@
+{% extends '../base.html' %}
+
+{% block title %}Create Group - FinanceFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .sidebar {
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.8);
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .nav-link {
+        border-radius: 10px;
+        transition: all 0.3s;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+    }
+    
+    .nav-link:hover, .nav-link.active {
+        background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.1), rgba(var(--primary-color-rgb), 0.2));
+        color: var(--primary-color);
+        transform: translateX(5px);
+    }
+    
+    .nav-link.active {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+    }
+    
+    .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+    }
+    
+    /* Button shimmer effect */
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        transform: translateX(-100%);
+        animation: shimmer 3s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar" data-aos="fade-right" data-aos-duration="800">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'expense' %}">
+                            <i class="fas fa-credit-card"></i> Expenses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'income' %}">
+                            <i class="fas fa-money-bill-wave"></i> Income
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'groups' %}">
+                            <i class="fas fa-users"></i> Groups
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'analytics' %}">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'reports' %}">
+                            <i class="fas fa-file-alt"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" data-aos="fade-left" data-aos-duration="800">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" data-aos="fade-up" data-aos-duration="800">
+                <h1 class="h2 fw-bold">Create New Group</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'groups' %}" class="btn btn-outline-secondary" style="border-radius: 10px; transition: all 0.3s ease;">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Groups
+                    </a>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                    <div class="card shadow" style="border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);">
+                        <div class="card-body p-4">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="mb-4" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                                    <label for="group_name" class="form-label fw-bold"><i class="fas fa-users me-2 text-primary"></i>Group Name *</label>
+                                    <input type="text" class="form-control form-control-lg" id="group_name" name="group_name" required style="border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); transition: all 0.3s ease;" placeholder="Enter a name for your group">
+                                </div>
+
+                                <div class="mb-4" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                                    <label for="group_type" class="form-label fw-bold"><i class="fas fa-tag me-2 text-primary"></i>Group Type *</label>
+                                    <select class="form-select form-select-lg" id="group_type" name="group_type" required style="border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                        <option value="">Select group type</option>
+                                        <option value="trip">Trip</option>
+                                        <option value="home">Home</option>
+                                        <option value="friends">Friends</option>
+                                        <option value="work">Work</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-4" data-aos="fade-up" data-aos-delay="400" data-aos-duration="800">
+                                    <label for="description" class="form-label fw-bold"><i class="fas fa-align-left me-2 text-primary"></i>Description (Optional)</label>
+                                    <textarea class="form-control form-control-lg" id="description" name="description" rows="3" placeholder="Describe your group..." style="border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); transition: all 0.3s ease;"></textarea>
+                                </div>
+
+                                <div class="mb-4" data-aos="fade-up" data-aos-delay="500" data-aos-duration="800">
+                                    <label class="form-label fw-bold"><i class="fas fa-user-plus me-2 text-primary"></i>Add Members</label>
+                                    <p class="text-muted small">Enter email addresses of people you want to invite to this group. You can add up to 10 members.</p>
+                                    
+                                    <div id="member-fields" class="card p-3 mb-3" style="border-radius: 10px; background: rgba(var(--primary-color-rgb), 0.05); border: 1px solid rgba(var(--primary-color-rgb), 0.1);">
+                                        <div class="mb-2">
+                                            <div class="input-group input-group-lg">
+                                                <span class="input-group-text" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border: none;"><i class="fas fa-envelope"></i></span>
+                                                <input type="email" class="form-control member-email" name="member_email_1" placeholder="Enter member email address" style="border-radius: 0 10px 10px 0; border: 1px solid rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-primary" id="add-member-btn" style="border-radius: 10px; transition: all 0.3s ease;">
+                                        <i class="fas fa-plus me-2"></i> Add Another Member
+                                    </button>
+                                </div>
+
+                                <div class="d-grid gap-2" data-aos="fade-up" data-aos-delay="600" data-aos-duration="800">
+                                    <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 12px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border: none; position: relative; overflow: hidden; box-shadow: 0 4px 15px -3px rgba(var(--primary-color-rgb), 0.5); transition: all 0.3s ease;">
+                                        <i class="fas fa-save me-2"></i> Create Group
+                                    </button>
+                                    <p class="text-center text-muted small mt-2">Members will receive an email invitation to join this group</p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS animations
+    AOS.init({
+        once: true,
+        offset: 50
+    });
+    
+    // Member fields functionality
+    const memberFields = document.getElementById('member-fields');
+    const addMemberBtn = document.getElementById('add-member-btn');
+    let memberCount = 1;
+
+    addMemberBtn.addEventListener('click', function() {
+        if (memberCount < 10) {
+            memberCount++;
+            const newField = document.createElement('div');
+            newField.className = 'mb-2';
+            newField.setAttribute('data-aos', 'fade-up');
+            newField.setAttribute('data-aos-duration', '600');
+            newField.innerHTML = `
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border: none;"><i class="fas fa-envelope"></i></span>
+                    <input type="email" class="form-control member-email" name="member_email_${memberCount}" placeholder="Enter member email address" style="border-radius: 0 10px 10px 0; border: 1px solid rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                </div>
+            `;
+            memberFields.appendChild(newField);
+            
+            // Reinitialize AOS for the new element
+            AOS.refresh();
+            
+            if (memberCount >= 10) {
+                addMemberBtn.style.display = 'none';
+            }
+        }
+    });
+    
+    // Add hover effects to buttons
+    const buttons = document.querySelectorAll('.btn-primary, .btn-outline-primary');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            if (this.classList.contains('btn-primary')) {
+                this.style.boxShadow = '0 8px 15px -5px rgba(var(--primary-color-rgb), 0.6)';
+            }
+        });
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            if (this.classList.contains('btn-primary')) {
+                this.style.boxShadow = '0 4px 15px -3px rgba(var(--primary-color-rgb), 0.5)';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

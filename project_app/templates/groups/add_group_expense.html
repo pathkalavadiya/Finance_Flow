@@ -1,0 +1,219 @@
+{% extends '../base.html' %}
+
+{% block title %}Add Expense - {{ group.name }} - FinanceFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) rotate(45deg); }
+    }
+    
+    .btn-shimmer::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(45deg);
+        pointer-events: none;
+        animation: shimmer 3s infinite linear;
+        z-index: 1;
+    }
+    
+    .form-container {
+        background-color: var(--bg-light);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid form-container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar" data-aos="fade-right" data-aos-duration="800">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'expense' %}">
+                            <i class="fas fa-credit-card"></i> Expenses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'income' %}">
+                            <i class="fas fa-money-bill-wave"></i> Income
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'groups' %}">
+                            <i class="fas fa-users"></i> Groups
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'analytics' %}">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'reports' %}">
+                            <i class="fas fa-file-alt"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" data-aos="fade-left" data-aos-duration="800">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" data-aos="fade-up" data-aos-duration="800">
+                <h1 class="h2">Add Expense to <span class="text-primary">{{ group.name }}</span></h1>
+                <div class="btn-toolbar mb-2 mb-md-0" data-aos="fade-left" data-aos-delay="200" data-aos-duration="800">
+                    <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Group
+                    </a>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                    <div class="card shadow" style="border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;">
+                        <div class="card-header bg-primary text-white py-3" data-aos="fade-down" data-aos-delay="200" data-aos-duration="800">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-receipt me-3" style="font-size: 24px;"></i>
+                                <h5 class="mb-0">Group Expense Details</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if error %}
+                                <div class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </div>
+                            {% endif %}
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3" data-aos="fade-up" data-aos-delay="250" data-aos-duration="800">
+                                    <label for="description" class="form-label fw-bold"><i class="fas fa-tag me-2 text-primary"></i>Description *</label>
+                                    <input type="text" class="form-control form-control-lg" id="description" name="description" value="{{ form_values.description }}" required style="border-radius: 10px; border: 1px solid rgba(79, 70, 229, 0.2); transition: all 0.3s ease;" placeholder="What was this expense for?">
+                                </div>
+
+                                <div class="mb-3" data-aos="fade-up" data-aos-delay="300" data-aos-duration="800">
+                                    <label for="amount" class="form-label fw-bold"><i class="fas fa-dollar-sign me-2 text-primary"></i>Amount *</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white;">$</span>
+                                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" value="{{ form_values.amount }}" required style="border-radius: 0 10px 10px 0; border: 1px solid rgba(79, 70, 229, 0.2); transition: all 0.3s ease;" placeholder="0.00">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3" data-aos="fade-up" data-aos-delay="350" data-aos-duration="800">
+                                    <label for="date" class="form-label fw-bold"><i class="fas fa-calendar-alt me-2 text-primary"></i>Date *</label>
+                                    <input type="date" class="form-control form-control-lg" id="date" name="date" value="{{ form_values.date }}" required style="border-radius: 10px; border: 1px solid rgba(79, 70, 229, 0.2); transition: all 0.3s ease;">
+                                </div>
+
+                                <div class="mb-3" data-aos="fade-up" data-aos-delay="400" data-aos-duration="800">
+                                    <label for="payer" class="form-label fw-bold"><i class="fas fa-user-circle me-2 text-primary"></i>Paid By *</label>
+                                    <select class="form-select form-select-lg" id="payer" name="payer" required style="border-radius: 10px; border: 1px solid rgba(79, 70, 229, 0.2); transition: all 0.3s ease;">
+                                        <option value="">Select who paid</option>
+                                        {% for member in group.members.all %}
+                                            <option value="{{ member.id }}" {% if form_values.payer == member.id|stringformat:"s" %}selected{% endif %}>{{ member.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-4" data-aos="fade-up" data-aos-delay="450" data-aos-duration="800">
+                                    <label class="form-label fw-bold"><i class="fas fa-users me-2 text-primary"></i>Split Between *</label>
+                                    <p class="text-muted small">Select the members who should split this expense equally.</p>
+                                    
+                                    <div class="card p-3 mt-2" style="border-radius: 10px; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(79, 70, 229, 0.1);">
+                                        {% for member in group.members.all %}
+                                            <div class="form-check mb-2" data-aos="fade-left" data-aos-delay="{{ forloop.counter|add:450 }}" data-aos-duration="800">
+                                                <input class="form-check-input" type="checkbox" name="included_members" value="{{ member.id }}" id="member_{{ member.id }}" {% if form_values.included_members and member.id|stringformat:"s" in form_values.included_members %}checked{% endif %}>
+                                                <label class="form-check-label" for="member_{{ member.id }}">
+                                                    <span class="fw-medium">{{ member.name }}</span>
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2" data-aos="fade-up" data-aos-delay="500" data-aos-duration="800">
+                                    <button type="submit" class="btn btn-primary btn-lg btn-shimmer" style="border-radius: 12px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border: none; padding: 12px; position: relative; overflow: hidden; transition: all 0.3s ease;">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-save me-2"></i> 
+                                            <span class="fw-bold">Add Group Expense</span>
+                                        </div>
+                                    </button>
+                                    <div class="text-center mt-2 text-muted small">All members will be notified</div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS animations
+    AOS.init();
+    
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    if (!document.getElementById('date').value) {
+        document.getElementById('date').value = today;
+    }
+    
+    // Set current user as default payer if they're a member
+    const currentUser = '{{ user.id }}';
+    const payerSelect = document.getElementById('payer');
+    if (!payerSelect.value) {
+        for (let option of payerSelect.options) {
+            if (option.value === currentUser) {
+                option.selected = true;
+                break;
+            }
+        }
+    }
+    
+    // Check current user by default in included members
+    const currentUserCheckbox = document.getElementById('member_{{ user.id }}');
+    if (currentUserCheckbox && !currentUserCheckbox.checked) {
+        currentUserCheckbox.checked = true;
+    }
+    
+    // Add hover effect to submit button
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 10px 20px rgba(79, 70, 229, 0.3)';
+        });
+        
+        submitBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    }
+});
+</script>
+{% endblock %}

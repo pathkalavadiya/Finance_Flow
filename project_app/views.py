@@ -33,17 +33,17 @@ def register(request):
         register_data.password = request.POST['password']
         register_data.confirm_password = request.POST['confirm_password']
         if request.POST['password'] != request.POST['confirm_password']:
-            return render(request, 'register.html', {'password_mismatch': "Passwords do not match"})
+            return render(request, 'authentication/register.html', {'password_mismatch': "Passwords do not match"})
         register_data.address = request.POST['add']
         try:
             check_register = Registration.objects.get(email=request.POST['email'])
          
             if check_register:
-                return render(request, 'register.html', {'register_check_key': "Email already exists"})
+                return render(request, 'authentication/register.html', {'register_check_key': "Email already exists"})
         except:
             register_data.save()
-            return render(request, 'register.html', {'register_key': "Registration Successful"})
-    return render(request, 'register.html')
+            return render(request, 'authentication/register.html', {'register_key': "Registration Successful"})
+    return render(request, 'authentication/register.html')
 
  
 # login
@@ -57,10 +57,10 @@ def login(request):
                 request.session['entry_email'] = check_register.email
                 return redirect('dashboard')
             else:
-                return render(request, 'login.html', {'login_key_incorrect': "Email or password is wrong"})
+                return render(request, 'authentication/login.html', {'login_key_incorrect': "Email or password is wrong"})
         else:
-            return render(request, 'login.html', {'not_register': "This email is not registered"})
-    return render(request, 'login.html')
+            return render(request, 'authentication/login.html', {'not_register': "This email is not registered"})
+    return render(request, 'authentication/login.html')
 
 
 # logout
@@ -85,6 +85,9 @@ def dashboard(request):
     net_balance = 0
     max_income = 0
     max_expense = 0
+    previous_balance = 0
+    balance = 0
+    balance_change_percent = 0.0
     
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
@@ -115,12 +118,46 @@ def dashboard(request):
                 created_at__year=current_date.year,
                 created_at__month=current_date.month
             ).aggregate(total=Sum('amount'))['total'] or 0
-            
+
             current_month_expense = Expense.objects.filter(
                 user=user,
                 created_at__year=current_date.year,
                 created_at__month=current_date.month
             ).aggregate(total=Sum('amount'))['total'] or 0
+
+
+            # Get previous month's income
+            previous_month = current_date.month - 1 if current_date.month > 1 else 12
+            previous_year = current_date.year if current_date.month > 1 else current_date.year - 1
+            previous_income = Income.objects.filter(
+                user=user,
+                created_at__year=previous_year,
+                created_at__month=previous_month
+            ).aggregate(total=Sum('amount'))['total'] or 0
+
+            # Calculate income change percent
+            income_change_percent = 0.0
+            if previous_income and previous_income > 0:
+                income_change_percent = ((total_income - previous_income) / previous_income) * 100
+
+            # Get previous month's expenses
+            previous_expenses = Expense.objects.filter(
+                user=user,
+                created_at__year=previous_year,
+                created_at__month=previous_month
+            ).aggregate(total=Sum('amount'))['total'] or 0
+
+            # Calculate expense change percent
+            expense_change_percent = 0.0
+            if previous_expenses and previous_expenses > 0:
+                expense_change_percent = ((total_expense - previous_expenses) / previous_expenses) * 100
+                
+            # Calculate previous month's balance
+            previous_balance = previous_income - previous_expenses
+            balance = net_balance
+            balance_change_percent = 0.0
+            if previous_balance and previous_balance > 0:
+                balance_change_percent = ((balance - previous_balance) / previous_balance) * 100
             
             # Set goals/budgets (you can make these configurable later)
             income_goal = 3100  # $3100 monthly income goal
@@ -185,35 +222,42 @@ def dashboard(request):
             month_sales_percentage = min(int((month_sales / month_planned_sales) * 100), 100) if month_planned_sales > 0 else 0
     
     context = {
-        'user': user,
-        'total_income': total_income,
-        'total_expense': total_expense,
-        'net_balance': net_balance,
-        'max_income': max_income,
-        'max_expense': max_expense,
-        'current_month': current_month,
-        'current_income': current_month_income,
-        'current_expense': current_month_expense,
-        'income_goal': income_goal,
-        'expense_budget': expense_budget,
-        'income_progress_percentage': income_progress_percentage,
-        'expense_progress_percentage': expense_progress_percentage,
-        'income_remaining_percentage': income_remaining_percentage,
-        'expense_remaining_percentage': expense_remaining_percentage,
-        'days_left': days_left,
-        'last_income_update': last_income_update,
-        'last_expense_update': last_expense_update,
-        'today_sales': today_sales,
-        'week_sales': week_sales,
-        'month_sales': month_sales,
-        'today_planned_sales': today_planned_sales,
-        'week_planned_sales': week_planned_sales,
-        'month_planned_sales': month_planned_sales,
-        'today_sales_percentage': today_sales_percentage,
-        'week_sales_percentage': week_sales_percentage,
-        'month_sales_percentage': month_sales_percentage
-    }
-    return render(request, 'dashboard.html', context)
+            'user': user,
+            'total_income': total_income,
+            'total_expense': total_expense,
+            'net_balance': net_balance,
+            'max_income': max_income,
+            'max_expense': max_expense,
+            'current_month': current_month,
+            'current_income': current_month_income,
+            'current_expense': current_month_expense,
+            'income_goal': income_goal,
+            'expense_budget': expense_budget,
+            'income_progress_percentage': income_progress_percentage,
+            'expense_progress_percentage': expense_progress_percentage,
+            'income_remaining_percentage': income_remaining_percentage,
+            'expense_remaining_percentage': expense_remaining_percentage,
+            'days_left': days_left,
+            'last_income_update': last_income_update,
+            'last_expense_update': last_expense_update,
+            'today_sales': today_sales,
+            'week_sales': week_sales,
+            'month_sales': month_sales,
+            'today_planned_sales': today_planned_sales,
+            'week_planned_sales': week_planned_sales,
+            'month_planned_sales': month_planned_sales,
+            'today_sales_percentage': today_sales_percentage,
+            'week_sales_percentage': week_sales_percentage,
+            'month_sales_percentage': month_sales_percentage,
+            'previous_income': previous_income,
+            'income_change_percent': income_change_percent,
+            'previous_expenses': previous_expenses,
+            'expense_change_percent': expense_change_percent,
+            'previous_balance': previous_balance,
+            'balance': balance,
+            'balance_change_percent': balance_change_percent
+        }
+    return render(request, 'dashboard/dashboard.html', context)
 
 
 @login_required
@@ -241,14 +285,14 @@ def expense(request):
             # Handle case where user is not logged in
             return redirect('login')
             
-        return render(request, 'expense.html', {
+        return render(request, 'transactions/expense.html', {
             'success': True,
             'amount': amount,
             'description': description,
             'currency': currency,
             'category': category
         })
-    return render(request, 'expense.html')
+    return render(request, 'transactions/expense.html')
 
 
 @login_required
@@ -276,14 +320,14 @@ def income(request):
             # Handle case where user is not logged in
             return redirect('login')
             
-        return render(request, 'income.html', {
+        return render(request, 'transactions/income.html', {
             'success': True,
             'amount': amount,
             'description': description,
             'currency': currency,
             'category': category
         })
-    return render(request, 'income.html')
+    return render(request, 'transactions/income.html')
 
 
 @login_required
@@ -291,7 +335,7 @@ def profile(request):
     user = None
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
-    return render(request, 'profile.html', {'user': user})
+    return render(request, 'user/profile.html', {'user': user})
 
 
 
@@ -343,7 +387,7 @@ def reports(request):
         'expense_categories': expense_categories,
         'income_categories': income_categories,
     }
-    return render(request, 'reports.html', context)
+    return render(request, 'reports/reports.html', context)
 
 
 @login_required
@@ -455,7 +499,7 @@ def analytics(request):
         'avg_monthly_expense': avg_monthly_expense,
     }
     
-    return render(request, 'analytics.html', context)
+    return render(request, 'analytics/analytics.html', context)
 
 
 def chart_data(request):
@@ -600,7 +644,7 @@ def groups(request):
         'groups': unique_groups,
         'user': user
     }
-    return render(request, 'groups.html', context)
+    return render(request, 'groups/groups.html', context)
 
 
 @login_required
@@ -646,7 +690,7 @@ def create_group(request):
     context = {
         'user': user
     }
-    return render(request, 'create_group.html', context)
+    return render(request, 'groups/create_group.html', context)
 
 
 @login_required
@@ -674,7 +718,7 @@ def group_detail(request, group_id):
             'member_balances': member_balances,
             'user': user
         }
-        return render(request, 'group_detail.html', context)
+        return render(request, 'groups/group_detail.html', context)
     
     except Group.DoesNotExist:
         return redirect('groups')
@@ -738,7 +782,7 @@ def add_group_expense(request, group_id):
                         'included_members': included_members,
                     }
                 }
-                return render(request, 'add_group_expense.html', context)
+                return render(request, 'groups/add_group_expense.html', context)
 
             # Create the expense
             expense = GroupExpense.objects.create(
@@ -771,7 +815,7 @@ def add_group_expense(request, group_id):
             'group': group,
             'user': user
         }
-        return render(request, 'add_group_expense.html', context)
+        return render(request, 'groups/add_group_expense.html', context)
     
     except Group.DoesNotExist:
         return redirect('groups')
@@ -907,7 +951,7 @@ def group_balances(request, group_id):
             'settlements': settlements,
             'settlement_instructions': settlement_instructions,
         }
-        return render(request, 'group_balances.html', context)
+        return render(request, 'groups/group_balances.html', context)
     
     except Group.DoesNotExist:
         return redirect('groups')
@@ -934,13 +978,13 @@ def add_group_member(request, group_id):
                     GroupMember.objects.create(group=group, member=member, joined_at=datetime.now())
                     return redirect('group_detail', group_id=group.id)
                 else:
-                    return render(request, 'add_group_member.html', {
+                    return render(request, 'groups/add_group_member.html', {
                         'group': group,
                         'user': user,
                         'error': 'Member is already in the group'
                     })
             except Registration.DoesNotExist:
-                return render(request, 'add_group_member.html', {
+                return render(request, 'groups/add_group_member.html', {
                     'group': group,
                     'user': user,
                     'error': 'User with this email does not exist'
@@ -950,7 +994,7 @@ def add_group_member(request, group_id):
             'group': group,
             'user': user
         }
-        return render(request, 'add_group_member.html', context)
+        return render(request, 'groups/add_group_member.html', context)
     
     except Group.DoesNotExist:
         return redirect('groups')

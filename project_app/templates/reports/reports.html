@@ -1,0 +1,515 @@
+{% extends '../base.html' %}
+
+{% block title %}Reports - Finance Flow{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+<div class="content-header">
+    <h1 class="page-title">Financial Reports</h1>
+    <div class="header-actions">
+        <button class="search-btn" title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+        <button class="notification-btn" title="Notifications">
+            <i class="bi bi-bell"></i>
+        </button>
+        <div class="user-profile">
+            <div class="user-avatar">{{ user.name|first|upper }}</div>
+            <div class="user-name">{{ user.name }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Body -->
+<div class="content-body">
+    <!-- 1. Export Options -->
+    <div class="card mb-4 fade-in-up">
+        <div class="card-header">
+            <h5 class="mb-0">Export Options</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Report Type</label>
+                    <select class="form-select">
+                        <option>Income Report</option>
+                        <option>Expense Report</option>
+                        <option>Balance Report</option>
+                        <option>Category Analysis</option>
+                        <option>Monthly Summary</option>
+                        <option>Custom Report</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 3 months</option>
+                        <option>Last 6 months</option>
+                        <option>Last year</option>
+                        <option>Custom range</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Format</label>
+                    <select class="form-select">
+                        <option>PDF</option>
+                        <option>Excel</option>
+                        <option>CSV</option>
+                        <option>JSON</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary w-100">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card income fade-in-up stagger-1">
+            <div class="stat-header">
+                <div class="stat-icon income">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    {% if total_income and previous_income and previous_income > 0 %}
+                        {{ ((total_income - previous_income) / previous_income * 100)|floatformat:1 }}%
+                    {% else %}
+                        0.0%
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-value">₹{{ total_income|default:"0" }}</div>
+            <div class="stat-label">Total Income</div>
+            <div class="stat-comparison">
+                {% if total_income and previous_income %}
+                    {% if total_income > previous_income %}+{% endif %}₹{{ total_income|add:"-"|add:previous_income }} vs last period
+                {% else %}
+                    No previous data
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="stat-card expense fade-in-up stagger-2">
+            <div class="stat-header">
+                <div class="stat-icon expense">
+                    <i class="bi bi-graph-down"></i>
+                </div>
+                <div class="stat-change negative">
+                    <i class="bi bi-arrow-down"></i>
+                    {% if total_expenses and previous_expenses and previous_expenses > 0 %}
+                        {{ ((total_expenses - previous_expenses) / previous_expenses * 100)|floatformat:1 }}%
+                    {% else %}
+                        0.0%
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-value">₹{{ total_expenses|default:"18,730" }}</div>
+            <div class="stat-label">Total Expenses</div>
+            <div class="stat-comparison">-₹1,150 vs last period</div>
+        </div>
+
+        <div class="stat-card balance fade-in-up stagger-3">
+            <div class="stat-header">
+                <div class="stat-icon balance">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    +32.1%
+                </div>
+            </div>
+            <div class="stat-value">₹{{ balance|default:"26,270" }}</div>
+            <div class="stat-label">Net Savings</div>
+            <div class="stat-comparison">+₹7,050 vs last period</div>
+        </div>
+
+        <div class="stat-card profit fade-in-up stagger-4">
+            <div class="stat-header">
+                <div class="stat-icon profit">
+                    <i class="bi bi-trending-up"></i>
+                </div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    +22.4%
+                </div>
+            </div>
+            <div class="stat-value">58.4%</div>
+            <div class="stat-label">Savings Rate</div>
+            <div class="stat-comparison">+8.7% vs last period</div>
+        </div>
+    </div>
+
+    <!-- 2. Detailed Report -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Income Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon income me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="bi bi-plus-circle"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Monthly Income Summary</div>
+                            <small class="text-muted">Detailed breakdown of all income sources</small>
+                        </div>
+                        <button class="btn btn-success btn-sm">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </button>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon profit me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="bi bi-pie-chart"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Income by Category</div>
+                            <small class="text-muted">Visual representation of income distribution</small>
+                        </div>
+                        <button class="btn btn-success btn-sm">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </button>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon balance me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Income Trends</div>
+                            <small class="text-muted">Historical income analysis and forecasting</small>
+                        </div>
+                        <button class="btn btn-success btn-sm">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Expense Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon expense me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="bi bi-dash-circle"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Monthly Expense Summary</div>
+                            <small class="text-muted">Comprehensive expense breakdown</small>
+                        </div>
+                        <button class="btn btn-warning btn-sm">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </button>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon warning me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="bi bi-pie-chart"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Expense by Category</div>
+                            <small class="text-muted">Category-wise expense analysis</small>
+                        </div>
+                        <button class="btn btn-warning btn-sm">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </button>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon danger me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="bi bi-graph-down"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Spending Patterns</div>
+                            <small class="text-muted">Identify spending trends and patterns</small>
+                        </div>
+                        <button class="btn btn-warning btn-sm">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Trends Report -->
+    <div class="card fade-in-up mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Balance Trends Report</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon balance me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Balance Overview</div>
+                            <small class="text-muted">Monthly balance trends and analysis</small>
+                        </div>
+                        <button class="btn btn-primary btn-sm">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon profit me-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i class="bi bi-trending-up"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Savings Analysis</div>
+                            <small class="text-muted">Savings rate and goal tracking</small>
+                        </div>
+                        <button class="btn btn-primary btn-sm">
+                            <i class="bi bi-download"></i>
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Custom Reports -->
+    <div class="card fade-in-up mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Custom Report Generator</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">End Date</label>
+                    <input type="date" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Category</label>
+                    <select class="form-select">
+                        <option>All</option>
+                        <option>Food</option>
+                        <option>Transport</option>
+                        <option>Housing</option>
+                        <option>Entertainment</option>
+                        <option>Salary</option>
+                        <option>Freelance</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Type</label>
+                    <select class="form-select">
+                        <option>All</option>
+                        <option>Income</option>
+                        <option>Expense</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i>
+                        Generate
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row g-3 mt-3">
+                <div class="col-md-3">
+                    <label class="form-label">Amount Range</label>
+                    <select class="form-select">
+                        <option>All Amounts</option>
+                        <option>₹0 - ₹1,000</option>
+                        <option>₹1,000 - ₹5,000</option>
+                        <option>₹5,000 - ₹10,000</option>
+                        <option>₹10,000+</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sort By</label>
+                    <select class="form-select">
+                        <option>Date (Newest)</option>
+                        <option>Date (Oldest)</option>
+                        <option>Amount (High to Low)</option>
+                        <option>Amount (Low to High)</option>
+                        <option>Category</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Group By</label>
+                    <select class="form-select">
+                        <option>None</option>
+                        <option>Category</option>
+                        <option>Date</option>
+                        <option>Type</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Export Format</label>
+                    <select class="form-select">
+                        <option>PDF</option>
+                        <option>Excel</option>
+                        <option>CSV</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="card fade-in-up">
+        <div class="card-header">
+            <h5 class="mb-0">Recent Reports</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Report Name</th>
+                            <th>Type</th>
+                            <th>Generated</th>
+                            <th>Size</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="slide-in-left stagger-1">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon income me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">Income Report - Dec 2024</div>
+                                        <small class="text-muted">Monthly income summary</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-success">Income</span></td>
+                            <td>Dec 15, 2024</td>
+                            <td>2.4 MB</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm me-2">
+                                    <i class="bi bi-eye"></i>
+                                    View
+                                </button>
+                                <button class="btn btn-success btn-sm">
+                                    <i class="bi bi-download"></i>
+                                    Download
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <tr class="slide-in-left stagger-2">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon expense me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">Expense Report - Dec 2024</div>
+                                        <small class="text-muted">Monthly expense breakdown</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-warning">Expense</span></td>
+                            <td>Dec 14, 2024</td>
+                            <td>1.8 MB</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm me-2">
+                                    <i class="bi bi-eye"></i>
+                                    View
+                                </button>
+                                <button class="btn btn-success btn-sm">
+                                    <i class="bi bi-download"></i>
+                                    Download
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <tr class="slide-in-left stagger-3">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon balance me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">Balance Report - Nov 2024</div>
+                                        <small class="text-muted">Monthly balance summary</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-primary">Balance</span></td>
+                            <td>Dec 1, 2024</td>
+                            <td>3.1 MB</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm me-2">
+                                    <i class="bi bi-eye"></i>
+                                    View
+                                </button>
+                                <button class="btn btn-success btn-sm">
+                                    <i class="bi bi-download"></i>
+                                    Download
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <tr class="slide-in-left stagger-4">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon profit me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">Custom Report - Food Expenses</div>
+                                        <small class="text-muted">Food category analysis</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-info">Custom</span></td>
+                            <td>Nov 28, 2024</td>
+                            <td>1.2 MB</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm me-2">
+                                    <i class="bi bi-eye"></i>
+                                    View
+                                </button>
+                                <button class="btn btn-success btn-sm">
+                                    <i class="bi bi-download"></i>
+                                    Download
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

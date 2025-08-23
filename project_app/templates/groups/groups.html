@@ -1,0 +1,209 @@
+{% extends '../base.html' %}
+
+{% block title %}Groups - FinanceFlow{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+<div class="content-header">
+    <h1 class="page-title">Groups</h1>
+    <div class="header-actions">
+        <button class="search-btn" title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+        <button class="notification-btn" title="Notifications">
+            <i class="bi bi-bell"></i>
+        </button>
+        <div class="user-profile">
+            <div class="user-avatar">{{ user.name|first|upper }}</div>
+            <div class="user-name">{{ user.name }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Body -->
+<div class="content-body">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-gradient mb-2">Manage Your Groups</h2>
+            <p class="text-muted">Create and manage expense groups with friends and family</p>
+        </div>
+        <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+            <i class="bi bi-plus-circle"></i>
+            Create New Group
+        </button>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card income fade-in-up stagger-1">
+            <div class="stat-header">
+                <div class="stat-icon income">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    Active
+                </div>
+            </div>
+            <div class="stat-value">{{ groups.count|default:"3" }}</div>
+            <div class="stat-label">Total Groups</div>
+            <div class="stat-comparison">You're managing {{ groups.count|default:"3" }} groups</div>
+        </div>
+
+        <div class="stat-card expense fade-in-up stagger-2">
+            <div class="stat-header">
+                <div class="stat-icon expense">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    Members
+                </div>
+            </div>
+            <div class="stat-value">{{ total_members|default:"12" }}</div>
+            <div class="stat-label">Total Members</div>
+            <div class="stat-comparison">Across all your groups</div>
+        </div>
+
+        <div class="stat-card balance fade-in-up stagger-3">
+            <div class="stat-header">
+                <div class="stat-icon balance">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    Total
+                </div>
+            </div>
+            <div class="stat-value">${{ total_group_expenses|default:"2,450" }}</div>
+            <div class="stat-label">Group Expenses</div>
+            <div class="stat-comparison">This month across all groups</div>
+        </div>
+
+        <div class="stat-card profit fade-in-up stagger-4">
+            <div class="stat-header">
+                <div class="stat-icon profit">
+                    <i class="bi bi-arrow-left-right"></i>
+                </div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    Pending
+                </div>
+            </div>
+            <div class="stat-value">${{ pending_settlements|default:"180" }}</div>
+            <div class="stat-label">Pending Settlements</div>
+            <div class="stat-comparison">Amounts to be settled</div>
+        </div>
+    </div>
+
+    <!-- Groups Grid -->
+    <div class="row g-4">
+        {% for group in groups %}
+        <div class="col-lg-6 col-xl-4">
+            <div class="card fade-in-up" style="animation-delay: {{ forloop.counter|add:'-1'|multiply:0.1 }}s;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon balance me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ group.name }}</h5>
+                            <small class="text-muted">{{ group.members.count }} members</small>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'group_detail' group.id %}">View Details</a></li>
+                            <li><a class="dropdown-item" href="{% url 'add_group_expense' group.id %}">Add Expense</a></li>
+                            <li><a class="dropdown-item" href="{% url 'add_group_member' group.id %}">Add Member</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#">Delete Group</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Description:</small>
+                        <p class="mb-0">{{ group.description|default:"No description provided" }}</p>
+                    </div>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="fw-bold text-success">${{ group.total_expenses|default:"0" }}</div>
+                            <small class="text-muted">Total Expenses</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="fw-bold text-primary">{{ group.members.count }}</div>
+                            <small class="text-muted">Members</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'group_detail' group.id %}" class="btn btn-primary">
+                            <i class="bi bi-eye"></i>
+                            View Group
+                        </a>
+                        <a href="{% url 'add_group_expense' group.id %}" class="btn btn-outline-success">
+                            <i class="bi bi-plus-circle"></i>
+                            Add Expense
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card fade-in-up">
+                <div class="card-body text-center py-5">
+                    <div class="stat-icon balance mx-auto mb-3" style="width: 64px; height: 64px; font-size: 2rem;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3 class="text-gradient mb-3">No Groups Yet</h3>
+                    <p class="text-muted mb-4">Create your first group to start sharing expenses with friends and family</p>
+                    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                        <i class="bi bi-plus-circle"></i>
+                        Create Your First Group
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Create Group Modal -->
+<div class="modal fade" id="createGroupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Group</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'create_group' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="groupName" class="form-label">Group Name</label>
+                        <input type="text" class="form-control" id="groupName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="groupDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="groupDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i>
+                            Create Group
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

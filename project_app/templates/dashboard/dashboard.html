@@ -1,0 +1,582 @@
+{% extends '../base.html' %}
+
+{% block title %}Dashboard - Finance Flow{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+
+<div class="content-header">
+    <h1 class="page-title">Dashboard Overview</h1>
+    <div class="header-actions">
+        <button class="search-btn" title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+        <button class="notification-btn" title="Notifications">
+            <i class="bi bi-bell"></i>
+        </button>
+        <div class="user-profile">
+            <div class="user-avatar">{{ user.name|first|upper }}</div>
+            <div class="user-name">{{ user.name }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Body -->
+<div class="content-body">
+    <!-- Welcome Message -->
+    <div class="card mb-4 fade-in-up">
+        <div class="card-body text-center">
+            <h2 class="text-gradient mb-3">Welcome back, {{ user.name }}! 👋</h2>
+            <p class="text-muted">Here's your financial overview for today</p>
+            {% if not total_income and not total_expenses %}
+            <div class="alert alert-info mt-3" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Getting Started:</strong> Start by adding your first income or expense to see your financial data here!
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 1. Summary Cards -->
+    <div class="stats-grid mb-4">
+        <!-- Income Card -->
+        <div class="stat-card income fade-in-up stagger-1">
+            <div class="stat-header">
+                <div class="stat-icon income">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    {% if previous_income and previous_income > 0 %}
+                        {{ income_change_percent|floatformat:1 }}%
+                    {% else %}
+                        0.0%
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-value">₹{{ total_income|default:"0" }}</div>
+            <div class="stat-label">Total Income</div>
+            <div class="stat-comparison">
+                {% if previous_income %}
+                    Previous Month: ₹{{ previous_income }}
+                {% else %}
+                    No previous data
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Expense Card -->
+        <div class="stat-card expense fade-in-up stagger-2">
+            <div class="stat-header">
+                <div class="stat-icon expense">
+                    <i class="bi bi-bar-chart"></i>
+                </div>
+                <div class="stat-change negative">
+                    <i class="bi bi-arrow-down"></i>
+                    {% if previous_expenses and previous_expenses > 0 %}
+                        {{ expense_change_percent|floatformat:1 }}%
+                    {% else %}
+                        0.0%
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-value">₹{{ total_expense|default:"0" }}</div>
+            <div class="stat-label">Total Expenses</div>
+            <div class="stat-comparison">
+                {% if previous_expenses %}
+                    Previous Month: ₹{{ previous_expenses }}
+                {% else %}
+                    No previous data
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="stat-card balance fade-in-up stagger-3">
+            <div class="stat-header">
+                <div class="stat-icon balance">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="stat-change {% if balance_change_percent >= 0 %}positive{% else %}negative{% endif %}">
+                    <i class="bi bi-arrow-{% if balance_change_percent >= 0 %}up{% else %}down{% endif %}"></i>
+                    {% if previous_balance and previous_balance > 0 %}
+                        {{ balance_change_percent|floatformat:1 }}%
+                    {% else %}
+                        0.0%
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-value">₹{{ balance|default:"0" }}</div>
+            <div class="stat-label">Total Balance</div>
+            <div class="stat-comparison">
+                {% if previous_balance %}
+                    Previous Month: ₹{{ previous_balance }}
+                {% else %}
+                    No previous data
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Transactions Overview -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Today's Transactions</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-6 text-success mb-2">{{ today_transactions|default:"0" }}</div>
+                    <p class="text-muted mb-0">Total transactions today</p>
+                    <div class="mt-3">
+                        <span class="badge bg-success me-2">Income: ₹{{ today_income|default:"0" }}</span>
+                        <span class="badge bg-warning">Expense: ₹{{ today_expense|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Weekly Transactions</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-6 text-primary mb-2">{{ weekly_transactions|default:"0" }}</div>
+                    <p class="text-muted mb-0">Total transactions this week</p>
+                    <div class="mt-3">
+                        <span class="badge bg-success me-2">Income: ₹{{ weekly_income|default:"0" }}</span>
+                        <span class="badge bg-warning">Expense: ₹{{ weekly_expense|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Monthly Transactions</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-6 text-info mb-2">{{ monthly_transactions|default:"0" }}</div>
+                    <p class="text-muted mb-0">Total transactions this month</p>
+                    <div class="mt-3">
+                        <span class="badge bg-success me-2">Income: ₹{{ monthly_income|default:"0" }}</span>
+                        <span class="badge bg-warning">Expense: ₹{{ monthly_expense|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Graphs & Charts -->
+    {% if total_income or total_expenses %}
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Income vs Expense Combined Graph</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="incomeExpenseChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Category-wise Spending</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card fade-in-up mb-4">
+        <div class="card-body text-center py-5">
+            <div class="text-muted">
+                <i class="bi bi-bar-chart display-4 d-block mb-3"></i>
+                <h5>No Financial Data Yet</h5>
+                <p class="mb-4">Charts and graphs will appear here once you start adding income and expenses.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'income' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>Add Income
+                    </a>
+                    <a href="{% url 'expense' %}" class="btn btn-warning">
+                        <i class="bi bi-plus-circle me-2"></i>Add Expense
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Balance Trend Chart -->
+    {% if total_income or total_expenses %}
+    <div class="card fade-in-up mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Balance Trend Over Time</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="balanceTrendChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 4. Recent Transactions List -->
+    <div class="card fade-in-up mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Recent Transactions (Last 10)</h5>
+            <a href="#" class="btn btn-primary btn-sm">View All</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_transactions %}
+                            {% for transaction in recent_transactions %}
+                            <tr class="slide-in-left stagger-{{ forloop.counter }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar me-3" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                                            {% if transaction.type == 'income' %}💰{% else %}🛒{% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ transaction.description }}</div>
+                                            <small class="text-muted">{{ transaction.category }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge {% if transaction.type == 'income' %}bg-success{% else %}bg-warning{% endif %}">{{ transaction.category }}</span></td>
+                                <td class="{% if transaction.type == 'income' %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                    {% if transaction.type == 'income' %}+{% else %}-{% endif %}₹{{ transaction.amount }}
+                                </td>
+                                <td>{{ transaction.date }}</td>
+                                <td><span class="badge {% if transaction.type == 'income' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if transaction.type == 'income' %}Income{% else %}Expense{% endif %}
+                                </span></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                                        <h6>No transactions yet</h6>
+                                        <p class="mb-3">Start by adding your first income or expense to see your financial data here!</p>
+                                        <a href="{% url 'income' %}" class="btn btn-success btn-sm me-2">
+                                            <i class="bi bi-plus-circle me-1"></i>Add Income
+                                        </a>
+                                        <a href="{% url 'expense' %}" class="btn btn-warning btn-sm">
+                                            <i class="bi bi-plus-circle me-1"></i>Add Expense
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Filters & Insights -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Filters & Date Range</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select">
+                                <option>Today</option>
+                                <option>This Week</option>
+                                <option>This Month</option>
+                                <option>Last 3 Months</option>
+                                <option>Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Category</label>
+                            <select class="form-select">
+                                <option>All Categories</option>
+                                <option>Food</option>
+                                <option>Transport</option>
+                                <option>Housing</option>
+                                <option>Entertainment</option>
+                                <option>Salary</option>
+                                <option>Freelance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Amount Range</label>
+                            <select class="form-select">
+                                <option>All Amounts</option>
+                                <option>₹0 - ₹1,000</option>
+                                <option>₹1,000 - ₹5,000</option>
+                                <option>₹5,000 - ₹10,000</option>
+                                <option>₹10,000+</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Insights</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <strong>This week you spent 20% more than last week</strong>
+                        <small class="d-block text-muted mt-1">Consider reviewing your expenses</small>
+                    </div>
+                    <div class="alert alert-success mb-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>You're on track with your budget goals!</strong>
+                        <small class="d-block text-muted mt-1">Keep up the good work</small>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Food expenses increased by 15%</strong>
+                        <small class="d-block text-muted mt-1">Review your dining habits</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch monthly chart data from API
+    fetch('{% url "chart_data" %}?type=monthly')
+        .then(response => response.json())
+        .then(data => {
+            // Income vs Expense Chart
+            const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+            new Chart(incomeExpenseCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        data.datasets[0] || {
+                            label: 'Income',
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        data.datasets[1] || {
+                            label: 'Expenses',
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            borderColor: '#F97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching chart data:', error);
+            // Fallback to empty chart if API fails
+            const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+            new Chart(incomeExpenseCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Income',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Expenses',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#F97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+
+
+    // Category Chart
+    fetch('{% url "chart_data" %}?type=category')
+        .then(response => response.json())
+        .then(data => {
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels || ['Food', 'Transport', 'Housing', 'Entertainment', 'Others'],
+                    datasets: [{
+                        data: data.datasets[0]?.data || [25, 18, 35, 12, 10],
+                        backgroundColor: [
+                            '#F97316',
+                            '#8B5CF6',
+                            '#EF4444',
+                            '#F59E0B',
+                            '#06B6D4'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching category chart data:', error);
+            // Fallback to empty chart if API fails
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Food', 'Transport', 'Housing', 'Entertainment', 'Others'],
+                    datasets: [{
+                        data: [25, 18, 35, 12, 10],
+                        backgroundColor: [
+                            '#F97316',
+                            '#8B5CF6',
+                            '#EF4444',
+                            '#F59E0B',
+                            '#06B6D4'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        });
+
+    // Balance Trend Chart
+    fetch('{% url "chart_data" %}?type=balance')
+        .then(response => response.json())
+        .then(data => {
+            const balanceTrendCtx = document.getElementById('balanceTrendChart').getContext('2d');
+            new Chart(balanceTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Balance',
+                        data: data.datasets[0]?.data || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching balance trend chart data:', error);
+            // Fallback to empty chart if API fails
+            const balanceTrendCtx = document.getElementById('balanceTrendChart').getContext('2d');
+            new Chart(balanceTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Balance',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+});
+</script>
+{% endblock %}

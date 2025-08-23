@@ -4,47 +4,333 @@
 {% block title %}Welcome - Finance Flow{% endblock %}
 
 {% block extra_css %}
-<style>
-	/* Full-bleed hero with background image */
-	.landing-hero {
-		position: relative;
-		min-height: 100vh;
-		background: url('{% static 'images/landing.jpg' %}') center center / cover no-repeat;
-		display: flex;
-		align-items: center;
-	}
-	.landing-hero::after {
-		content: "";
-		position: absolute;
-		inset: 0;
-		background: rgba(0,0,0,0.45);
-	}
-	.landing-content { position: relative; z-index: 1; }
-	.hero-heading {
-		font-size: 56px;
-		line-height: 1.1;
-		font-weight: 800;
-		color: #fff;
-	}
-	.hero-subtitle { color: #e5e7eb; font-size: 22px; }
-	.cta-btn { padding: 16px 26px; border-radius: 12px; font-weight: 700; }
-	.cta-secondary { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.35); }
-</style>
+<link rel="stylesheet" href="{% static 'CSS/landing.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="landing-hero">
-	<div class="container landing-content py-5">
-		<div class="col-lg-9 col-xl-8">
-			<h1 class="hero-heading mb-3">Grow Your Wealth<br/>with Smart Finance</h1>
-			<p class="hero-subtitle mb-4">Analytics, Investments, and<br/>Secure Financial Management</p>
-			<div class="d-flex gap-3">
-				<a href="{% url 'register' %}" class="btn btn-primary cta-btn">Get Started</a>
-				<a href="{% url 'login' %}" class="btn cta-btn cta-secondary">Sign In</a>
-			</div>
-		</div>
-	</div>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-bg-pattern"></div>
+    <div class="container hero-container">
+        <!-- Logo Header -->
+        <div class="row mb-5" data-aos="fade-down">
+            <div class="col-12 text-center">
+                <div class="hero-logo">
+                    <img src="{% static 'images/financeflow-logo-white.svg' %}" alt="FinanceFlow Logo" class="hero-logo-img">
+                </div>
+            </div>
+        </div>
+        
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="hero-content">
+                    <h1>Track Your Money.<br>Take Control of Your Life</h1>
+                    <p class="subtitle">Easily manage your income and expenses with real-time charts and insights.</p>
+                    <div class="hero-cta">
+                        <a href="{% url 'register' %}" class="btn-primary-gradient" data-aos="zoom-in" data-aos-delay="200">
+                            Start Tracking Free
+                        </a>
+                        <a href="#demo" class="btn-outline-gradient" data-aos="zoom-in" data-aos-delay="400">
+                            See Demo
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+                <div class="hero-illustration">
+                    <img src="{% static 'images/hero-illustration.svg' %}" alt="Finance Management Dashboard" class="floating">
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+    <div class="container">
+        <div class="section-title" data-aos="fade-up">
+            <h2>Powerful Features</h2>
+            <p>Everything you need to take control of your finances in one place</p>
+        </div>
+        <!-- Dashboard Preview Image -->
+        <div class="row mb-5" data-aos="fade-up" data-aos-delay="200">
+            <div class="col-12 text-center">
+                <img src="{% static 'images/dashboard-preview.svg' %}" alt="Finance Tracker Dashboard" class="dashboard-preview-img" style="max-width: 100%; height: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border-radius: 16px;">
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card">
+                    <div class="feature-icon income">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <h3>Add Income & Expenses</h3>
+                    <p>Simple forms to input transactions and keep your finances up to date with smart categorization.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card">
+                    <div class="feature-icon reports">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h3>Visual Reports</h3>
+                    <p>Beautiful charts and graphs to see your spending habits and financial trends at a glance.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card">
+                    <div class="feature-icon budget">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <h3>Budget Goals</h3>
+                    <p>Set monthly or weekly limits and stay on track with your financial goals and aspirations.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card">
+                    <div class="feature-icon security">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h3>Secure & Private</h3>
+                    <p>Your data is encrypted and protected—privacy and security are our top priorities.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Demo Section -->
+<section class="demo-section" id="demo">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                <div class="demo-image">
+                    <img src="{% static 'images/dashboard-preview.svg' %}" alt="Finance Tracker Dashboard" class="pulse">
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+                <div class="demo-content">
+                    <h3>See Your Finances in One Place</h3>
+                    <p>Get a real-time overview of your income, expenses, and budgets with our interactive dashboard. Beautiful charts, smart insights, and everything you need to make informed financial decisions.</p>
+                    <div class="mt-4">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon income me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                        <i class="bi bi-check-lg"></i>
+                                    </div>
+                                    <span class="fw-semibold">Real-time Updates</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon reports me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                        <i class="bi bi-check-lg"></i>
+                                    </div>
+                                    <span class="fw-semibold">Smart Analytics</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon budget me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                        <i class="bi bi-check-lg"></i>
+                                    </div>
+                                    <span class="fw-semibold">Goal Tracking</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="feature-icon security me-3" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                        <i class="bi bi-check-lg"></i>
+                                    </div>
+                                    <span class="fw-semibold">Secure Data</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="benefits-section">
+    <div class="container">
+        <div class="section-title" data-aos="fade-up">
+            <h2>Why Choose FinanceFlow?</h2>
+            <p>Join thousands of users who have transformed their financial lives</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="benefit-item">
+                    <div class="benefit-icon savings">
+                        <i class="bi bi-piggy-bank"></i>
+                    </div>
+                    <h4>Save More Money</h4>
+                    <p>Understand your spending patterns and identify areas where you can cut back to save more every month.</p>
+                </div>
+            </div>
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="benefit-item">
+                    <div class="benefit-icon insights">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h4>Understand Spending Habits</h4>
+                    <p>Get deep insights into where your money goes with detailed analytics and spending breakdowns.</p>
+                </div>
+            </div>
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="benefit-item">
+                    <div class="benefit-icon management">
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+                    <h4>Manage Personal & Business</h4>
+                    <p>Handle both personal and business finances with separate tracking and comprehensive reporting.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="container">
+        <div class="section-title" data-aos="fade-up">
+            <h2>What Our Users Say</h2>
+            <p>Real feedback from real people who use FinanceFlow daily</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating mb-3">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "FinanceFlow helped me save 20% more each month! The visual reports made me realize how much I was spending on unnecessary things."
+                    </div>
+                    <div class="testimonial-author">– Priya S., Marketing Manager</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating mb-3">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "Easy to use and super helpful for my small business. I can track both personal and business expenses separately."
+                    </div>
+                    <div class="testimonial-author">– Rahul M., Entrepreneur</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating mb-3">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "I love the reports and budget features! Finally, I can see exactly where my money goes and plan better."
+                    </div>
+                    <div class="testimonial-author">– Sneha T., Software Developer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="zoom-in">
+                <h2>Start Tracking Today – It's Free!</h2>
+                <p>Join thousands of users who have already taken control of their finances</p>
+                <a href="{% url 'register' %}" class="btn-light-gradient">
+                    Sign Up Now
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Section -->
+<footer class="footer-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h5 class="mb-3">FinanceFlow</h5>
+                <p class="text-muted mb-0">Empowering you to take control of your financial future.</p>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <ul class="footer-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 text-md-end">
+                <div class="social-icons">
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-twitter"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4" style="border-color: #374151;">
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-2 mb-md-0">
+                <ul class="footer-links d-flex flex-wrap">
+                    <li class="me-3"><a href="#">Privacy Policy</a></li>
+                    <li class="me-3"><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <small class="text-muted">&copy; 2025 FinanceFlow. All rights reserved.</small>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Add floating animation to elements
+    document.addEventListener('DOMContentLoaded', function() {
+        const floatingElements = document.querySelectorAll('.floating');
+        floatingElements.forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.5}s`;
+        });
+    });
+</script>
 {% endblock %}
 
 

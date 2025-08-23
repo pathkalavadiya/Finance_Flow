@@ -1,0 +1,60 @@
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="walletGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ECDC4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#44A08D;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="chartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="targetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF8E53;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FE6B8B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD93D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF6B6B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Wallet Icon -->
+  <g transform="translate(50, 50)">
+    <rect x="20" y="40" width="60" height="40" rx="8" fill="url(#walletGrad)" opacity="0.9"/>
+    <rect x="25" y="45" width="50" height="30" rx="5" fill="white"/>
+    <circle cx="50" cy="60" r="8" fill="url(#walletGrad)"/>
+    <rect x="15" y="35" width="70" height="8" rx="4" fill="url(#walletGrad)"/>
+    <rect x="25" y="75" width="50" height="3" rx="1.5" fill="url(#walletGrad)"/>
+  </g>
+  
+  <!-- Chart Icon -->
+  <g transform="translate(250, 50)">
+    <rect x="20" y="60" width="15" height="40" rx="2" fill="url(#chartGrad)"/>
+    <rect x="40" y="50" width="15" height="50" rx="2" fill="url(#chartGrad)"/>
+    <rect x="60" y="70" width="15" height="30" rx="2" fill="url(#chartGrad)"/>
+    <rect x="80" y="40" width="15" height="60" rx="2" fill="url(#chartGrad)"/>
+    <circle cx="50" cy="30" r="20" fill="url(#chartGrad)" opacity="0.3"/>
+    <circle cx="50" cy="30" r="15" fill="url(#chartGrad)" opacity="0.6"/>
+    <circle cx="50" cy="30" r="10" fill="url(#chartGrad)"/>
+  </g>
+  
+  <!-- Target Icon -->
+  <g transform="translate(450, 50)">
+    <circle cx="50" cy="50" r="40" fill="url(#targetGrad)" opacity="0.2"/>
+    <circle cx="50" cy="50" r="30" fill="url(#targetGrad)" opacity="0.4"/>
+    <circle cx="50" cy="50" r="20" fill="url(#targetGrad)" opacity="0.6"/>
+    <circle cx="50" cy="50" r="10" fill="url(#targetGrad)"/>
+    <circle cx="50" cy="50" r="3" fill="white"/>
+    <line x1="50" y1="10" x2="50" y2="90" stroke="url(#targetGrad)" stroke-width="2" opacity="0.3"/>
+    <line x1="10" y1="50" x2="90" y2="50" stroke="url(#targetGrad)" stroke-width="2" opacity="0.3"/>
+  </g>
+  
+  <!-- Shield Icon -->
+  <g transform="translate(650, 50)">
+    <path d="M50 20 L80 35 L80 70 C80 85 65 95 50 90 C35 95 20 85 20 70 L20 35 Z" fill="url(#shieldGrad)"/>
+    <rect x="35" y="45" width="30" height="20" rx="3" fill="white"/>
+    <circle cx="50" cy="55" r="3" fill="url(#shieldGrad)"/>
+    <rect x="45" y="60" width="10" height="2" rx="1" fill="url(#shieldGrad)"/>
+    <rect x="42" y="65" width="16" height="2" rx="1" fill="url(#shieldGrad)"/>
+  </g>
+</svg>
