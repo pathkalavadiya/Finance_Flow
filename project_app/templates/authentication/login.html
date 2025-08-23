@@ -19,11 +19,11 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="username" class="form-label">Username or Email</label>
+                <label for="email" class="form-label">Email Address</label>
                 <div class="input-wrapper">
-                    <i class="input-icon bi bi-person"></i>
-                    <input type="text" class="form-control" id="username" name="username" 
-                           placeholder="Enter your username or email" required>
+                    <i class="input-icon bi bi-envelope"></i>
+                    <input type="email" class="form-control" id="email" name="email" 
+                           placeholder="Enter your email address" required>
                 </div>
             </div>
 
@@ -46,10 +46,17 @@
                 <a href="#" class="forgot-password">Forgot password?</a>
             </div>
 
-            {% if form.errors %}
+            {% if login_key_incorrect %}
             <div class="alert alert-danger" role="alert">
                 <i class="bi bi-exclamation-triangle"></i>
-                Invalid username or password. Please try again.
+                {{ login_key_incorrect }}
+            </div>
+            {% endif %}
+
+            {% if not_register %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                {{ not_register }}
             </div>
             {% endif %}
 
@@ -199,6 +206,30 @@
     color: #2563EB;
 }
 
+.alert {
+    border-radius: 12px;
+    border: none;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.alert-danger {
+    background-color: #FEF2F2;
+    color: #DC2626;
+    border-left: 4px solid #DC2626;
+}
+
+.alert-success {
+    background-color: #F0FDF4;
+    color: #16A34A;
+    border-left: 4px solid #16A34A;
+}
+
+.alert i {
+    margin-right: 8px;
+}
+
 .divider {
     text-align: center;
     margin: 24px 0;
@@ -247,4 +278,30 @@
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.login-form');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    
+    // Email validation
+    email.addEventListener('input', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (this.value && !emailRegex.test(this.value)) {
+            this.setCustomValidity('Please enter a valid email address');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        if (!email.value.trim() || !password.value.trim()) {
+            e.preventDefault();
+            alert('Please fill in all required fields');
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -26,40 +26,83 @@ def login_required(view_func):
 # registration
 def register(request):
     if request.method == 'POST':
-        register_data = Registration()
-        register_data.name = request.POST['name']
-        register_data.email = request.POST['email']
-        register_data.phone_no = request.POST['mob']
-        register_data.password = request.POST['password']
-        register_data.confirm_password = request.POST['confirm_password']
-        if request.POST['password'] != request.POST['confirm_password']:
-            return render(request, 'authentication/register.html', {'password_mismatch': "Passwords do not match"})
-        register_data.address = request.POST['add']
+        # Get form data
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone_no = request.POST.get('mob', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        address = request.POST.get('add', '').strip()
+        
+        # Basic validation
+        if not all([name, email, phone_no, password, confirm_password, address]):
+            return render(request, 'authentication/register.html', 
+                        {'register_check_key': "All fields are required"})
+        
+        # Check password match
+        if password != confirm_password:
+            return render(request, 'authentication/register.html', 
+                        {'password_mismatch': "Passwords do not match"})
+        
+        # Check password length (model constraint is 8 characters)
+        if len(password) > 8:
+            return render(request, 'authentication/register.html', 
+                        {'register_check_key': "Password must be 8 characters or less"})
+        
+        # Check phone number length
+        if len(phone_no) != 10:
+            return render(request, 'authentication/register.html', 
+                        {'register_check_key': "Phone number must be 10 digits"})
+        
+        # Check if email already exists
         try:
-            check_register = Registration.objects.get(email=request.POST['email'])
-         
+            check_register = Registration.objects.get(email=email)
             if check_register:
-                return render(request, 'authentication/register.html', {'register_check_key': "Email already exists"})
-        except:
-            register_data.save()
-            return render(request, 'authentication/register.html', {'register_key': "Registration Successful"})
+                return render(request, 'authentication/register.html', 
+                            {'register_check_key': "Email already exists"})
+        except Registration.DoesNotExist:
+            # Email doesn't exist, proceed with registration
+            try:
+                register_data = Registration(
+                    name=name,
+                    email=email,
+                    phone_no=phone_no,
+                    password=password,
+                    address=address
+                )
+                register_data.save()
+                return render(request, 'authentication/register.html', 
+                            {'register_key': "Registration Successful! You can now login."})
+            except Exception as e:
+                return render(request, 'authentication/register.html', 
+                            {'register_check_key': f"Registration failed: {str(e)}"})
+    
     return render(request, 'authentication/register.html')
 
  
 # login
 def login(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        check_register = Registration.objects.filter(email=email).first()
-        if check_register:
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        
+        # Basic validation
+        if not email or not password:
+            return render(request, 'authentication/login.html', 
+                        {'login_key_incorrect': "Please enter both email and password"})
+        
+        try:
+            check_register = Registration.objects.get(email=email)
             if check_register.password == password:
                 request.session['entry_email'] = check_register.email
                 return redirect('dashboard')
             else:
-                return render(request, 'authentication/login.html', {'login_key_incorrect': "Email or password is wrong"})
-        else:
-            return render(request, 'authentication/login.html', {'not_register': "This email is not registered"})
+                return render(request, 'authentication/login.html', 
+                            {'login_key_incorrect': "Email or password is incorrect"})
+        except Registration.DoesNotExist:
+            return render(request, 'authentication/login.html', 
+                        {'not_register': "This email is not registered"})
+    
     return render(request, 'authentication/login.html')
 
 
@@ -67,7 +110,7 @@ def login(request):
 def logout(request):
     if 'entry_email' in request.session:
         del request.session['entry_email']
-    return redirect('dashboard')
+    return redirect('landing')
 
 
 def landing(request):
