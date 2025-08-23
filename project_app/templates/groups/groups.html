@@ -47,9 +47,9 @@
                     Active
                 </div>
             </div>
-            <div class="stat-value">{{ groups.count|default:"3" }}</div>
+            <div class="stat-value">{{ total_groups|default:"0" }}</div>
             <div class="stat-label">Total Groups</div>
-            <div class="stat-comparison">You're managing {{ groups.count|default:"3" }} groups</div>
+            <div class="stat-comparison">You're managing {{ total_groups|default:"0" }} groups</div>
         </div>
 
         <div class="stat-card expense fade-in-up stagger-2">
@@ -62,7 +62,7 @@
                     Members
                 </div>
             </div>
-            <div class="stat-value">{{ total_members|default:"12" }}</div>
+            <div class="stat-value">{{ total_members|default:"0" }}</div>
             <div class="stat-label">Total Members</div>
             <div class="stat-comparison">Across all your groups</div>
         </div>
@@ -77,25 +77,12 @@
                     Total
                 </div>
             </div>
-            <div class="stat-value">${{ total_group_expenses|default:"2,450" }}</div>
-            <div class="stat-label">Group Expenses</div>
-            <div class="stat-comparison">This month across all groups</div>
+            <div class="stat-value">${{ total_group_expenses|default:"0" }}</div>
+            <div class="stat-label">Total Expenses</div>
+            <div class="stat-comparison">All time across all groups</div>
         </div>
 
-        <div class="stat-card profit fade-in-up stagger-4">
-            <div class="stat-header">
-                <div class="stat-icon profit">
-                    <i class="bi bi-arrow-left-right"></i>
-                </div>
-                <div class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    Pending
-                </div>
-            </div>
-            <div class="stat-value">${{ pending_settlements|default:"180" }}</div>
-            <div class="stat-label">Pending Settlements</div>
-            <div class="stat-comparison">Amounts to be settled</div>
-        </div>
+
     </div>
 
     <!-- Groups Grid -->
@@ -133,16 +120,16 @@
                         <p class="mb-0">{{ group.description|default:"No description provided" }}</p>
                     </div>
                     
-                    <div class="row text-center mb-3">
-                        <div class="col-6">
-                            <div class="fw-bold text-success">${{ group.total_expenses|default:"0" }}</div>
-                            <small class="text-muted">Total Expenses</small>
-                        </div>
-                        <div class="col-6">
-                            <div class="fw-bold text-primary">{{ group.members.count }}</div>
-                            <small class="text-muted">Members</small>
-                        </div>
-                    </div>
+                                         <div class="row text-center mb-3">
+                         <div class="col-6">
+                             <div class="fw-bold text-success">${{ group_expenses_dict|dict_get:group.id|default:"0" }}</div>
+                             <small class="text-muted">Total Expenses</small>
+                         </div>
+                         <div class="col-6">
+                             <div class="fw-bold text-primary">{{ group.members.count }}</div>
+                             <small class="text-muted">Members</small>
+                         </div>
+                     </div>
                     
                     <div class="d-grid gap-2">
                         <a href="{% url 'group_detail' group.id %}" class="btn btn-primary">

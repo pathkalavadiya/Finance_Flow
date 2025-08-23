@@ -757,9 +757,45 @@ def groups(request):
     all_groups = list(user_groups) + list(created_groups)
     unique_groups = list({group.id: group for group in all_groups}.values())
     
+    # Calculate statistics with default values of 0
+    total_groups = len(unique_groups)
+    
+    # Calculate total members across all groups
+    total_members = 0
+    for group in unique_groups:
+        total_members += group.members.count()
+    
+    # Calculate total group expenses (all time) and individual group expenses
+    total_group_expenses = 0
+    group_expenses_dict = {}
+    
+    for group in unique_groups:
+        group_expenses = GroupExpense.objects.filter(group=group).aggregate(total=Sum('amount'))['total'] or 0
+        total_group_expenses += group_expenses
+        group_expenses_dict[group.id] = group_expenses
+    
+    # Calculate pending settlements (simplified calculation)
+    pending_settlements = 0
+    for group in unique_groups:
+        # Get all expenses for this group
+        group_expenses = GroupExpense.objects.filter(group=group)
+        for expense in group_expenses:
+            # Calculate what each member owes
+            included_count = expense.included_members.count()
+            if included_count > 0:
+                per_person_amount = expense.amount / included_count
+                # If someone other than the payer is included, they owe money
+                if expense.paid_by not in expense.included_members.all():
+                    pending_settlements += per_person_amount
+    
     context = {
         'groups': unique_groups,
-        'user': user
+        'user': user,
+        'total_groups': total_groups,
+        'total_members': total_members,
+        'total_group_expenses': total_group_expenses,
+        'pending_settlements': pending_settlements,
+        'group_expenses_dict': group_expenses_dict
     }
     return render(request, 'groups/groups.html', context)
 
@@ -770,13 +806,20 @@ def create_group(request):
     user = Registration.objects.get(email=request.session['entry_email'])
     
     if request.method == 'POST':
-        group_name = request.POST.get('group_name')
+        group_name = request.POST.get('name')  # Changed from 'group_name' to 'name'
         description = request.POST.get('description', '')
         group_type = request.POST.get('group_type', 'other')
         
+        # Validate that group name is provided
+        if not group_name or not group_name.strip():
+            return render(request, 'groups/create_group.html', {
+                'user': user,
+                'error': 'Group name is required'
+            })
+        
         # Create the group
         group = Group.objects.create(
-            name=group_name,
+            name=group_name.strip(),
             description=description,
             group_type=group_type,
             created_by=user
