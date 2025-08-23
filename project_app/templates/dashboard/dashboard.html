@@ -202,12 +202,12 @@
                 <h5>No Financial Data Yet</h5>
                 <p class="mb-4">Charts and graphs will appear here once you start adding income and expenses.</p>
                 <div class="d-flex justify-content-center gap-3">
-                    <a href="{% url 'income' %}" class="btn btn-success">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addIncomeModal">
                         <i class="bi bi-plus-circle me-2"></i>Add Income
-                    </a>
-                    <a href="{% url 'expense' %}" class="btn btn-warning">
+                    </button>
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
                         <i class="bi bi-plus-circle me-2"></i>Add Expense
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -276,12 +276,12 @@
                                         <i class="bi bi-inbox display-4 d-block mb-3"></i>
                                         <h6>No transactions yet</h6>
                                         <p class="mb-3">Start by adding your first income or expense to see your financial data here!</p>
-                                        <a href="{% url 'income' %}" class="btn btn-success btn-sm me-2">
+                                        <button class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#addIncomeModal">
                                             <i class="bi bi-plus-circle me-1"></i>Add Income
-                                        </a>
-                                        <a href="{% url 'expense' %}" class="btn btn-warning btn-sm">
+                                        </button>
+                                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
                                             <i class="bi bi-plus-circle me-1"></i>Add Expense
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

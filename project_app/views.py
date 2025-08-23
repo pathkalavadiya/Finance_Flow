@@ -132,6 +132,17 @@ def dashboard(request):
     balance = 0
     balance_change_percent = 0.0
     
+    # Transaction card variables
+    today_transactions = 0
+    today_income = 0
+    today_expense = 0
+    weekly_transactions = 0
+    weekly_income = 0
+    weekly_expense = 0
+    monthly_transactions = 0
+    monthly_income = 0
+    monthly_expense = 0
+    
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
         
@@ -225,34 +236,95 @@ def dashboard(request):
             last_income_update = last_income.created_at if last_income else current_date
             last_expense_update = last_expense.created_at if last_expense else current_date
             
-            # Sales Report calculations
-            # Today's sales (income)
+            # Transaction calculations for dashboard cards
+            # Today's transactions
             today_start = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
             today_end = today_start + timedelta(days=1)
-            today_sales = Income.objects.filter(
+            
+            today_income = Income.objects.filter(
                 user=user,
                 created_at__gte=today_start,
                 created_at__lt=today_end
             ).aggregate(total=Sum('amount'))['total'] or 0
             
-            # This week's sales (income)
+            today_expense = Expense.objects.filter(
+                user=user,
+                created_at__gte=today_start,
+                created_at__lt=today_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            today_transactions = Income.objects.filter(
+                user=user,
+                created_at__gte=today_start,
+                created_at__lt=today_end
+            ).count() + Expense.objects.filter(
+                user=user,
+                created_at__gte=today_start,
+                created_at__lt=today_end
+            ).count()
+            
+            # Weekly transactions
             week_start = current_date - timedelta(days=current_date.weekday())
             week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
             week_end = week_start + timedelta(days=7)
-            week_sales = Income.objects.filter(
+            
+            weekly_income = Income.objects.filter(
                 user=user,
                 created_at__gte=week_start,
                 created_at__lt=week_end
             ).aggregate(total=Sum('amount'))['total'] or 0
             
-            # This month's sales (income)
+            weekly_expense = Expense.objects.filter(
+                user=user,
+                created_at__gte=week_start,
+                created_at__lt=week_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            weekly_transactions = Income.objects.filter(
+                user=user,
+                created_at__gte=week_start,
+                created_at__lt=week_end
+            ).count() + Expense.objects.filter(
+                user=user,
+                created_at__gte=week_start,
+                created_at__lt=week_end
+            ).count()
+            
+            # Monthly transactions
             month_start = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             month_end = (month_start + timedelta(days=32)).replace(day=1)
-            month_sales = Income.objects.filter(
+            
+            monthly_income = Income.objects.filter(
                 user=user,
                 created_at__gte=month_start,
                 created_at__lt=month_end
             ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            monthly_expense = Expense.objects.filter(
+                user=user,
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            monthly_transactions = Income.objects.filter(
+                user=user,
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).count() + Expense.objects.filter(
+                user=user,
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).count()
+            
+            # Sales Report calculations (keeping existing code)
+            # Today's sales (income)
+            today_sales = today_income
+            
+            # This week's sales (income)
+            week_sales = weekly_income
+            
+            # This month's sales (income)
+            month_sales = monthly_income
             
             # Planned sales targets (you can make these configurable)
             today_planned_sales = 300
@@ -298,7 +370,17 @@ def dashboard(request):
             'expense_change_percent': expense_change_percent,
             'previous_balance': previous_balance,
             'balance': balance,
-            'balance_change_percent': balance_change_percent
+            'balance_change_percent': balance_change_percent,
+            # Transaction card data
+            'today_transactions': today_transactions,
+            'today_income': today_income,
+            'today_expense': today_expense,
+            'weekly_transactions': weekly_transactions,
+            'weekly_income': weekly_income,
+            'weekly_expense': weekly_expense,
+            'monthly_transactions': monthly_transactions,
+            'monthly_income': monthly_income,
+            'monthly_expense': monthly_expense
         }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -312,29 +394,58 @@ def expense(request):
     if request.method == 'POST':
         amount = request.POST.get('amount')
         description = request.POST.get('description')
+        date = request.POST.get('date')
         currency = request.POST.get('currency')
         category = request.POST.get('category')
         
+        # Check if it's an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
         # Save to database with user association
         if user:
-            Expense.objects.create(
-                user=user,
-                amount=amount,
-                description=description,
-                currency=currency,
-                category=category
-            )
+            try:
+                Expense.objects.create(
+                    user=user,
+                    amount=amount,
+                    description=description,
+                    date=date,
+                    currency=currency,
+                    category=category
+                )
+                
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': f'Expense of ₹{amount} added successfully!'
+                    })
+                else:
+                    return render(request, 'transactions/expense.html', {
+                        'success': True,
+                        'amount': amount,
+                        'description': description,
+                        'currency': currency,
+                        'category': category
+                    })
+            except Exception as e:
+                if is_ajax:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error adding expense: {str(e)}'
+                    })
+                else:
+                    return render(request, 'transactions/expense.html', {
+                        'error': f'Error adding expense: {str(e)}'
+                    })
         else:
             # Handle case where user is not logged in
-            return redirect('login')
-            
-        return render(request, 'transactions/expense.html', {
-            'success': True,
-            'amount': amount,
-            'description': description,
-            'currency': currency,
-            'category': category
-        })
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not authenticated'
+                }, status=401)
+            else:
+                return redirect('login')
+    
     return render(request, 'transactions/expense.html')
 
 
@@ -347,29 +458,58 @@ def income(request):
     if request.method == 'POST':
         amount = request.POST.get('amount')
         description = request.POST.get('description')
+        date = request.POST.get('date')
         currency = request.POST.get('currency')
         category = request.POST.get('category')
         
+        # Check if it's an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
         # Save to database with user association
         if user:
-            Income.objects.create(
-                user=user,
-                amount=amount,
-                description=description,
-                currency=currency,
-                category=category
-            )
+            try:
+                Income.objects.create(
+                    user=user,
+                    amount=amount,
+                    description=description,
+                    date=date,
+                    currency=currency,
+                    category=category
+                )
+                
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': f'Income of ₹{amount} added successfully!'
+                    })
+                else:
+                    return render(request, 'transactions/income.html', {
+                        'success': True,
+                        'amount': amount,
+                        'description': description,
+                        'currency': currency,
+                        'category': category
+                    })
+            except Exception as e:
+                if is_ajax:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error adding income: {str(e)}'
+                    })
+                else:
+                    return render(request, 'transactions/income.html', {
+                        'error': f'Error adding income: {str(e)}'
+                    })
         else:
             # Handle case where user is not logged in
-            return redirect('login')
-            
-        return render(request, 'transactions/income.html', {
-            'success': True,
-            'amount': amount,
-            'description': description,
-            'currency': currency,
-            'category': category
-        })
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not authenticated'
+                }, status=401)
+            else:
+                return redirect('login')
+    
     return render(request, 'transactions/income.html')
 
 
@@ -395,6 +535,8 @@ def reports(request):
     total_income = 0
     total_expense = 0
     net_balance = 0
+    message = None
+    message_type = None
     
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
@@ -451,8 +593,122 @@ def reports(request):
         'balance': balance,
         'expense_categories': expense_categories,
         'income_categories': income_categories,
+        'message': message,
+        'message_type': message_type,
     }
     return render(request, 'reports/reports.html', context)
+
+
+@login_required
+def generate_report(request):
+    """Generate and download financial reports"""
+    if request.method != 'POST':
+        return redirect('reports')
+    
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return HttpResponse('Unauthorized', status=401)
+    
+    report_type = request.POST.get('report_type', 'Income Report')
+    date_range = request.POST.get('date_range', 'Last 7 days')
+    format_type = request.POST.get('format', 'PDF')
+    
+    # Calculate date range based on selection
+    end_date = datetime.now()
+    if date_range == 'Last 7 days':
+        start_date = end_date - timedelta(days=7)
+    elif date_range == 'Last 30 days':
+        start_date = end_date - timedelta(days=30)
+    elif date_range == 'Last 3 months':
+        start_date = end_date - timedelta(days=90)
+    elif date_range == 'Last 6 months':
+        start_date = end_date - timedelta(days=180)
+    elif date_range == 'Last year':
+        start_date = end_date - timedelta(days=365)
+    else:
+        start_date = end_date - timedelta(days=7)  # Default to last 7 days
+    
+    # Filter data based on date range
+    incomes = Income.objects.filter(
+        user=user,
+        created_at__range=[start_date, end_date]
+    ).order_by('-created_at')
+    
+    expenses = Expense.objects.filter(
+        user=user,
+        created_at__range=[start_date, end_date]
+    ).order_by('-created_at')
+    
+    if format_type == 'CSV':
+        # Generate CSV report
+        response = HttpResponse(content_type='text/csv')
+        filename = f"{report_type.replace(' ', '_')}_{date_range.replace(' ', '_')}_{end_date.strftime('%Y%m%d')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        writer = csv.writer(response)
+        
+        # Write headers
+        writer.writerow(['Report Type', report_type])
+        writer.writerow(['Date Range', date_range])
+        writer.writerow(['Generated On', end_date.strftime('%Y-%m-%d %H:%M')])
+        writer.writerow([])
+        
+        if report_type == 'Income Report':
+            writer.writerow(['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'])
+            for income in incomes:
+                writer.writerow([
+                    'Income',
+                    income.amount,
+                    income.category,
+                    income.description,
+                    income.currency,
+                    income.created_at.strftime('%Y-%m-%d %H:%M')
+                ])
+        elif report_type == 'Expense Report':
+            writer.writerow(['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'])
+            for expense in expenses:
+                writer.writerow([
+                    'Expense',
+                    expense.amount,
+                    expense.category,
+                    expense.description,
+                    expense.currency,
+                    expense.created_at.strftime('%Y-%m-%d %H:%M')
+                ])
+        else:  # Balance Report
+            writer.writerow(['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'])
+            for income in incomes:
+                writer.writerow([
+                    'Income',
+                    income.amount,
+                    income.category,
+                    income.description,
+                    income.currency,
+                    income.created_at.strftime('%Y-%m-%d %H:%M')
+                ])
+            writer.writerow([])
+            for expense in expenses:
+                writer.writerow([
+                    'Expense',
+                    expense.amount,
+                    expense.category,
+                    expense.description,
+                    expense.currency,
+                    expense.created_at.strftime('%Y-%m-%d %H:%M')
+                ])
+        
+        return response
+    
+    elif format_type == 'PDF':
+        # For PDF, we'll redirect to a formatted view that can be printed
+        # For now, return CSV as PDF generation requires additional libraries
+        return HttpResponse('PDF generation is not yet implemented. Please use CSV format.', content_type='text/plain')
+    
+    else:
+        # Default to CSV
+        return redirect('generate_report')
 
 
 @login_required

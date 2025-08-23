@@ -3,6 +3,100 @@
 
 {% block title %}Reports - Finance Flow{% endblock %}
 
+{% block extra_css %}
+<style>
+    .export-options-card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .export-options-card .form-control {
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 10px 12px;
+        font-size: 14px;
+        background-color: white;
+    }
+    
+    .export-options-card .form-control[readonly] {
+        background-color: #f8f9fa;
+        color: #495057;
+    }
+    
+    .export-options-card .form-control[style*="border: 1px solid #10b981"] {
+        border-color: #10b981 !important;
+        background-color: white;
+        color: #10b981;
+        font-weight: 500;
+    }
+    
+    .generate-report-btn {
+        background: linear-gradient(135deg, #10b981, #f59e0b) !important;
+        border: none !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .generate-report-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .generate-report-btn i {
+        margin-right: 8px;
+    }
+    
+    .export-options-card .form-select {
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 10px 12px;
+        font-size: 14px;
+        background-color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .export-options-card .form-select:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+    }
+    
+    .export-options-card .form-select[name="format"] {
+        border-color: #10b981;
+        color: #10b981;
+        font-weight: 500;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        border: none;
+        padding: 16px;
+        font-size: 14px;
+    }
+    
+    .alert-success {
+        background-color: #F0FDF4;
+        color: #16A34A;
+        border-left: 4px solid #16A34A;
+    }
+    
+    .alert-danger {
+        background-color: #FEF2F2;
+        color: #DC2626;
+        border-left: 4px solid #DC2626;
+    }
+    
+    .alert-warning {
+        background-color: #FFFBEB;
+        color: #D97706;
+        border-left: 4px solid #D97706;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Content Header -->
 <div class="content-header">
@@ -23,52 +117,58 @@
 
 <!-- Content Body -->
 <div class="content-body">
+    <!-- Success/Error Messages -->
+    {% if message %}
+    <div class="alert alert-{{ message_type }} alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-{% if message_type == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    
     <!-- 1. Export Options -->
-    <div class="card mb-4 fade-in-up">
+    <div class="card mb-4 fade-in-up export-options-card">
         <div class="card-header">
             <h5 class="mb-0">Export Options</h5>
         </div>
         <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Report Type</label>
-                    <select class="form-select">
-                        <option>Income Report</option>
-                        <option>Expense Report</option>
-                        <option>Balance Report</option>
-                        <option>Category Analysis</option>
-                        <option>Monthly Summary</option>
-                        <option>Custom Report</option>
-                    </select>
+            <form method="post" action="{% url 'generate_report' %}">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Report Type</label>
+                        <select name="report_type" class="form-select">
+                            <option value="Income Report" selected>Income Report</option>
+                            <option value="Expense Report">Expense Report</option>
+                            <option value="Balance Report">Balance Report</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date Range</label>
+                        <select name="date_range" class="form-select">
+                            <option value="Last 7 days" selected>Last 7 days</option>
+                            <option value="Last 30 days">Last 30 days</option>
+                            <option value="Last 3 months">Last 3 months</option>
+                            <option value="Last 6 months">Last 6 months</option>
+                            <option value="Last year">Last year</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Format</label>
+                        <select name="format" class="form-select" style="border: 1px solid #10b981;">
+                            <option value="CSV" selected>CSV</option>
+                            <option value="PDF">PDF</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn w-100 generate-report-btn">
+                            <i class="bi bi-file-earmark-text"></i>
+                            Generate Report
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Date Range</label>
-                    <select class="form-select">
-                        <option>Last 7 days</option>
-                        <option>Last 30 days</option>
-                        <option>Last 3 months</option>
-                        <option>Last 6 months</option>
-                        <option>Last year</option>
-                        <option>Custom range</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Format</label>
-                    <select class="form-select">
-                        <option>PDF</option>
-                        <option>Excel</option>
-                        <option>CSV</option>
-                        <option>JSON</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">&nbsp;</label>
-                    <button class="btn btn-primary w-100">
-                        <i class="bi bi-file-earmark-text"></i>
-                        Generate Report
-                    </button>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 
