@@ -18,32 +18,12 @@
         <form method="post" class="register-form">
             {% csrf_token %}
             
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="firstName" class="form-label">First Name</label>
-                    <div class="input-wrapper">
-                        <i class="input-icon bi bi-person"></i>
-                        <input type="text" class="form-control" id="firstName" name="first_name" 
-                               placeholder="Enter your first name" required>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <label for="lastName" class="form-label">Last Name</label>
-                    <div class="input-wrapper">
-                        <i class="input-icon bi bi-person"></i>
-                        <input type="text" class="form-control" id="lastName" name="last_name" 
-                               placeholder="Enter your last name" required>
-                    </div>
-                </div>
-            </div>
-
             <div class="form-group">
-                <label for="username" class="form-label">Username</label>
+                <label for="name" class="form-label">Full Name</label>
                 <div class="input-wrapper">
-                    <i class="input-icon bi bi-person-badge"></i>
-                    <input type="text" class="form-control" id="username" name="username" 
-                           placeholder="Choose a username" required>
+                    <i class="input-icon bi bi-person"></i>
+                    <input type="text" class="form-control" id="name" name="name" 
+                           placeholder="Enter your full name" required>
                 </div>
             </div>
 
@@ -57,64 +37,59 @@
             </div>
 
             <div class="form-group">
-                <label for="phone" class="form-label">Phone Number</label>
+                <label for="mob" class="form-label">Phone Number</label>
                 <div class="input-wrapper">
                     <i class="input-icon bi bi-telephone"></i>
-                    <input type="tel" class="form-control" id="phone" name="phone" 
-                           placeholder="Enter your phone number">
-                </div>
-            </div>
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="password" class="form-label">Password</label>
-                    <div class="input-wrapper">
-                        <i class="input-icon bi bi-lock"></i>
-                        <input type="password" class="form-control" id="password" name="password1" 
-                               placeholder="Create a password" required>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <label for="confirmPassword" class="form-label">Confirm Password</label>
-                    <div class="input-wrapper">
-                        <i class="input-icon bi bi-lock-fill"></i>
-                        <input type="password" class="form-control" id="confirmPassword" name="password2" 
-                               placeholder="Confirm your password" required>
-                    </div>
+                    <input type="tel" class="form-control" id="mob" name="mob" 
+                           placeholder="Enter your phone number" required>
                 </div>
             </div>
 
             <div class="form-group">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="termsAgreement" name="terms_agreement" required>
-                    <label class="form-check-label" for="termsAgreement">
-                        I agree to the <a href="#" class="terms-link">Terms of Service</a> and 
-                        <a href="#" class="terms-link">Privacy Policy</a>
-                    </label>
+                <label for="password" class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <i class="input-icon bi bi-lock"></i>
+                    <input type="password" class="form-control" id="password" name="password" 
+                           placeholder="Create a password" required>
                 </div>
             </div>
 
             <div class="form-group">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter">
-                    <label class="form-check-label" for="newsletter">
-                        Subscribe to our newsletter for financial tips and updates
-                    </label>
+                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <div class="input-wrapper">
+                    <i class="input-icon bi bi-lock-fill"></i>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                           placeholder="Confirm your password" required>
                 </div>
             </div>
 
-            {% if form.errors %}
+            <div class="form-group">
+                <label for="add" class="form-label">Address</label>
+                <div class="input-wrapper">
+                    <i class="input-icon bi bi-geo-alt"></i>
+                    <textarea class="form-control" id="add" name="add" 
+                              placeholder="Enter your address" rows="3" required></textarea>
+                </div>
+            </div>
+
+            {% if password_mismatch %}
             <div class="alert alert-danger" role="alert">
                 <i class="bi bi-exclamation-triangle"></i>
-                Please correct the errors below:
-                <ul class="mb-0 mt-2">
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                </ul>
+                {{ password_mismatch }}
+            </div>
+            {% endif %}
+
+            {% if register_check_key %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                {{ register_check_key }}
+            </div>
+            {% endif %}
+
+            {% if register_key %}
+            <div class="alert alert-success" role="alert">
+                <i class="bi bi-check-circle"></i>
+                {{ register_key }}
             </div>
             {% endif %}
 
@@ -264,6 +239,30 @@
     color: #7C3AED;
 }
 
+.alert {
+    border-radius: 12px;
+    border: none;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.alert-danger {
+    background-color: #FEF2F2;
+    color: #DC2626;
+    border-left: 4px solid #DC2626;
+}
+
+.alert-success {
+    background-color: #F0FDF4;
+    color: #16A34A;
+    border-left: 4px solid #16A34A;
+}
+
+.alert i {
+    margin-right: 8px;
+}
+
 .divider {
     text-align: center;
     margin: 24px 0;
@@ -312,4 +311,45 @@
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.register-form');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const phone = document.getElementById('mob');
+    
+    // Phone number validation
+    phone.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+    });
+    
+    // Password confirmation validation
+    confirmPassword.addEventListener('input', function() {
+        if (password.value !== this.value) {
+            this.setCustomValidity('Passwords do not match');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Password length validation
+    password.addEventListener('input', function() {
+        if (this.value.length > 8) {
+            this.setCustomValidity('Password must be 8 characters or less');
+        } else {
+            this.setCustomValidity('');
+        }
+        // Update confirm password validation
+        if (confirmPassword.value && password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    });
+});
+</script>
 {% endblock %}
