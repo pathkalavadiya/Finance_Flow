@@ -21,19 +21,25 @@
     .welcome-title {
         font-size: 2rem;
         font-weight: 700;
-        color: #212529;
+        color: #343a40;
         margin: 0;
-        background: linear-gradient(135deg, #F57C00, #FF9800);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    }
+
+    .chart-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 1.5rem;
     }
 
     .welcome-subtitle {
-        color: #6C757D;
+        color: #6c757d;
         font-size: 1rem;
         margin: 0.5rem 0 0 0;
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .header-actions {
@@ -49,21 +55,6 @@
         align-items: center;
     }
 
-    .search-input {
-        padding: 0.75rem 1rem 0.75rem 2.5rem;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        background: #ffffff;
-        font-size: 0.9rem;
-        width: 280px;
-        transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: #F57C00;
-        box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.1);
-    }
 
     .search-icon {
         position: absolute;
@@ -87,9 +78,8 @@
     }
 
     .notification-btn:hover {
-        border-color: #F57C00;
-        background: #FFF3E0;
-        transform: translateY(-2px);
+        border-color: #007bff;
+        background: #e7f3ff;
     }
 
     .notification-btn i {
@@ -131,15 +121,14 @@
     }
 
     .user-info:hover {
-        border-color: #F57C00;
-        background: #FFF3E0;
-        transform: translateY(-2px);
+        border-color: #007bff;
+        background: #e7f3ff;
     }
 
     .user-avatar {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #F57C00, #FF9800);
+        background: #007bff;
         color: white;
         border-radius: 10px;
         display: flex;
@@ -157,23 +146,29 @@
 
     .user-name {
         font-weight: 600;
-        color: #212529;
+        color: #343a40;
         font-size: 0.9rem;
         line-height: 1.2;
     }
 
     .user-role {
         font-size: 0.75rem;
-        color: #6C757D;
+        color: #6c757d;
         line-height: 1.2;
     }
 
     .user-info i {
-        color: #6C757D;
+        color: #6c757d;
         font-size: 0.8rem;
     }
 
     /* Dropdown Menu */
+    .search-input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
     .dropdown-menu {
         border: none;
         border-radius: 12px;
@@ -191,64 +186,62 @@
     }
 
     .dropdown-item:hover {
-        background: #FFF3E0;
-        color: #F57C00;
+        background: #e7f3ff;
+        color: #007bff;
     }
     
     /* Stats Cards */
     .stats-card {
         background: white;
-        border-radius: 16px;
+        border-radius: 0.375rem;
         padding: 1.5rem;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        border: 1px solid #DEE2E6;
-        transition: all 0.3s ease;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid #dee2e6;
+        transition: all 0.15s ease-in-out;
         position: relative;
-        overflow: hidden;
-    }
-
-    .stats-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(135deg, #F57C00, #FF9800);
     }
 
     .stats-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
-        border-color: #F57C00;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     }
 
     .stat-icon {
         width: 60px;
         height: 60px;
-        border-radius: 12px;
+        border-radius: 0.375rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.75rem;
+        font-size: 1.5rem;
         margin-bottom: 1rem;
-        background: linear-gradient(135deg, #1E73BE, #F57C00);
         color: white;
-        box-shadow: 0 4px 6px -1px rgba(13, 71, 161, 0.2);
+    }
+    
+    .income-icon {
+        background-color: #28a745;
+    }
+    
+    .expense-icon {
+        background-color: #dc3545;
+    }
+    
+    .balance-icon {
+        background-color: #007bff;
+    }
+    
+    .savings-icon {
+        background-color: #17a2b8;
     }
 
     .stat-value {
-        font-size: 2.5rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #1E73BE, #0D47A1);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #343a40;
         margin-bottom: 0.5rem;
     }
 
     .stat-label {
-        color: #555555;
+        color: #6c757d;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -256,45 +249,25 @@
     }
 
     .chart-container {
-        background: #FFFFFF;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 4px 6px -1px rgba(13, 71, 161, 0.1);
-        border: 1px solid #DDDDDD;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .chart-container::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #1E73BE, #F57C00);
-    }
-
-    .chart-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #0D47A1;
-        margin-bottom: 1.5rem;
-        text-align: center;
+        background: white;
+        border-radius: 0.375rem;
+        padding: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid #dee2e6;
     }
 
     .filter-section {
-        background: #FFFFFF;
-        border-radius: 16px;
+        background: white;
+        border-radius: 0.375rem;
         padding: 1.5rem;
         margin-bottom: 2rem;
-        border: 1px solid #DDDDDD;
-        box-shadow: 0 4px 6px -1px rgba(13, 71, 161, 0.1);
+        border: 1px solid #dee2e6;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
 
     .filter-title {
         font-weight: 700;
-        color: #0D47A1;
+        color: #343a40;
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -302,56 +275,39 @@
     }
 
     .recent-transactions {
-        background: #FFFFFF;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 4px 6px -1px rgba(13, 71, 161, 0.1);
-        border: 1px solid #DDDDDD;
-        position: relative;
-        overflow: hidden;
+        background: white;
+        border-radius: 0.375rem;
+        padding: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid #dee2e6;
     }
 
     .transaction-item {
         padding: 1rem;
-        border-radius: 12px;
+        border-radius: 0.375rem;
         margin-bottom: 0.75rem;
-        transition: all 0.3s ease;
-        border: 1px solid #E0E0E0;
-        background: #FFFFFF;
+        border: 1px solid #dee2e6;
+        background: white;
+        transition: all 0.15s ease-in-out;
     }
 
     .transaction-item:hover {
-        background: #F5F5F5;
-        transform: translateX(4px);
-        box-shadow: 0 1px 3px 0 rgba(13, 71, 161, 0.1);
+        background: #f8f9fa;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
 
     .transaction-amount {
         font-weight: 700;
         font-size: 1.1rem;
+        color: #007bff;
     }
 
     .transaction-income {
-        color: #1E73BE;
+        color: #28a745;
     }
 
     .transaction-expense {
-        color: #F57C00;
-    }
-    
-    .transaction-item {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 10px;
-        transition: all 0.3s ease;
-    }
-    
-    .transaction-item:hover {
-        transform: translateX(5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        color: #dc3545;
     }
     
     .transaction-author {
@@ -364,20 +320,57 @@
         color: #3b82f6;
     }
     
+    /* Glassmorphism Table Styling */
+    .table {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .table:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .table tbody tr {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(30, 115, 190, 0.08);
+        transform: translateX(8px) scale(1.01);
+        box-shadow: 8px 0 24px rgba(30, 115, 190, 0.15);
+    }
+
     /* Sleek Rounded Table Header Design */
     .table thead th {
-        background: linear-gradient(145deg, #ff6b35, #ff8c42) !important;
+        background: var(--gradient-mixed) !important;
         color: white !important;
-        border: none !important;
+        border-bottom: none !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.6px !important;
-        font-size: 0.85rem !important;
-        padding: 1rem 1.5rem !important;
-        position: relative !important;
-        border-radius: 12px 12px 0 0 !important;
-        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25) !important;
-        margin: 0 2px !important;
+        letter-spacing: 1px !important;
+        font-size: 0.875rem !important;
+        padding: 1.25rem !important;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .table thead th::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.3);
     }
     
     .table thead th:first-child {
