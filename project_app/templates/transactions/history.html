@@ -137,8 +137,22 @@
                             <h6 class="mb-1">{{ transaction.description }}</h6>
                             <span class="badge bg-secondary">{{ transaction.category }}</span>
                         </div>
-                        <div class="transaction-amount {{ transaction.type }}">
-                            {% if transaction.type == 'income' %}+{% else %}-{% endif %}₹{{ transaction.amount }}
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="transaction-amount {{ transaction.type }}">
+                                {% if transaction.type == 'income' %}+{% else %}-{% endif %}₹{{ transaction.amount }}
+                            </div>
+                            <div class="transaction-actions">
+                                <button class="btn btn-sm btn-outline-primary me-1" 
+                                        onclick="editTransaction('{{ transaction.type }}', {{ transaction.id }}, '{{ transaction.description }}', {{ transaction.amount }}, '{{ transaction.category }}', '{{ transaction.date|date:"Y-m-d" }}')"
+                                        title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="deleteTransaction('{{ transaction.type }}', {{ transaction.id }}, '{{ transaction.description }}', {{ transaction.amount }})"
+                                        title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -176,6 +190,92 @@
     </div>
 </div>
 
+<!-- Edit Transaction Modal -->
+<div class="modal fade" id="editTransactionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Transaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editTransactionForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="editTransactionId">
+                    <input type="hidden" id="editTransactionType">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="editAmount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" id="editAmount" name="amount" step="0.01" required class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editCurrency" class="form-label">Currency</label>
+                            <select id="editCurrency" name="currency" required class="form-select">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="INR">INR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="JPY">JPY</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="editDescription" class="form-label">Description</label>
+                            <input type="text" id="editDescription" name="description" required class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editCategory" class="form-label">Category</label>
+                            <select id="editCategory" name="category" required class="form-select">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editDate" class="form-label">Date</label>
+                            <input type="date" id="editDate" name="date" required class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteTransactionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Transaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="bi bi-exclamation-triangle text-warning display-4 mb-3"></i>
+                    <h5>Are you sure?</h5>
+                    <p class="text-muted">This action cannot be undone. This will permanently delete the transaction:</p>
+                    <div class="alert alert-light">
+                        <strong id="deleteTransactionDetails"></strong>
+                    </div>
+                </div>
+                <input type="hidden" id="deleteTransactionId">
+                <input type="hidden" id="deleteTransactionType">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete Transaction</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block extra_js %}
 <script>
     // Filter functionality
@@ -203,6 +303,159 @@
             });
         });
     });
+
+    // Category options for different transaction types
+    const incomeCategories = [
+        { value: 'salary', text: 'Salary' },
+        { value: 'freelance', text: 'Freelance' },
+        { value: 'business', text: 'Business' },
+        { value: 'investment', text: 'Investment' },
+        { value: 'gift', text: 'Gift' },
+        { value: 'other', text: 'Other' }
+    ];
+
+    const expenseCategories = [
+        { value: 'food', text: 'Food & Dining' },
+        { value: 'transport', text: 'Transportation' },
+        { value: 'shopping', text: 'Shopping' },
+        { value: 'entertainment', text: 'Entertainment' },
+        { value: 'bills', text: 'Bills & Utilities' },
+        { value: 'healthcare', text: 'Healthcare' },
+        { value: 'education', text: 'Education' },
+        { value: 'travel', text: 'Travel' },
+        { value: 'other', text: 'Other' }
+    ];
+
+    // Edit transaction function
+    function editTransaction(type, id, description, amount, category, date) {
+        document.getElementById('editTransactionId').value = id;
+        document.getElementById('editTransactionType').value = type;
+        document.getElementById('editDescription').value = description;
+        document.getElementById('editAmount').value = amount;
+        document.getElementById('editDate').value = date;
+
+        // Populate category dropdown based on transaction type
+        const categorySelect = document.getElementById('editCategory');
+        categorySelect.innerHTML = '';
+        
+        const categories = type === 'income' ? incomeCategories : expenseCategories;
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.value;
+            option.textContent = cat.text;
+            if (cat.value === category) {
+                option.selected = true;
+            }
+            categorySelect.appendChild(option);
+        });
+
+        // Show modal
+        new bootstrap.Modal(document.getElementById('editTransactionModal')).show();
+    }
+
+    // Delete transaction function
+    function deleteTransaction(type, id, description, amount) {
+        document.getElementById('deleteTransactionId').value = id;
+        document.getElementById('deleteTransactionType').value = type;
+        document.getElementById('deleteTransactionDetails').textContent = `${description} - ₹${amount}`;
+
+        // Show modal
+        new bootstrap.Modal(document.getElementById('deleteTransactionModal')).show();
+    }
+
+    // Handle edit form submission
+    document.getElementById('editTransactionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const transactionId = document.getElementById('editTransactionId').value;
+        const transactionType = document.getElementById('editTransactionType').value;
+        
+        const url = transactionType === 'income' ? 
+            `/income/edit/${transactionId}/` : 
+            `/expense/edit/${transactionId}/`;
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showAlert('success', data.message);
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('editTransactionModal')).hide();
+                // Reload page to show updated data
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert('danger', data.message);
+            }
+        })
+        .catch(error => {
+            showAlert('danger', 'An error occurred while updating the transaction.');
+            console.error('Error:', error);
+        });
+    });
+
+    // Confirm delete function
+    function confirmDelete() {
+        const transactionId = document.getElementById('deleteTransactionId').value;
+        const transactionType = document.getElementById('deleteTransactionType').value;
+        
+        const url = transactionType === 'income' ? 
+            `/income/delete/${transactionId}/` : 
+            `/expense/delete/${transactionId}/`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showAlert('success', data.message);
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('deleteTransactionModal')).hide();
+                // Reload page to show updated data
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert('danger', data.message);
+            }
+        })
+        .catch(error => {
+            showAlert('danger', 'An error occurred while deleting the transaction.');
+            console.error('Error:', error);
+        });
+    }
+
+    // Show alert function
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
 </script>
 {% endblock %}
 {% endblock %}

@@ -315,14 +315,33 @@
     </div>
     {% endif %}
 
-    <!-- Balance Trend Chart -->
+    <!-- Balance Trend Chart and Monthly Savings Chart -->
     {% if total_income or total_expenses %}
-    <div class="card fade-in-up mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Balance Trend Over Time</h5>
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Balance Trend Over Time</h5>
+                </div>
+                <div class="card-body">
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="balanceTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <canvas id="balanceTrendChart" width="400" height="200"></canvas>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Monthly Savings</h5>
+                </div>
+                <div class="card-body">
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="monthlySavingsChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -682,13 +701,118 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+
+    // Monthly Savings Area Chart
+    fetch('{% url "chart_data" %}?type=monthly')
+        .then(response => response.json())
+        .then(data => {
+            const monthlySavingsCtx = document.getElementById('monthlySavingsChart').getContext('2d');
+            
+            // Calculate savings data (income - expenses)
+            const savingsData = [];
+            const incomeData = data.datasets[0]?.data || [];
+            const expenseData = data.datasets[1]?.data || [];
+            
+            for (let i = 0; i < Math.max(incomeData.length, expenseData.length); i++) {
+                const income = incomeData[i] || 0;
+                const expense = expenseData[i] || 0;
+                savingsData.push(income - expense);
+            }
+            
+            new Chart(monthlySavingsCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Monthly Savings',
+                        data: savingsData,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#059669',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    return context.dataset.label + ': ₹' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching monthly savings chart data:', error);
+            // Fallback chart
+            const monthlySavingsCtx = document.getElementById('monthlySavingsChart').getContext('2d');
+            new Chart(monthlySavingsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Monthly Savings',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
 });
 
 // Filter functionality
 function applyFilters() {
     const dateRange = document.getElementById('dateRangeFilter').value;
     const category = document.getElementById('categoryFilter').value;
-    const amountRange = document.getElementById('amountRangeFilter').value;
     
     console.log('Applying filters:', { dateRange, category, amountRange });
     

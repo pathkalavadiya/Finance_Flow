@@ -458,6 +458,7 @@ def expense(request):
                     })
                 else:
                     return render(request, 'transactions/expense.html', {
+                        'user': user,
                         'success': True,
                         'amount': amount,
                         'description': description,
@@ -472,6 +473,7 @@ def expense(request):
                     })
                 else:
                     return render(request, 'transactions/expense.html', {
+                        'user': user,
                         'error': f'Error adding expense: {str(e)}'
                     })
         else:
@@ -484,7 +486,7 @@ def expense(request):
             else:
                 return redirect('login')
     
-    return render(request, 'transactions/expense.html')
+    return render(request, 'transactions/expense.html', {'user': user})
 
 
 @login_required
@@ -557,6 +559,7 @@ def income(request):
                     })
                 else:
                     return render(request, 'transactions/income.html', {
+                        'user': user,
                         'success': True,
                         'amount': amount,
                         'description': description,
@@ -571,6 +574,7 @@ def income(request):
                     })
                 else:
                     return render(request, 'transactions/income.html', {
+                        'user': user,
                         'error': f'Error adding income: {str(e)}'
                     })
         else:
@@ -583,7 +587,7 @@ def income(request):
             else:
                 return redirect('login')
     
-    return render(request, 'transactions/income.html')
+    return render(request, 'transactions/income.html', {'user': user})
 
 
 @login_required
@@ -987,6 +991,17 @@ def analytics(request):
             'total': float(category['total'])
         })
     
+    # Debug: Add fallback data if no transactions exist
+    if not expense_categories_for_json:
+        expense_categories_for_json = [
+            {'category': 'No Data', 'total': 0}
+        ]
+    
+    if not income_categories_for_json:
+        income_categories_for_json = [
+            {'category': 'No Data', 'total': 0}
+        ]
+    
     context = {
         'user': user,
         'monthly_income': list(monthly_income),
@@ -1101,7 +1116,7 @@ def chart_data(request):
             ]
         })
     
-    elif chart_type == 'categories':
+    elif chart_type == 'category' or chart_type == 'categories':
         # Category breakdown data
         income_categories = Income.objects.filter(user=user).values('category').annotate(
             total=Sum('amount')
@@ -1111,16 +1126,22 @@ def chart_data(request):
             total=Sum('amount')
         ).order_by('-total')
         
-        return JsonResponse({
-            'income': {
-                'labels': [item['category'] for item in income_categories],
-                'data': [float(item['total']) for item in income_categories]
-            },
-            'expense': {
+        # Return data in the format expected by the dashboard chart
+        if expense_categories:
+            return JsonResponse({
                 'labels': [item['category'] for item in expense_categories],
-                'data': [float(item['total']) for item in expense_categories]
-            }
-        })
+                'datasets': [{
+                    'data': [float(item['total']) for item in expense_categories]
+                }]
+            })
+        else:
+            # Return empty data if no expenses found
+            return JsonResponse({
+                'labels': ['No Data'],
+                'datasets': [{
+                    'data': [0]
+                }]
+            })
     
     elif chart_type == 'income_sources':
         # Income sources breakdown data
@@ -1142,6 +1163,53 @@ def chart_data(request):
         return JsonResponse({
             'labels': [item['category'] for item in spending_categories],
             'data': [float(item['total']) for item in spending_categories]
+        })
+    
+    elif chart_type == 'balance':
+        # Balance trend data - calculate monthly balance (income - expenses)
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=365)
+        
+        # Get monthly data for the last 12 months
+        monthly_data = []
+        labels = []
+        
+        for i in range(12):
+            month_start = (end_date.replace(day=1) - timedelta(days=30*i)).replace(day=1)
+            if month_start.month == 12:
+                month_end = month_start.replace(year=month_start.year + 1, month=1)
+            else:
+                month_end = month_start.replace(month=month_start.month + 1)
+            
+            # Calculate income for this month
+            monthly_income = Income.objects.filter(
+                user=user,
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            # Calculate expenses for this month
+            monthly_expense = Expense.objects.filter(
+                user=user,
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            # Calculate balance
+            balance = float(monthly_income) - float(monthly_expense)
+            monthly_data.insert(0, balance)
+            labels.insert(0, month_start.strftime('%b %Y'))
+        
+        return JsonResponse({
+            'labels': labels,
+            'datasets': [{
+                'label': 'Balance',
+                'data': monthly_data,
+                'borderColor': '#3B82F6',
+                'backgroundColor': 'rgba(59, 130, 246, 0.1)',
+                'tension': 0.4,
+                'fill': True
+            }]
         })
     
     elif chart_type == 'filtered':
@@ -1845,6 +1913,205 @@ def generate_json_report(transactions, filename):
     response['Content-Disposition'] = f'attachment; filename="{filename}.json"'
     
     return response
+
+
+# Edit and Delete Transaction Views
+@login_required
+def edit_income(request, income_id):
+    """Edit an existing income transaction"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    income = get_object_or_404(Income, id=income_id, user=user)
+    
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        description = request.POST.get('description')
+        date = request.POST.get('date')
+        currency = request.POST.get('currency')
+        category = request.POST.get('category')
+        
+        # Check if it's an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        try:
+            income.amount = amount
+            income.description = description
+            income.date = date
+            income.currency = currency
+            income.category = category
+            income.save()
+            
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Income of ₹{amount} updated successfully!'
+                })
+            else:
+                messages.success(request, f'Income of ₹{amount} updated successfully!')
+                return redirect('transaction_history')
+        except Exception as e:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Error updating income: {str(e)}'
+                })
+            else:
+                messages.error(request, f'Error updating income: {str(e)}')
+    
+    context = {
+        'user': user,
+        'income': income,
+        'edit_mode': True
+    }
+    return render(request, 'transactions/edit_income.html', context)
+
+
+@login_required
+def edit_expense(request, expense_id):
+    """Edit an existing expense transaction"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    expense = get_object_or_404(Expense, id=expense_id, user=user)
+    
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        description = request.POST.get('description')
+        date = request.POST.get('date')
+        currency = request.POST.get('currency')
+        category = request.POST.get('category')
+        
+        # Check if it's an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        try:
+            expense.amount = amount
+            expense.description = description
+            expense.date = date
+            expense.currency = currency
+            expense.category = category
+            expense.save()
+            
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Expense of ₹{amount} updated successfully!'
+                })
+            else:
+                messages.success(request, f'Expense of ₹{amount} updated successfully!')
+                return redirect('transaction_history')
+        except Exception as e:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Error updating expense: {str(e)}'
+                })
+            else:
+                messages.error(request, f'Error updating expense: {str(e)}')
+    
+    context = {
+        'user': user,
+        'expense': expense,
+        'edit_mode': True
+    }
+    return render(request, 'transactions/edit_expense.html', context)
+
+
+@login_required
+def delete_income(request, income_id):
+    """Delete an income transaction"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    income = get_object_or_404(Income, id=income_id, user=user)
+    
+    if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        try:
+            amount = income.amount
+            income.delete()
+            
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Income of ₹{amount} deleted successfully!'
+                })
+            else:
+                messages.success(request, f'Income of ₹{amount} deleted successfully!')
+                return redirect('transaction_history')
+        except Exception as e:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Error deleting income: {str(e)}'
+                })
+            else:
+                messages.error(request, f'Error deleting income: {str(e)}')
+    
+    context = {
+        'user': user,
+        'income': income,
+        'delete_mode': True
+    }
+    return render(request, 'transactions/delete_income.html', context)
+
+
+@login_required
+def delete_expense(request, expense_id):
+    """Delete an expense transaction"""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    
+    if not user:
+        return redirect('login')
+    
+    expense = get_object_or_404(Expense, id=expense_id, user=user)
+    
+    if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        try:
+            amount = expense.amount
+            expense.delete()
+            
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Expense of ₹{amount} deleted successfully!'
+                })
+            else:
+                messages.success(request, f'Expense of ₹{amount} deleted successfully!')
+                return redirect('transaction_history')
+        except Exception as e:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Error deleting expense: {str(e)}'
+                })
+            else:
+                messages.error(request, f'Error deleting expense: {str(e)}')
+    
+    context = {
+        'user': user,
+        'expense': expense,
+        'delete_mode': True
+    }
+    return render(request, 'transactions/delete_expense.html', context)
 
 
 

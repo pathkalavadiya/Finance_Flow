@@ -28,6 +28,9 @@ from project_app.views import reports, export_report, generate_report, generate_
 from project_app.views import analytics, chart_data
 from project_app.views import landing
 
+# Edit and Delete Transaction Views
+from project_app.views import edit_income, edit_expense, delete_income, delete_expense
+
 # Group Split Money Views
 from project_app.views import groups, create_group, group_detail, add_group_expense, group_balances, add_group_member, delete_group
 
@@ -52,6 +55,12 @@ urlpatterns = [
     path('generate-custom-report/', generate_custom_report, name='generate_custom_report'),
     path('analytics/', analytics, name='analytics'),
     path('chart-data/', chart_data, name='chart_data'),
+    
+    # Edit and Delete Transaction URLs
+    path('income/edit/<int:income_id>/', edit_income, name='edit_income'),
+    path('expense/edit/<int:expense_id>/', edit_expense, name='edit_expense'),
+    path('income/delete/<int:income_id>/', delete_income, name='delete_income'),
+    path('expense/delete/<int:expense_id>/', delete_expense, name='delete_expense'),
     
     # Group Split Money URLs
     path('groups/', groups, name='groups'),

@@ -22,7 +22,7 @@ class Expense(models.Model):
     currency = models.CharField(max_length=10)
     category = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
-    # updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
     # created_by = models.ForeignKey(Registration, on_delete=models.CASCADE, related_name='created_expenses', null=True, blank=True)
 
     def __str__(self):
@@ -40,7 +40,7 @@ class Income(models.Model):
     currency = models.CharField(max_length=10)
     category = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
-    # updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
     # created_by = models.ForeignKey(Registration, on_delete=models.CASCADE, related_name='created_incomes', null=True, blank=True)
 
     def __str__(self):
