@@ -4,52 +4,339 @@
 
 {% block extra_css %}
 <style>
-    .welcome-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    /* Header Styles */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e2e8f0;
     }
-    
-    .welcome-header {
-        padding: 20px 0;
+
+    .welcome-section {
+        flex: 1;
     }
-    
-    .user-avatar-large {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
+
+    .welcome-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #212529;
+        margin: 0;
+        background: linear-gradient(135deg, #F57C00, #FF9800);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .welcome-subtitle {
+        color: #6C757D;
+        font-size: 1rem;
+        margin: 0.5rem 0 0 0;
+        font-weight: 500;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    /* Search Container */
+    .search-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-input {
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: #ffffff;
+        font-size: 0.9rem;
+        width: 280px;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #F57C00;
+        box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    /* Notification Button */
+    .notification-btn {
+        position: relative;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
-        font-weight: bold;
-        margin: 0 auto 20px;
-        backdrop-filter: blur(10px);
-        border: 3px solid rgba(255, 255, 255, 0.3);
     }
-    
-    .author-badge {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 8px 16px;
-        border-radius: 20px;
-        display: inline-block;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+
+    .notification-btn:hover {
+        border-color: #F57C00;
+        background: #FFF3E0;
+        transform: translateY(-2px);
     }
-    
-    .stat-card {
+
+    .notification-btn i {
+        font-size: 1.1rem;
+        color: #6b7280;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* User Profile */
+    .user-profile {
+        position: relative;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 1rem;
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        cursor: pointer;
         transition: all 0.3s ease;
-        border-radius: 16px;
+    }
+
+    .user-info:hover {
+        border-color: #F57C00;
+        background: #FFF3E0;
+        transform: translateY(-2px);
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #F57C00, #FF9800);
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .user-details {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #212529;
+        font-size: 0.9rem;
+        line-height: 1.2;
+    }
+
+    .user-role {
+        font-size: 0.75rem;
+        color: #6C757D;
+        line-height: 1.2;
+    }
+
+    .user-info i {
+        color: #6C757D;
+        font-size: 0.8rem;
+    }
+
+    /* Dropdown Menu */
+    .dropdown-menu {
         border: none;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        min-width: 200px;
+    }
+
+    .dropdown-item {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+    .dropdown-item:hover {
+        background: #FFF3E0;
+        color: #F57C00;
     }
     
-    .stat-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    /* Stats Cards */
+    .stats-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        border: 1px solid #DEE2E6;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #F57C00, #FF9800);
+    }
+
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+        border-color: #F57C00;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #1E73BE, #F57C00);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(13, 71, 161, 0.2);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #1E73BE, #0D47A1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #555555;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.875rem;
+    }
+
+    .chart-container {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(13, 71, 161, 0.1);
+        border: 1px solid #DDDDDD;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chart-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #1E73BE, #F57C00);
+    }
+
+    .chart-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0D47A1;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .filter-section {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #DDDDDD;
+        box-shadow: 0 4px 6px -1px rgba(13, 71, 161, 0.1);
+    }
+
+    .filter-title {
+        font-weight: 700;
+        color: #0D47A1;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .recent-transactions {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(13, 71, 161, 0.1);
+        border: 1px solid #DDDDDD;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .transaction-item {
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        border: 1px solid #E0E0E0;
+        background: #FFFFFF;
+    }
+
+    .transaction-item:hover {
+        background: #F5F5F5;
+        transform: translateX(4px);
+        box-shadow: 0 1px 3px 0 rgba(13, 71, 161, 0.1);
+    }
+
+    .transaction-amount {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .transaction-income {
+        color: #1E73BE;
+    }
+
+    .transaction-expense {
+        color: #F57C00;
     }
     
     .transaction-item {
@@ -76,30 +363,86 @@
     .author-icon {
         color: #3b82f6;
     }
+    
+    /* Sleek Rounded Table Header Design */
+    .table thead th {
+        background: linear-gradient(145deg, #ff6b35, #ff8c42) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+        font-size: 0.85rem !important;
+        padding: 1rem 1.5rem !important;
+        position: relative !important;
+        border-radius: 12px 12px 0 0 !important;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25) !important;
+        margin: 0 2px !important;
+    }
+    
+    .table thead th:first-child {
+        border-radius: 12px 0 0 0 !important;
+        margin-left: 0 !important;
+    }
+    
+    .table thead th:last-child {
+        border-radius: 0 12px 0 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    .table thead th::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)) !important;
+        border-radius: inherit !important;
+        pointer-events: none !important;
+    }
+    
+    .table thead th:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.35) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #fff8f5 !important;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Content Header -->
-
 <div class="content-header">
-    <h1 class="page-title">Dashboard Overview</h1>
+    <div class="welcome-section">
+        <h1 class="welcome-title">Welcome back, {{ user.name }}! 👋</h1>
+        <p class="welcome-subtitle">Here's what's happening with your finances today</p>
+    </div>
     <div class="header-actions">
-        <button class="search-btn" title="Search">
-            <i class="bi bi-search"></i>
-        </button>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search transactions...">
+            <i class="bi bi-search search-icon"></i>
+        </div>
         <button class="notification-btn" title="Notifications">
             <i class="bi bi-bell"></i>
+            <span class="notification-badge">3</span>
         </button>
         <div class="user-profile dropdown">
-            <div class="user-info" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+            <div class="user-info" data-bs-toggle="dropdown" aria-expanded="false">
                 <div class="user-avatar">{{ user.name|first|upper }}</div>
-                <div class="user-name">{{ user.name }}</div>
-                <i class="bi bi-chevron-down ms-2"></i>
+                <div class="user-details">
+                    <div class="user-name">{{ user.name }}</div>
+                    <div class="user-role">Personal Account</div>
+                </div>
+                <i class="bi bi-chevron-down"></i>
             </div>
-            <ul class="dropdown-menu dropdown-menu-end" style="z-index: 9999; min-width: 180px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
+            <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
                 <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-bell me-2"></i>Notifications</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
             </ul>
@@ -109,112 +452,104 @@
 
 <!-- Content Body -->
 <div class="content-body">
-    <!-- Welcome Message -->
-    <div class="card mb-4 fade-in-up welcome-card">
-        <div class="card-body text-center">
-            <div class="welcome-header">
-                <div class="user-avatar-large">{{ user.name|first|upper }}</div>
-                <h2 class="text-gradient mb-2">Welcome back, {{ user.name }}! 👋</h2>
-                <p class="text-muted mb-3">Here's your financial overview for today</p>
-                <div class="author-badge">
-                    <i class="bi bi-person-badge me-1"></i>
-                    <small class="text-muted">Account managed by {{ user.name }}</small>
-                </div>
-            </div>
-            {% if not total_income and not total_expenses %}
-            <div class="alert alert-info mt-4" role="alert">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Getting Started:</strong> Start by adding your first income or expense to see your financial data here!
-                <div class="mt-2">
-                    <button class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#addIncomeModal">
-                        <i class="bi bi-plus-circle me-1"></i>Add Income
-                    </button>
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
-                        <i class="bi bi-dash-circle me-1"></i>Add Expense
-                    </button>
-                </div>
-            </div>
-            {% endif %}
+    {% if not total_income and not total_expenses %}
+    <div class="alert alert-info mb-4" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Getting Started:</strong> Start by adding your first income or expense to see your financial data here!
+        <div class="mt-2">
+            <button class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#addIncomeModal">
+                <i class="bi bi-plus-circle me-1"></i>Add Income
+            </button>
+            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                <i class="bi bi-dash-circle me-1"></i>Add Expense
+            </button>
         </div>
     </div>
+    {% endif %}
 
     <!-- 1. Summary Cards -->
     <div class="stats-grid mb-4">
         <!-- Income Card -->
         <div class="stat-card income fade-in-up stagger-1">
-            <div class="stat-header">
-                <div class="stat-icon income">
+            <div class="card-body p-4">
+                <div class="stat-icon">
                     <i class="bi bi-graph-up"></i>
                 </div>
-                <div class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    {% if previous_income and previous_income > 0 %}
-                        {{ income_change_percent|floatformat:1 }}%
-                    {% else %}
-                        0.0%
-                    {% endif %}
+                <div class="stat-value">₹{{ total_income|default:"0" }}</div>
+                <div class="stat-label">Total Income</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-success me-2">
+                        <i class="bi bi-arrow-up me-1"></i>
+                        {% if previous_income and previous_income > 0 %}
+                            {{ income_change_percent|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">
+                        {% if previous_income %}
+                            vs ₹{{ previous_income }} last month
+                        {% else %}
+                            No previous data
+                        {% endif %}
+                    </small>
                 </div>
-            </div>
-            <div class="stat-value">₹{{ total_income|default:"0" }}</div>
-            <div class="stat-label">Total Income</div>
-            <div class="stat-comparison">
-                {% if previous_income %}
-                    Previous Month: ₹{{ previous_income }}
-                {% else %}
-                    No previous data
-                {% endif %}
             </div>
         </div>
 
         <!-- Expense Card -->
         <div class="stat-card expense fade-in-up stagger-2">
-            <div class="stat-header">
-                <div class="stat-icon expense">
+            <div class="card-body p-4">
+                <div class="stat-icon">
                     <i class="bi bi-bar-chart"></i>
                 </div>
-                <div class="stat-change negative">
-                    <i class="bi bi-arrow-down"></i>
-                    {% if previous_expenses and previous_expenses > 0 %}
-                        {{ expense_change_percent|floatformat:1 }}%
-                    {% else %}
-                        0.0%
-                    {% endif %}
+                <div class="stat-value">₹{{ total_expense|default:"0" }}</div>
+                <div class="stat-label">Total Expenses</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-warning me-2">
+                        <i class="bi bi-arrow-down me-1"></i>
+                        {% if previous_expenses and previous_expenses > 0 %}
+                            {{ expense_change_percent|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">
+                        {% if previous_expenses %}
+                            vs ₹{{ previous_expenses }} last month
+                        {% else %}
+                            No previous data
+                        {% endif %}
+                    </small>
                 </div>
-            </div>
-            <div class="stat-value">₹{{ total_expense|default:"0" }}</div>
-            <div class="stat-label">Total Expenses</div>
-            <div class="stat-comparison">
-                {% if previous_expenses %}
-                    Previous Month: ₹{{ previous_expenses }}
-                {% else %}
-                    No previous data
-                {% endif %}
             </div>
         </div>
 
         <!-- Balance Card -->
         <div class="stat-card balance fade-in-up stagger-3">
-            <div class="stat-header">
-                <div class="stat-icon balance">
+            <div class="card-body p-4">
+                <div class="stat-icon">
                     <i class="bi bi-cash-stack"></i>
                 </div>
-                <div class="stat-change {% if balance_change_percent >= 0 %}positive{% else %}negative{% endif %}">
-                    <i class="bi bi-arrow-{% if balance_change_percent >= 0 %}up{% else %}down{% endif %}"></i>
-                    {% if previous_balance and previous_balance > 0 %}
-                        {{ balance_change_percent|floatformat:1 }}%
-                    {% else %}
-                        0.0%
-                    {% endif %}
+                <div class="stat-value">₹{{ balance|default:"0" }}</div>
+                <div class="stat-label">Total Balance</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge {% if balance_change_percent >= 0 %}bg-success{% else %}bg-danger{% endif %} me-2">
+                        <i class="bi bi-arrow-{% if balance_change_percent >= 0 %}up{% else %}down{% endif %} me-1"></i>
+                        {% if previous_balance and previous_balance > 0 %}
+                            {{ balance_change_percent|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">
+                        {% if previous_balance %}
+                            vs ₹{{ previous_balance }} last month
+                        {% else %}
+                            No previous data
+                        {% endif %}
+                    </small>
                 </div>
-            </div>
-            <div class="stat-value">₹{{ balance|default:"0" }}</div>
-            <div class="stat-label">Total Balance</div>
-            <div class="stat-comparison">
-                {% if previous_balance %}
-                    Previous Month: ₹{{ previous_balance }}
-                {% else %}
-                    No previous data
-                {% endif %}
             </div>
         </div>
     </div>
@@ -505,16 +840,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         data.datasets[0] || {
                             label: 'Income',
                             data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderColor: '#ff6b35',
+                            backgroundColor: 'rgba(255, 107, 53, 0.1)',
                             tension: 0.4,
                             fill: true
                         },
                         data.datasets[1] || {
                             label: 'Expenses',
                             data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            borderColor: '#F97316',
-                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            borderColor: '#ff8c42',
+                            backgroundColor: 'rgba(255, 140, 66, 0.1)',
                             tension: 0.4,
                             fill: true
                         }
@@ -588,11 +923,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     datasets: [{
                         data: data.datasets[0]?.data || [25, 18, 35, 12, 10],
                         backgroundColor: [
-                            '#F97316',
-                            '#8B5CF6',
-                            '#EF4444',
-                            '#F59E0B',
-                            '#06B6D4'
+                            '#ff6b35',
+                            '#ff8c42',
+                            '#ffb894',
+                            '#e55a2b',
+                            '#ff9500'
                         ]
                     }]
                 },
@@ -648,8 +983,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     datasets: [{
                         label: 'Balance',
                         data: data.datasets[0]?.data || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: '#ff6b35',
+                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
                         tension: 0.4,
                         fill: true
                     }]

@@ -1,0 +1,51 @@
+<svg width="320" height="80" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Blue gradient for circle -->
+    <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Blue gradient for bars -->
+    <linearGradient id="barGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Orange gradient for arrow -->
+    <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ea580c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main logo group -->
+  <g transform="translate(10, 10)">
+    <!-- Blue circle -->
+    <circle cx="30" cy="30" r="25" fill="none" stroke="url(#circleGradient)" stroke-width="3"/>
+    
+    <!-- Chart bars inside circle -->
+    <g transform="translate(15, 15)">
+      <!-- Left bar (shortest) -->
+      <rect x="8" y="25" width="5" height="15" fill="url(#barGradient)" rx="2"/>
+      
+      <!-- Middle bar (medium) -->
+      <rect x="15" y="20" width="5" height="20" fill="url(#barGradient)" rx="2"/>
+      
+      <!-- Right bar (tallest) -->
+      <rect x="22" y="15" width="5" height="25" fill="url(#barGradient)" rx="2"/>
+    </g>
+    
+    <!-- Orange curved arrow -->
+    <g transform="translate(35, 15)">
+      <!-- Curved arrow path -->
+      <path d="M 5 25 Q 15 15 25 10" fill="none" stroke="url(#arrowGradient)" stroke-width="3" stroke-linecap="round"/>
+      
+      <!-- Arrow head -->
+      <polygon points="22,8 28,10 25,14" fill="url(#arrowGradient)"/>
+    </g>
+    
+    <!-- FINANCEFLOW text -->
+    <text x="75" y="38" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#1f2937" letter-spacing="0.5px">FINANCEFLOW</text>
+  </g>
+</svg>

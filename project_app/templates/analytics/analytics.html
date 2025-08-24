@@ -33,26 +33,28 @@
 <!-- Content Body -->
 <div class="content-body">
     <!-- Analytics Overview Cards -->
-    <div class="stats-grid mb-4">
-        <div class="stat-card income fade-in-up stagger-1">
-            <div class="stat-header">
-                <div class="stat-icon income">
-                    <i class="bi bi-graph-up"></i>
-                </div>
-                <div class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    {% if total_income and previous_income and previous_income > 0 %}
-                        {{ total_income|percentage_change:previous_income|floatformat:1 }}%
-                    {% else %}
-                        0.0%
-                    {% endif %}
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4 col-md-6">
+            <div class="stat-card fade-in-up">
+                <div class="card-body p-4">
+                    <div class="stat-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="stat-value">₹{{ total_income|default:"0" }}</div>
+                    <div class="stat-label">Total Income</div>
+                    <div class="d-flex align-items-center mt-2">
+                        <span class="badge bg-success me-2">
+                            <i class="bi bi-arrow-up me-1"></i>
+                            {% if total_income and previous_income and previous_income > 0 %}
+                                {{ total_income|percentage_change:previous_income|floatformat:1 }}%
+                            {% else %}
+                                New
+                            {% endif %}
+                        </span>
+                        <small class="text-muted">vs last month</small>
+                    </div>
                 </div>
             </div>
-            <div class="stat-value">₹{{ total_income|default:"0" }}</div>
-            <div class="stat-label">Total Income</div>
-            <div class="stat-comparison">
-                {% if total_income and previous_income %}
-                    {% if total_income > previous_income %}+{% endif %}₹{{ total_income|subtract:previous_income }} vs last month
                 {% else %}
                     No previous data
                 {% endif %}
