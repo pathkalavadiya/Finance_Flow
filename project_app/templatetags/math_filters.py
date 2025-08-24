@@ -22,6 +22,14 @@ def multiply(value, arg):
         return value
 
 @register.filter
+def mul(value, arg):
+    """Multiply the value by the argument (alias for multiply)"""
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return value
+
+@register.filter
 def divide(value, arg):
     """Divide the value by the argument"""
     try:

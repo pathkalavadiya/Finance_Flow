@@ -22,9 +22,15 @@ class Expense(models.Model):
     currency = models.CharField(max_length=10)
     category = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
+    # updated_at = models.DateTimeField(auto_now=True)
+    # created_by = models.ForeignKey(Registration, on_delete=models.CASCADE, related_name='created_expenses', null=True, blank=True)
 
     def __str__(self):
         return f"{self.amount} {self.currency} - {self.category}"
+
+    @property
+    def author_name(self):
+        return self.user.name if self.user else "Unknown"
 
 class Income(models.Model):
     user = models.ForeignKey(Registration, on_delete=models.CASCADE, null=True, blank=True)
@@ -34,9 +40,15 @@ class Income(models.Model):
     currency = models.CharField(max_length=10)
     category = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
+    # updated_at = models.DateTimeField(auto_now=True)
+    # created_by = models.ForeignKey(Registration, on_delete=models.CASCADE, related_name='created_incomes', null=True, blank=True)
 
     def __str__(self):
         return f"{self.amount} {self.currency} - {self.category}"
+    
+    @property
+    def author_name(self):
+        return self.user.name if self.user else "Unknown"
 
 
 # Group Split Money Models

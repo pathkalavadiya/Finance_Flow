@@ -1,10 +1,18 @@
 import csv
 import json
-from django.shortcuts import render, redirect, redirect
-from django.db.models import Sum, Count
+from django.contrib import messages
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator
+from django.db.models import Sum, Q
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum, Count, Value, CharField
+from django.db.models.functions import TruncMonth
 from .models import Registration, Expense, Income, Group, GroupMember, GroupExpense, GroupExpenseSplit
-from django.http import HttpResponse, JsonResponse
-from django.db.models.functions import TruncMonth, TruncWeek, TruncYear
+from itertools import chain
+from operator import attrgetter
 from django.views.decorators.csrf import ensure_csrf_cookie
 from datetime import datetime, date, timedelta
 from functools import wraps
@@ -142,6 +150,7 @@ def dashboard(request):
     monthly_transactions = 0
     monthly_income = 0
     monthly_expense = 0
+    recent_transactions = []
     
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
@@ -335,6 +344,34 @@ def dashboard(request):
             today_sales_percentage = min(int((today_sales / today_planned_sales) * 100), 100) if today_planned_sales > 0 else 0
             week_sales_percentage = min(int((week_sales / week_planned_sales) * 100), 100) if week_planned_sales > 0 else 0
             month_sales_percentage = min(int((month_sales / month_planned_sales) * 100), 100) if month_planned_sales > 0 else 0
+            
+            # Get recent transactions (last 10)
+            recent_income = Income.objects.filter(user=user).order_by('-created_at')[:5]
+            recent_expense = Expense.objects.filter(user=user).order_by('-created_at')[:5]
+            
+            # Combine and sort recent transactions
+            recent_transactions = []
+            
+            for income in recent_income:
+                recent_transactions.append({
+                    'description': income.description,
+                    'category': income.category,
+                    'amount': income.amount,
+                    'date': income.created_at.strftime('%Y-%m-%d'),
+                    'type': 'income'
+                })
+            
+            for expense in recent_expense:
+                recent_transactions.append({
+                    'description': expense.description,
+                    'category': expense.category,
+                    'amount': expense.amount,
+                    'date': expense.created_at.strftime('%Y-%m-%d'),
+                    'type': 'expense'
+                })
+            
+            # Sort by date (most recent first) and limit to 10
+            recent_transactions = sorted(recent_transactions, key=lambda x: x['date'], reverse=True)[:10]
     
     context = {
             'user': user,
@@ -380,7 +417,8 @@ def dashboard(request):
             'weekly_expense': weekly_expense,
             'monthly_transactions': monthly_transactions,
             'monthly_income': monthly_income,
-            'monthly_expense': monthly_expense
+            'monthly_expense': monthly_expense,
+            'recent_transactions': recent_transactions
         }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -450,6 +488,41 @@ def expense(request):
 
 
 @login_required
+def transaction_history(request):
+    user = None
+    transactions = []
+    
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+        
+        if user:
+            # Get all income and expense records
+            incomes = Income.objects.filter(user=user).annotate(
+                type=Value('income', output_field=CharField())
+            ).values('id', 'amount', 'description', 'date', 'category', 'created_at', 'type', 'user__name')
+            
+            expenses = Expense.objects.filter(user=user).annotate(
+                type=Value('expense', output_field=CharField())
+            ).values('id', 'amount', 'description', 'date', 'category', 'created_at', 'type', 'user__name')
+            
+            # Combine and sort by date
+            all_transactions = list(chain(incomes, expenses))
+            
+            # Add author_name field and sort by created_at
+            for transaction in all_transactions:
+                transaction['author_name'] = transaction.get('user__name', user.name)
+            
+            transactions = sorted(all_transactions, key=lambda x: x['created_at'], reverse=True)
+    
+    context = {
+        'user': user,
+        'transactions': transactions
+    }
+    
+    return render(request, 'transactions/history.html', context)
+
+
+@login_required
 def income(request):
     user = None
     if 'entry_email' in request.session:
@@ -516,14 +589,33 @@ def income(request):
 @login_required
 def profile(request):
     user = None
+    total_income = 0
+    total_expenses = 0
+    net_balance = 0
+    
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
-    return render(request, 'user/profile.html', {'user': user})
-
-
-
-
-
+        
+        if user:
+            # Calculate total income
+            income_sum = Income.objects.filter(user=user).aggregate(total=Sum('amount'))
+            total_income = income_sum['total'] or 0
+            
+            # Calculate total expenses
+            expense_sum = Expense.objects.filter(user=user).aggregate(total=Sum('amount'))
+            total_expenses = expense_sum['total'] or 0
+            
+            # Calculate net balance
+            net_balance = total_income - total_expenses
+    
+    context = {
+        'user': user,
+        'total_income': total_income,
+        'total_expenses': total_expenses,
+        'net_balance': net_balance
+    }
+    
+    return render(request, 'user/profile.html', context)
 
 
 
@@ -700,6 +792,8 @@ def generate_report(request):
                 ])
         
         return response
+
+
     
     elif format_type == 'PDF':
         # For PDF, we'll redirect to a formatted view that can be printed
@@ -752,6 +846,8 @@ def export_report(request):
         ])
 
     return response
+
+
 
 
 @login_required
@@ -835,6 +931,47 @@ def analytics(request):
     avg_monthly_income = total_income / 12 if total_income > 0 else 0
     avg_monthly_expense = total_expense / 12 if total_expense > 0 else 0
     
+    # Daily data (last 7 days)
+    today = datetime.now().date()
+    daily_income = []
+    daily_expense = []
+    
+    for i in range(7):
+        day = today - timedelta(days=6-i)
+        day_income = Income.objects.filter(
+            user=user,
+            created_at__date=day
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        day_expense = Expense.objects.filter(
+            user=user,
+            created_at__date=day
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        daily_income.append(float(day_income))
+        daily_expense.append(float(day_expense))
+    
+    # Weekly data (last 4 weeks)
+    weekly_income = []
+    weekly_expense = []
+    
+    for i in range(4):
+        week_end = today - timedelta(days=7*i)
+        week_start = week_end - timedelta(days=6)
+        
+        week_income = Income.objects.filter(
+            user=user,
+            created_at__date__range=[week_start, week_end]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        week_expense = Expense.objects.filter(
+            user=user,
+            created_at__date__range=[week_start, week_end]
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        weekly_income.insert(0, float(week_income))
+        weekly_expense.insert(0, float(week_expense))
+
     # Convert Decimal objects to float for JSON serialization
     expense_categories_for_json = []
     for category in expense_categories:
@@ -854,6 +991,10 @@ def analytics(request):
         'user': user,
         'monthly_income': list(monthly_income),
         'monthly_expense': list(monthly_expense),
+        'daily_income': daily_income,
+        'daily_expense': daily_expense,
+        'weekly_income': weekly_income,
+        'weekly_expense': weekly_expense,
         'income_categories': list(income_categories),
         'expense_categories': list(expense_categories),
         'recent_income': recent_income,
@@ -870,6 +1011,10 @@ def analytics(request):
         'avg_monthly_expense': avg_monthly_expense,
         'expense_categories_json': json.dumps(expense_categories_for_json),
         'income_categories_json': json.dumps(income_categories_for_json),
+        'daily_income_json': json.dumps(daily_income),
+        'daily_expense_json': json.dumps(daily_expense),
+        'weekly_income_json': json.dumps(weekly_income),
+        'weekly_expense_json': json.dumps(weekly_expense),
     }
     
     return render(request, 'analytics/analytics.html', context)
@@ -997,6 +1142,150 @@ def chart_data(request):
         return JsonResponse({
             'labels': [item['category'] for item in spending_categories],
             'data': [float(item['total']) for item in spending_categories]
+        })
+    
+    elif chart_type == 'filtered':
+        # Handle filtered dashboard data
+        date_range = request.GET.get('date_range', 'all')
+        category = request.GET.get('category', 'all')
+        amount_range = request.GET.get('amount_range', 'all')
+        
+        # Build filters
+        income_filters = {'user': user}
+        expense_filters = {'user': user}
+        
+        # Apply date range filter
+        current_date = datetime.now()
+        if date_range == 'today':
+            start_date = current_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            end_date = start_date + timedelta(days=1)
+            income_filters['created_at__gte'] = start_date
+            income_filters['created_at__lt'] = end_date
+            expense_filters['created_at__gte'] = start_date
+            expense_filters['created_at__lt'] = end_date
+        elif date_range == 'this_week':
+            start_date = current_date - timedelta(days=current_date.weekday())
+            start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            end_date = start_date + timedelta(days=7)
+            income_filters['created_at__gte'] = start_date
+            income_filters['created_at__lt'] = end_date
+            expense_filters['created_at__gte'] = start_date
+            expense_filters['created_at__lt'] = end_date
+        elif date_range == 'this_month':
+            start_date = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            if current_date.month == 12:
+                end_date = start_date.replace(year=current_date.year + 1, month=1)
+            else:
+                end_date = start_date.replace(month=current_date.month + 1)
+            income_filters['created_at__gte'] = start_date
+            income_filters['created_at__lt'] = end_date
+            expense_filters['created_at__gte'] = start_date
+            expense_filters['created_at__lt'] = end_date
+        elif date_range == 'last_3_months':
+            end_date = current_date
+            start_date = current_date - timedelta(days=90)
+            income_filters['created_at__gte'] = start_date
+            income_filters['created_at__lte'] = end_date
+            expense_filters['created_at__gte'] = start_date
+            expense_filters['created_at__lte'] = end_date
+        
+        # Apply category filter
+        if category != 'all':
+            income_filters['category'] = category
+            expense_filters['category'] = category
+        
+        # Get filtered data
+        filtered_income = Income.objects.filter(**income_filters)
+        filtered_expense = Expense.objects.filter(**expense_filters)
+        
+        # Apply amount range filter
+        if amount_range != 'all':
+            if amount_range == '0-1000':
+                filtered_income = filtered_income.filter(amount__gte=0, amount__lte=1000)
+                filtered_expense = filtered_expense.filter(amount__gte=0, amount__lte=1000)
+            elif amount_range == '1000-5000':
+                filtered_income = filtered_income.filter(amount__gt=1000, amount__lte=5000)
+                filtered_expense = filtered_expense.filter(amount__gt=1000, amount__lte=5000)
+            elif amount_range == '5000-10000':
+                filtered_income = filtered_income.filter(amount__gt=5000, amount__lte=10000)
+                filtered_expense = filtered_expense.filter(amount__gt=5000, amount__lte=10000)
+            elif amount_range == '10000+':
+                filtered_income = filtered_income.filter(amount__gt=10000)
+                filtered_expense = filtered_expense.filter(amount__gt=10000)
+        
+        # Calculate transaction counts
+        today_income_count = filtered_income.filter(created_at__date=current_date.date()).count()
+        today_expense_count = filtered_expense.filter(created_at__date=current_date.date()).count()
+        today_income_sum = filtered_income.filter(created_at__date=current_date.date()).aggregate(total=Sum('amount'))['total'] or 0
+        today_expense_sum = filtered_expense.filter(created_at__date=current_date.date()).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Weekly data
+        week_start = current_date - timedelta(days=current_date.weekday())
+        week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_end = week_start + timedelta(days=7)
+        
+        weekly_income_count = filtered_income.filter(created_at__gte=week_start, created_at__lt=week_end).count()
+        weekly_expense_count = filtered_expense.filter(created_at__gte=week_start, created_at__lt=week_end).count()
+        weekly_income_sum = filtered_income.filter(created_at__gte=week_start, created_at__lt=week_end).aggregate(total=Sum('amount'))['total'] or 0
+        weekly_expense_sum = filtered_expense.filter(created_at__gte=week_start, created_at__lt=week_end).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Monthly data
+        month_start = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if current_date.month == 12:
+            month_end = month_start.replace(year=current_date.year + 1, month=1)
+        else:
+            month_end = month_start.replace(month=current_date.month + 1)
+            
+        monthly_income_count = filtered_income.filter(created_at__gte=month_start, created_at__lt=month_end).count()
+        monthly_expense_count = filtered_expense.filter(created_at__gte=month_start, created_at__lt=month_end).count()
+        monthly_income_sum = filtered_income.filter(created_at__gte=month_start, created_at__lt=month_end).aggregate(total=Sum('amount'))['total'] or 0
+        monthly_expense_sum = filtered_expense.filter(created_at__gte=month_start, created_at__lt=month_end).aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Get recent transactions
+        recent_income = filtered_income.order_by('-created_at')[:5]
+        recent_expense = filtered_expense.order_by('-created_at')[:5]
+        
+        recent_transactions = []
+        for income in recent_income:
+            recent_transactions.append({
+                'description': income.description,
+                'category': income.category,
+                'amount': float(income.amount),
+                'date': income.created_at.strftime('%Y-%m-%d'),
+                'type': 'income'
+            })
+        
+        for expense in recent_expense:
+            recent_transactions.append({
+                'description': expense.description,
+                'category': expense.category,
+                'amount': float(expense.amount),
+                'date': expense.created_at.strftime('%Y-%m-%d'),
+                'type': 'expense'
+            })
+        
+        # Sort by date (most recent first) and limit to 10
+        recent_transactions = sorted(recent_transactions, key=lambda x: x['date'], reverse=True)[:10]
+        
+        return JsonResponse({
+            'transaction_counts': {
+                'today': {
+                    'total': today_income_count + today_expense_count,
+                    'income': float(today_income_sum),
+                    'expense': float(today_expense_sum)
+                },
+                'weekly': {
+                    'total': weekly_income_count + weekly_expense_count,
+                    'income': float(weekly_income_sum),
+                    'expense': float(weekly_expense_sum)
+                },
+                'monthly': {
+                    'total': monthly_income_count + monthly_expense_count,
+                    'income': float(monthly_income_sum),
+                    'expense': float(monthly_expense_sum)
+                }
+            },
+            'recent_transactions': recent_transactions
         })
     
     return JsonResponse({'error': 'Invalid chart type'}, status=400)
@@ -1433,6 +1722,129 @@ def delete_group(request, group_id):
         return redirect('groups')
 
 
+@login_required
+def generate_custom_report(request):
+    """Generate custom reports based on user filters"""
+    if request.method == 'POST':
+        user = None
+        if 'entry_email' in request.session:
+            user = Registration.objects.filter(email=request.session['entry_email']).first()
+        
+        if not user:
+            return redirect('login')
+        
+        # Get form data
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        category = request.POST.get('category', 'All')
+        transaction_type = request.POST.get('type', 'All')
+        amount_range = request.POST.get('amount_range', 'All')
+        sort_by = request.POST.get('sort_by', 'date_desc')
+        group_by = request.POST.get('group_by', 'None')
+        export_format = request.POST.get('export_format', 'PDF')
+        
+        # Build query filters
+        income_filters = {'user': user}
+        expense_filters = {'user': user}
+        
+        if start_date:
+            income_filters['created_at__gte'] = start_date
+            expense_filters['created_at__gte'] = start_date
+        
+        if end_date:
+            income_filters['created_at__lte'] = end_date
+            expense_filters['created_at__lte'] = end_date
+        
+        if category != 'All':
+            income_filters['category'] = category
+            expense_filters['category'] = category
+        
+        # Get transactions based on type
+        transactions = []
+        
+        if transaction_type in ['All', 'Income']:
+            income_data = Income.objects.filter(**income_filters).values(
+                'amount', 'category', 'description', 'created_at'
+            ).annotate(type=Value('Income', output_field=CharField()))
+            transactions.extend(list(income_data))
+        
+        if transaction_type in ['All', 'Expense']:
+            expense_data = Expense.objects.filter(**expense_filters).values(
+                'amount', 'category', 'description', 'created_at'
+            ).annotate(type=Value('Expense', output_field=CharField()))
+            transactions.extend(list(expense_data))
+        
+        # Apply amount range filter
+        if amount_range != 'All':
+            if amount_range == '0-1000':
+                transactions = [t for t in transactions if 0 <= float(t['amount']) <= 1000]
+            elif amount_range == '1000-5000':
+                transactions = [t for t in transactions if 1000 < float(t['amount']) <= 5000]
+            elif amount_range == '5000-10000':
+                transactions = [t for t in transactions if 5000 < float(t['amount']) <= 10000]
+            elif amount_range == '10000+':
+                transactions = [t for t in transactions if float(t['amount']) > 10000]
+        
+        # Sort transactions
+        if sort_by == 'date_desc':
+            transactions.sort(key=lambda x: x['created_at'], reverse=True)
+        elif sort_by == 'date_asc':
+            transactions.sort(key=lambda x: x['created_at'])
+        elif sort_by == 'amount_desc':
+            transactions.sort(key=lambda x: float(x['amount']), reverse=True)
+        elif sort_by == 'amount_asc':
+            transactions.sort(key=lambda x: float(x['amount']))
+        elif sort_by == 'category':
+            transactions.sort(key=lambda x: x['category'])
+        
+        # Generate report based on format
+        if export_format == 'CSV':
+            return generate_csv_report(transactions, f"Custom_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+        elif export_format == 'JSON':
+            return generate_json_report(transactions, f"Custom_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+        else:
+            # Default to existing generate_report functionality
+            return generate_report(request)
+    
+    return redirect('reports')
+
+
+def generate_csv_report(transactions, filename):
+    """Generate CSV report from transactions data"""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Date', 'Type', 'Category', 'Description', 'Amount'])
+    
+    for transaction in transactions:
+        writer.writerow([
+            transaction['created_at'].strftime('%Y-%m-%d %H:%M'),
+            transaction['type'],
+            transaction['category'],
+            transaction['description'],
+            f"₹{transaction['amount']}"
+        ])
+    
+    return response
+
+
+
+
+def generate_json_report(transactions, filename):
+    """Generate JSON report from transactions data"""
+    # Convert datetime objects to strings for JSON serialization
+    for transaction in transactions:
+        transaction['created_at'] = transaction['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+        transaction['amount'] = str(transaction['amount'])
+    
+    response = HttpResponse(
+        json.dumps(transactions, indent=2),
+        content_type='application/json'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}.json"'
+    
+    return response
 
 
 

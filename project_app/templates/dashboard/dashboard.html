@@ -2,6 +2,83 @@
 
 {% block title %}Dashboard - Finance Flow{% endblock %}
 
+{% block extra_css %}
+<style>
+    .welcome-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    }
+    
+    .welcome-header {
+        padding: 20px 0;
+    }
+    
+    .user-avatar-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0 auto 20px;
+        backdrop-filter: blur(10px);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .author-badge {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-block;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-card {
+        transition: all 0.3s ease;
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .transaction-item {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .transaction-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .transaction-author {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 5px;
+    }
+    
+    .author-icon {
+        color: #3b82f6;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Content Header -->
 
@@ -14,9 +91,18 @@
         <button class="notification-btn" title="Notifications">
             <i class="bi bi-bell"></i>
         </button>
-        <div class="user-profile">
-            <div class="user-avatar">{{ user.name|first|upper }}</div>
-            <div class="user-name">{{ user.name }}</div>
+        <div class="user-profile dropdown">
+            <div class="user-info" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                <div class="user-avatar">{{ user.name|first|upper }}</div>
+                <div class="user-name">{{ user.name }}</div>
+                <i class="bi bi-chevron-down ms-2"></i>
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end" style="z-index: 9999; min-width: 180px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
+                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            </ul>
         </div>
     </div>
 </div>
@@ -24,14 +110,29 @@
 <!-- Content Body -->
 <div class="content-body">
     <!-- Welcome Message -->
-    <div class="card mb-4 fade-in-up">
+    <div class="card mb-4 fade-in-up welcome-card">
         <div class="card-body text-center">
-            <h2 class="text-gradient mb-3">Welcome back, {{ user.name }}! 👋</h2>
-            <p class="text-muted">Here's your financial overview for today</p>
+            <div class="welcome-header">
+                <div class="user-avatar-large">{{ user.name|first|upper }}</div>
+                <h2 class="text-gradient mb-2">Welcome back, {{ user.name }}! 👋</h2>
+                <p class="text-muted mb-3">Here's your financial overview for today</p>
+                <div class="author-badge">
+                    <i class="bi bi-person-badge me-1"></i>
+                    <small class="text-muted">Account managed by {{ user.name }}</small>
+                </div>
+            </div>
             {% if not total_income and not total_expenses %}
-            <div class="alert alert-info mt-3" role="alert">
+            <div class="alert alert-info mt-4" role="alert">
                 <i class="bi bi-info-circle me-2"></i>
                 <strong>Getting Started:</strong> Start by adding your first income or expense to see your financial data here!
+                <div class="mt-2">
+                    <button class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#addIncomeModal">
+                        <i class="bi bi-plus-circle me-1"></i>Add Income
+                    </button>
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                        <i class="bi bi-dash-circle me-1"></i>Add Expense
+                    </button>
+                </div>
             </div>
             {% endif %}
         </div>
@@ -303,34 +404,38 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Date Range</label>
-                            <select class="form-select">
-                                <option>Today</option>
-                                <option>This Week</option>
-                                <option>This Month</option>
-                                <option>Last 3 Months</option>
-                                <option>Custom Range</option>
+                            <select class="form-select" id="dateRangeFilter" onchange="applyFilters()">
+                                <option value="today">Today</option>
+                                <option value="this_week" selected>This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="last_3_months">Last 3 Months</option>
+                                <option value="custom">Custom Range</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Category</label>
-                            <select class="form-select">
-                                <option>All Categories</option>
-                                <option>Food</option>
-                                <option>Transport</option>
-                                <option>Housing</option>
-                                <option>Entertainment</option>
-                                <option>Salary</option>
-                                <option>Freelance</option>
+                            <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                                <option value="all">All Categories</option>
+                                <option value="Food">Food</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Housing" selected>Housing</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Freelance">Freelance</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Education">Education</option>
+                                <option value="Utilities">Utilities</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Amount Range</label>
-                            <select class="form-select">
-                                <option>All Amounts</option>
-                                <option>₹0 - ₹1,000</option>
-                                <option>₹1,000 - ₹5,000</option>
-                                <option>₹5,000 - ₹10,000</option>
-                                <option>₹10,000+</option>
+                            <select class="form-select" id="amountRangeFilter" onchange="applyFilters()">
+                                <option value="all" selected>All Amounts</option>
+                                <option value="0-1000">₹0 - ₹1,000</option>
+                                <option value="1000-5000">₹1,000 - ₹5,000</option>
+                                <option value="5000-10000">₹5,000 - ₹10,000</option>
+                                <option value="10000+">₹10,000+</option>
                             </select>
                         </div>
                     </div>
@@ -578,5 +683,158 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 });
+
+// Filter functionality
+function applyFilters() {
+    const dateRange = document.getElementById('dateRangeFilter').value;
+    const category = document.getElementById('categoryFilter').value;
+    const amountRange = document.getElementById('amountRangeFilter').value;
+    
+    console.log('Applying filters:', { dateRange, category, amountRange });
+    
+    // Show loading state
+    showFilterLoading(true);
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (dateRange !== 'all') params.append('date_range', dateRange);
+    if (category !== 'all') params.append('category', category);
+    if (amountRange !== 'all') params.append('amount_range', amountRange);
+    
+    // Fetch filtered data
+    fetch(`{% url "chart_data" %}?type=filtered&${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            updateDashboardWithFilteredData(data);
+            showFilterLoading(false);
+        })
+        .catch(error => {
+            console.error('Error applying filters:', error);
+            showFilterLoading(false);
+            // Show user-friendly error message
+            showFilterError('Unable to apply filters. Please try again.');
+        });
+}
+
+function updateDashboardWithFilteredData(data) {
+    // Update transaction counts if provided
+    if (data.transaction_counts) {
+        updateTransactionCards(data.transaction_counts);
+    }
+    
+    // Update charts with filtered data
+    if (data.chart_data) {
+        updateChartsWithFilteredData(data.chart_data);
+    }
+    
+    // Update recent transactions table
+    if (data.recent_transactions) {
+        updateRecentTransactionsTable(data.recent_transactions);
+    }
+}
+
+function updateTransactionCards(counts) {
+    // Update today's transactions
+    if (counts.today) {
+        document.querySelector('.col-lg-4:nth-child(1) .display-6').textContent = counts.today.total || '0';
+        document.querySelector('.col-lg-4:nth-child(1) .badge.bg-success').textContent = `Income: ₹${counts.today.income || '0'}`;
+        document.querySelector('.col-lg-4:nth-child(1) .badge.bg-warning').textContent = `Expense: ₹${counts.today.expense || '0'}`;
+    }
+    
+    // Update weekly transactions
+    if (counts.weekly) {
+        document.querySelector('.col-lg-4:nth-child(2) .display-6').textContent = counts.weekly.total || '0';
+        document.querySelector('.col-lg-4:nth-child(2) .badge.bg-success').textContent = `Income: ₹${counts.weekly.income || '0'}`;
+        document.querySelector('.col-lg-4:nth-child(2) .badge.bg-warning').textContent = `Expense: ₹${counts.weekly.expense || '0'}`;
+    }
+    
+    // Update monthly transactions
+    if (counts.monthly) {
+        document.querySelector('.col-lg-4:nth-child(3) .display-6').textContent = counts.monthly.total || '0';
+        document.querySelector('.col-lg-4:nth-child(3) .badge.bg-success').textContent = `Income: ₹${counts.monthly.income || '0'}`;
+        document.querySelector('.col-lg-4:nth-child(3) .badge.bg-warning').textContent = `Expense: ₹${counts.monthly.expense || '0'}`;
+    }
+}
+
+function updateChartsWithFilteredData(chartData) {
+    // This would require recreating the charts with new data
+    // For now, we'll just log the data - full implementation would recreate charts
+    console.log('Chart data received:', chartData);
+}
+
+function updateRecentTransactionsTable(transactions) {
+    const tbody = document.querySelector('.table tbody');
+    
+    if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                        <h6>No transactions found</h6>
+                        <p class="mb-3">No transactions match the selected filters.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = transactions.map((transaction, index) => `
+        <tr class="slide-in-left stagger-${index + 1}">
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-3" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                        ${transaction.type === 'income' ? '💰' : '🛒'}
+                    </div>
+                    <div>
+                        <div class="fw-semibold">${transaction.description}</div>
+                        <small class="text-muted">${transaction.category}</small>
+                    </div>
+                </div>
+            </td>
+            <td><span class="badge ${transaction.type === 'income' ? 'bg-success' : 'bg-warning'}">${transaction.category}</span></td>
+            <td class="${transaction.type === 'income' ? 'text-success' : 'text-danger'} fw-bold">
+                ${transaction.type === 'income' ? '+' : '-'}₹${transaction.amount}
+            </td>
+            <td>${transaction.date}</td>
+            <td><span class="badge ${transaction.type === 'income' ? 'bg-success' : 'bg-warning'}">
+                ${transaction.type === 'income' ? 'Income' : 'Expense'}
+            </span></td>
+        </tr>
+    `).join('');
+}
+
+function showFilterLoading(show) {
+    const filters = document.querySelectorAll('#dateRangeFilter, #categoryFilter, #amountRangeFilter');
+    filters.forEach(filter => {
+        filter.disabled = show;
+    });
+    
+    if (show) {
+        // Add loading spinner or indicator
+        console.log('Applying filters...');
+    }
+}
+
+function showFilterError(message) {
+    // Create a temporary alert
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alert);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.parentNode.removeChild(alert);
+        }
+    }, 5000);
+}
 </script>
 {% endblock %}

@@ -122,6 +122,10 @@
                         <i class="bi bi-people"></i>
                         <span>Groups</span>
                     </a>
+                    <a href="{% url 'transaction_history' %}" class="nav-item {% if request.resolver_match.url_name == 'transaction_history' %}active{% endif %}">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Transaction History</span>
+                    </a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">Analytics</div>
@@ -452,5 +456,83 @@
             </div>
         </div>
     </div>
+
+    <!-- Author Attribution Footer -->
+    {% if request.resolver_match.url_name != 'landing' %}
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <span class="footer-text">© 2024 FinanceFlow</span>
+                <span class="footer-separator">•</span>
+                <span class="footer-author">
+                    <i class="bi bi-code-slash me-1"></i>
+                    Developed by <strong>Path Kalavadiya</strong>
+                </span>
+            </div>
+            <div class="footer-right">
+                <span class="footer-version">v2.1.0</span>
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+
+    <style>
+        .app-footer {
+            position: fixed;
+            bottom: 0;
+            left: 280px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 8px 20px;
+            z-index: 1000;
+            font-size: 0.85rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-text, .footer-author {
+            color: #6b7280;
+        }
+        
+        .footer-author strong {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .footer-separator {
+            color: #d1d5db;
+        }
+        
+        .footer-version {
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+        
+        .main-content {
+            padding-bottom: 50px;
+        }
+        
+        @media (max-width: 768px) {
+            .app-footer {
+                left: 0;
+            }
+            .footer-content {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
 </body>
 </html>

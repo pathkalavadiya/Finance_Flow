@@ -35,6 +35,35 @@ body {
     align-items: center;
 }
 
+/* Trust Badges */
+.trust-badges {
+    margin: 1.5rem 0;
+}
+
+.trust-badge {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 25px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.trust-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.4);
+}
+
+.trust-badge i {
+    color: #667eea;
+}
+
 /* Hero Logo Styling */
 .hero-logo {
     margin-bottom: 2rem;
@@ -47,6 +76,116 @@ body {
     transition: all 0.3s ease;
     border-radius: 20px;
     border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* CTA Section Enhancements */
+.cta-buttons {
+    margin-bottom: 2rem;
+}
+
+.btn-outline-light {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.cta-trust {
+    opacity: 0.9;
+}
+
+.trust-item {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+}
+
+.trust-item i {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Footer Enhancements */
+.newsletter-signup {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.newsletter-signup h6 {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.newsletter-signup .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.newsletter-signup .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.newsletter-signup .form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    color: white;
+}
+
+.trust-badge-footer {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.trust-badge-footer:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.trust-badge-footer i {
+    color: #4ECDC4;
+}
+
+.footer-links li a {
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.footer-links li a:hover {
+    color: #4ECDC4;
+    transform: translateX(5px);
+}
+
+.footer-links li a i {
+    color: #667eea;
+    transition: color 0.3s ease;
+}
+
+.footer-links li a:hover i {
+    color: #4ECDC4;
 }
 
 .hero-logo-img:hover {

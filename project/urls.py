@@ -22,8 +22,9 @@ from project_app.views import expense
 from project_app.views import profile
 from project_app.views import income
 from project_app.views import logout
+from project_app.views import transaction_history
 
-from project_app.views import reports, export_report, generate_report
+from project_app.views import reports, export_report, generate_report, generate_custom_report
 from project_app.views import analytics, chart_data
 from project_app.views import landing
 
@@ -43,10 +44,12 @@ urlpatterns = [
     path('expense/', expense, name='expense'),
     path('profile/', profile, name='profile'),
     path('income/', income, name='income'),
+    path('transactions/', transaction_history, name='transaction_history'),
 
     path('reports/', reports, name='reports'),
     path('export-report/', export_report, name='export_report'),
     path('generate-report/', generate_report, name='generate_report'),
+    path('generate-custom-report/', generate_custom_report, name='generate_custom_report'),
     path('analytics/', analytics, name='analytics'),
     path('chart-data/', chart_data, name='chart_data'),
     
