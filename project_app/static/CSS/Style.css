@@ -1,3 +1,13 @@
+/* ===== CSS VARIABLES FOR BOOTSTRAP THEME ===== */
+:root {
+  --primary-color: #007bff;
+  --primary-dark: #0056b3;
+  --text-primary: #6c757d;
+  --warning-color: #ffc107;
+  --radius-lg: 0.5rem;
+  --shadow-md: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
 * {
   margin: 0;
   padding: 0;

@@ -5,8 +5,11 @@
 
 {% block content %}
 <!-- Content Header -->
-<div class="content-header">
-    <h1 class="page-title">Analytics Dashboard</h1>
+<div class="content-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title mb-1">Analytics Dashboard</h1>
+        <p class="text-muted mb-0">Comprehensive financial insights and analysis</p>
+    </div>
     <div class="header-actions">
         <button class="search-btn" title="Search">
             <i class="bi bi-search"></i>
@@ -15,10 +18,10 @@
             <i class="bi bi-bell"></i>
         </button>
         <div class="user-profile dropdown">
-            <div class="user-info" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                <div class="user-avatar">{{ user.name|first|upper }}</div>
-                <div class="user-name">{{ user.name }}</div>
-                <i class="bi bi-chevron-down ms-2"></i>
+            <div class="user-info d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                <div class="user-avatar me-2">{{ user.name|first|upper }}</div>
+                <div class="user-name me-1">{{ user.name }}</div>
+                <i class="bi bi-chevron-down"></i>
             </div>
             <ul class="dropdown-menu dropdown-menu-end" style="z-index: 9999; min-width: 180px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
                 <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -33,112 +36,96 @@
 <!-- Content Body -->
 <div class="content-body">
     <!-- Analytics Overview Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-4 col-md-6">
-            <div class="stat-card fade-in-up">
-                <div class="card-body p-4">
-                    <div class="stat-icon">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
-                    <div class="stat-value">₹{{ total_income|default:"0" }}</div>
-                    <div class="stat-label">Total Income</div>
-                    <div class="d-flex align-items-center mt-2">
-                        <span class="badge bg-success me-2">
-                            <i class="bi bi-arrow-up me-1"></i>
-                            {% if total_income and previous_income and previous_income > 0 %}
-                                {{ total_income|percentage_change:previous_income|floatformat:1 }}%
-                            {% else %}
-                                New
-                            {% endif %}
-                        </span>
-                        <small class="text-muted">vs last month</small>
-                    </div>
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card h-100">
+                <div class="stat-icon income-icon">
+                    <i class="bi bi-graph-up"></i>
                 </div>
-            </div>
-                {% else %}
-                    No previous data
-                {% endif %}
+                <div class="stat-value">₹{{ total_income|default:"0"|floatformat:0 }}</div>
+                <div class="stat-label">Total Income</div>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="badge bg-success me-2">
+                        <i class="bi bi-arrow-up me-1"></i>
+                        {% if total_income and previous_income and previous_income > 0 %}
+                            {{ total_income|percentage_change:previous_income|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">vs last month</small>
+                </div>
             </div>
         </div>
 
-        <div class="stat-card expense fade-in-up stagger-2">
-            <div class="stat-header">
-                <div class="stat-icon expense">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card h-100">
+                <div class="stat-icon expense-icon">
                     <i class="bi bi-graph-down"></i>
                 </div>
-                <div class="stat-change negative">
-                    <i class="bi bi-arrow-down"></i>
-                    {% if total_expenses and previous_expenses and previous_expenses > 0 %}
-                        {{ total_expenses|percentage_change:previous_expenses|floatformat:1 }}%
-                    {% else %}
-                        0.0%
-                    {% endif %}
+                <div class="stat-value">₹{{ total_expenses|default:"0"|floatformat:0 }}</div>
+                <div class="stat-label">Total Expenses</div>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="badge bg-warning me-2">
+                        <i class="bi bi-arrow-down me-1"></i>
+                        {% if total_expenses and previous_expenses and previous_expenses > 0 %}
+                            {{ total_expenses|percentage_change:previous_expenses|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">vs last month</small>
                 </div>
-            </div>
-            <div class="stat-value">₹{{ total_expenses|default:"0" }}</div>
-            <div class="stat-label">Total Expenses</div>
-            <div class="stat-comparison">
-                {% if total_expenses and previous_expenses %}
-                    {% if total_expenses < previous_expenses %}-{% endif %}₹{{ total_expenses|subtract:previous_expenses }} vs last month
-                {% else %}
-                    No previous data
-                {% endif %}
             </div>
         </div>
 
-        <div class="stat-card balance fade-in-up stagger-3">
-            <div class="stat-header">
-                <div class="stat-icon balance">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card h-100">
+                <div class="stat-icon balance-icon">
                     <i class="bi bi-cash-stack"></i>
                 </div>
-                <div class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    {% if balance and previous_balance and previous_balance > 0 %}
-                        {{ balance|percentage_change:previous_balance|floatformat:1 }}%
-                    {% else %}
-                        0.0%
-                    {% endif %}
+                <div class="stat-value">₹{{ balance|default:"0"|floatformat:0 }}</div>
+                <div class="stat-label">Net Savings</div>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="badge {% if balance >= 0 %}bg-success{% else %}bg-danger{% endif %} me-2">
+                        <i class="bi bi-arrow-{% if balance >= 0 %}up{% else %}down{% endif %} me-1"></i>
+                        {% if balance and previous_balance and previous_balance > 0 %}
+                            {{ balance|percentage_change:previous_balance|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">vs last month</small>
                 </div>
-            </div>
-            <div class="stat-value">₹{{ balance|default:"0" }}</div>
-            <div class="stat-label">Net Savings</div>
-            <div class="stat-comparison">
-                {% if balance and previous_balance %}
-                    {% if balance > previous_balance %}+{% endif %}₹{{ balance|subtract:previous_balance }} vs last month
-                {% else %}
-                    No previous data
-                {% endif %}
             </div>
         </div>
 
-        <div class="stat-card profit fade-in-up stagger-4">
-            <div class="stat-header">
-                <div class="stat-icon profit">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card h-100">
+                <div class="stat-icon savings-icon">
                     <i class="bi bi-trending-up"></i>
                 </div>
-                <div class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i>
+                <div class="stat-value">
                     {% if total_income and total_expenses and total_income > 0 %}
                         {{ total_income|subtract:total_expenses|divide:total_income|multiply:100|floatformat:1 }}%
                     {% else %}
                         0.0%
                     {% endif %}
                 </div>
-            </div>
-            <div class="stat-value">
-                {% if total_income and total_expenses and total_income > 0 %}
-                    {{ total_income|subtract:total_expenses|divide:total_income|multiply:100|floatformat:1 }}%
-                {% else %}
-                    0.0%
-                {% endif %}
-            </div>
-            <div class="stat-label">Savings Rate</div>
-            <div class="stat-comparison">
-                {% if total_income and total_expenses %}
-                    {% if total_income > total_expenses %}Positive{% else %}Negative{% endif %} savings rate
-                {% else %}
-                    No data available
-                {% endif %}
+                <div class="stat-label">Savings Rate</div>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="badge bg-info me-2">
+                        <i class="bi bi-percent me-1"></i>
+                        Rate
+                    </span>
+                    <small class="text-muted">
+                        {% if total_income and total_expenses %}
+                            {% if total_income > total_expenses %}Positive{% else %}Negative{% endif %} savings
+                        {% else %}
+                            No data
+                        {% endif %}
+                    </small>
+                </div>
             </div>
         </div>
     </div>
@@ -224,7 +211,7 @@
                                 {{ category.category|title }}
                                 <span class="ms-2 text-success" style="font-size: 0.8rem;">↑</span>
                             </div>
-                            <small class="text-muted">{% if total_expenses %}{{ category.total|floatformat:0|add:0|mul:100|divide:total_expenses|floatformat:1 }}% of total{% else %}Category{% endif %}</small>
+                            <small class="text-muted">{% if total_expenses %}{{ category.total|multiply:100|divide:total_expenses|floatformat:1 }}% of total{% else %}Category{% endif %}</small>
                         </div>
                         <div class="text-danger fw-bold">₹{{ category.total|floatformat:0 }}</div>
                     </div>

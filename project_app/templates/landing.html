@@ -4,7 +4,286 @@
 {% block title %}Welcome - Finance Flow{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'CSS/landing.css' %}">
+<style>
+/* Original Bootstrap Landing Page Styles */
+.hero-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 4rem 0;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-logo-img {
+    max-width: 250px;
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.hero-content h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 1.5rem;
+}
+
+.hero-content .subtitle {
+    font-size: 1.25rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+}
+
+.trust-badge {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    color: #495057;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.15s ease-in-out;
+    font-weight: 500;
+}
+
+.trust-badge:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.trust-badge i {
+    color: #0d6efd;
+}
+
+.btn-primary-gradient {
+    background: #0d6efd;
+    color: white;
+    padding: 0.875rem 2rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: all 0.15s ease-in-out;
+    margin-right: 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.btn-primary-gradient:hover {
+    background: #0b5ed7;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-gradient {
+    background: transparent;
+    color: #0d6efd;
+    border: 1px solid #0d6efd;
+    padding: 0.875rem 2rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: all 0.15s ease-in-out;
+    margin-bottom: 1rem;
+}
+
+.btn-outline-gradient:hover {
+    background: #0d6efd;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.features-section, .demo-section, .benefits-section, .testimonials-section {
+    padding: 4rem 0;
+}
+
+.features-section {
+    background: #ffffff;
+}
+
+.demo-section {
+    background: #f8f9fa;
+}
+
+.benefits-section {
+    background: #ffffff;
+}
+
+.testimonials-section {
+    background: #f8f9fa;
+}
+
+.section-title h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 1rem;
+}
+
+.section-title p {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+
+.feature-card, .testimonial-card {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.feature-card:hover, .testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin: 0 auto 1.5rem;
+}
+
+.feature-icon.income { background: #28a745; }
+.feature-icon.reports { background: #007bff; }
+.feature-icon.budget { background: #ffc107; color: #212529; }
+.feature-icon.security { background: #dc3545; }
+
+.benefit-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin: 0 auto 1.5rem;
+}
+
+.benefit-icon.savings { background: #28a745; }
+.benefit-icon.insights { background: #007bff; }
+.benefit-icon.management { background: #6f42c1; }
+
+.cta-section {
+    background: #007bff;
+    color: white;
+    padding: 4rem 0;
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.btn-light-gradient {
+    background: white;
+    color: #007bff;
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-light-gradient:hover {
+    background: #f8f9fa;
+    color: #007bff;
+    transform: translateY(-2px);
+}
+
+.btn-outline-light {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background: white;
+    color: #007bff;
+    transform: translateY(-2px);
+}
+
+.footer-section {
+    background: #212529;
+    color: white;
+    padding: 3rem 0 2rem;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links a {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: white;
+}
+
+.trust-item {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+}
+
+.testimonial-rating {
+    color: #ffc107;
+    font-size: 1.1rem;
+}
+
+.testimonial-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.15s ease-in-out;
+    height: 100%;
+}
+
+.testimonial-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.testimonial-content {
+    font-style: italic;
+    color: #495057;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.testimonial-author {
+    font-weight: 600;
+    color: #0d6efd;
+    font-size: 0.9rem;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -13,22 +292,22 @@
     <div class="hero-bg-pattern"></div>
     <div class="container hero-container">
         <!-- Logo Header -->
-        <div class="row mb-5" data-aos="fade-down">
+        <div class="row mb-5">
             <div class="col-12 text-center">
                 <div class="hero-logo">
-                    <img src="{% static 'images/financeflow-logo-white.svg' %}" alt="FinanceFlow Logo" class="hero-logo-img">
+                    <img src="{% static 'images/financeflow-logo-white.svg' %}" alt="FinanceFlow Logo" class="hero-logo-img" loading="lazy">
                 </div>
             </div>
         </div>
         
         <div class="row align-items-center">
-            <div class="col-lg-6" data-aos="fade-right">
+            <div class="col-lg-6">
                 <div class="hero-content">
                     <h1>Track Your Money.<br>Take Control of Your Life</h1>
                     <p class="subtitle">Smart budgeting, simplified. Easily manage your income and expenses with real-time charts and insights.</p>
                     
                     <!-- Trust Badges -->
-                    <div class="trust-badges mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="trust-badges mb-4">
                         <div class="d-flex flex-wrap align-items-center justify-content-start gap-3">
                             <div class="trust-badge">
                                 <i class="bi bi-people-fill me-2"></i>

@@ -189,79 +189,81 @@
     </div>
 
     <!-- Enhanced KPI Cards with Tooltips -->
-    <div class="stats-grid mb-4">
-        <div class="stat-card income fade-in-up stagger-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Your total income has increased by ₹2,500 since last month. Great progress!">
-            <div class="stat-header">
-                <div class="stat-icon income">
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Your total income has increased by ₹2,500 since last month. Great progress!">
+                <div class="stat-icon income-icon">
                     <i class="bi bi-graph-up"></i>
                 </div>
-                <div class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    {% if total_income and previous_income and previous_income > 0 %}
-                        {{ total_income|percentage_change:previous_income|floatformat:1 }}%
-                    {% else %}
-                        0.0%
-                    {% endif %}
+                <div class="stat-value">₹{{ total_income|default:"0" }}</div>
+                <div class="stat-label">Total Income</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-success me-2">
+                        <i class="bi bi-arrow-up me-1"></i>
+                        {% if total_income and previous_income and previous_income > 0 %}
+                            {{ total_income|percentage_change:previous_income|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">vs last period</small>
                 </div>
-            </div>
-            <div class="stat-value">₹{{ total_income|default:"0" }}</div>
-            <div class="stat-label">💰 Total Income</div>
-            <div class="stat-comparison">
-                {% if total_income and previous_income %}
-                    {% if total_income > previous_income %}↗️ +{% endif %}₹{{ total_income|subtract:previous_income }} vs last period
-                {% else %}
-                    No previous data
-                {% endif %}
             </div>
         </div>
 
-        <div class="stat-card expense fade-in-up stagger-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Your expenses decreased by ₹1,150 compared to last month. Good cost control!">
-            <div class="stat-header">
-                <div class="stat-icon expense">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Your expenses decreased by ₹1,150 compared to last month. Good cost control!">
+                <div class="stat-icon expense-icon">
                     <i class="bi bi-graph-down"></i>
                 </div>
-                <div class="stat-change negative">
-                    <i class="bi bi-arrow-down"></i>
-                    {% if total_expenses and previous_expenses and previous_expenses > 0 %}
-                        {{ total_expenses|percentage_change:previous_expenses|floatformat:1 }}%
-                    {% else %}
-                        0.0%
-                    {% endif %}
+                <div class="stat-value">₹{{ total_expenses|default:"0" }}</div>
+                <div class="stat-label">Total Expenses</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-warning me-2">
+                        <i class="bi bi-arrow-down me-1"></i>
+                        {% if total_expenses and previous_expenses and previous_expenses > 0 %}
+                            {{ total_expenses|percentage_change:previous_expenses|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">vs last period</small>
                 </div>
             </div>
-            <div class="stat-value">₹{{ total_expenses|default:"18,730" }}</div>
-            <div class="stat-label">💸 Total Expenses</div>
-            <div class="stat-comparison">📉 -₹1,150 vs last period</div>
         </div>
 
-        <div class="stat-card balance fade-in-up stagger-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Excellent! Your net savings increased by ₹7,050. You're on track to meet your savings goal.">
-            <div class="stat-header">
-                <div class="stat-icon balance">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Excellent! Your net savings increased by ₹7,050. You're on track to meet your savings goal.">
+                <div class="stat-icon balance-icon">
                     <i class="bi bi-cash-stack"></i>
                 </div>
-                <div class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    +32.1%
+                <div class="stat-value">₹{{ balance|default:"0" }}</div>
+                <div class="stat-label">Net Savings</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-success me-2">
+                        <i class="bi bi-arrow-up me-1"></i>
+                        +32.1%
+                    </span>
+                    <small class="text-muted">vs last period</small>
                 </div>
             </div>
-            <div class="stat-value">₹{{ balance|default:"26,270" }}</div>
-            <div class="stat-label">💰 Net Savings</div>
-            <div class="stat-comparison">📈 +₹7,050 vs last period</div>
         </div>
 
-        <div class="stat-card profit fade-in-up stagger-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Outstanding savings rate! You're saving 58.4% of your income - well above the recommended 20%.">
-            <div class="stat-header">
-                <div class="stat-icon profit">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Outstanding savings rate! You're saving 58.4% of your income - well above the recommended 20%.">
+                <div class="stat-icon savings-icon">
                     <i class="bi bi-trending-up"></i>
                 </div>
-                <div class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    +22.4%
+                <div class="stat-value">58.4%</div>
+                <div class="stat-label">Savings Rate</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-info me-2">
+                        <i class="bi bi-percent me-1"></i>
+                        +22.4%
+                    </span>
+                    <small class="text-muted">vs last period</small>
                 </div>
             </div>
-            <div class="stat-value">58.4%</div>
-            <div class="stat-label">📊 Savings Rate</div>
-            <div class="stat-comparison">🎯 +8.7% vs last period</div>
         </div>
     </div>
 

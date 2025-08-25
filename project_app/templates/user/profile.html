@@ -4,52 +4,78 @@
 
 {% block extra_css %}
 <style>
-    .profile-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-    }
-    
     .profile-avatar {
-        width: 120px;
-        height: 120px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
+        background: #0d6efd;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
+        font-size: 2.5rem;
         font-weight: bold;
         margin: 0 auto 20px;
-        backdrop-filter: blur(10px);
-        border: 4px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .author-info-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 15px;
-        padding: 20px;
-        margin-top: 20px;
+        color: white;
+        border: 3px solid #e9ecef;
     }
     
     .stats-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 20px;
-        margin-top: 20px;
-        color: #333;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: box-shadow 0.15s ease-in-out;
     }
     
-    .activity-item {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-left: 4px solid #3b82f6;
+    .stats-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-card .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-card .stat-icon.income {
+        background: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .stats-card .stat-icon.expense {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .stats-card .stat-icon.balance {
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .stats-card .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-card .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-card .stat-comparison {
+        color: #6c757d;
+        font-size: 0.75rem;
     }
 </style>
 {% endblock %}
@@ -86,38 +112,32 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <!-- Profile Card -->
-            <div class="card fade-in-up profile-card">
-                <div class="card-header text-center">
+            <div class="card">
+                <div class="card-header text-center bg-white">
                     <div class="profile-avatar">
                         {{ user.name|first|upper }}
                     </div>
                     <h3 class="mb-2">{{ user.name|default:"User Name" }}</h3>
-                    <p class="mb-3" style="opacity: 0.9;">{{ user.email|default:"user@example.com" }}</p>
-                    <span class="badge bg-light text-dark">
+                    <p class="mb-3 text-muted">{{ user.email|default:"user@example.com" }}</p>
+                    <span class="badge bg-success">
                         <i class="bi bi-check-circle me-1"></i>
                         Active Account
                     </span>
                     
-                    <!-- Author Information -->
-                    <div class="author-info-card">
-                        <h6 class="mb-3">
-                            <i class="bi bi-person-badge me-2"></i>
-                            Account Author Information
-                        </h6>
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="mb-2">
-                                    <i class="bi bi-calendar-plus text-warning"></i>
-                                    <small class="d-block mt-1">Account Created</small>
-                                    <strong>{{ user.id|date:"M d, Y"|default:"Recently" }}</strong>
-                                </div>
+                    <!-- Account Information -->
+                    <div class="row mt-4">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <i class="bi bi-calendar-plus text-primary fs-4"></i>
+                                <small class="d-block mt-1 text-muted">Account Created</small>
+                                <strong class="text-dark">{{ user.date_joined|date:"M d, Y"|default:"Recently" }}</strong>
                             </div>
-                            <div class="col-6">
-                                <div class="mb-2">
-                                    <i class="bi bi-person-check text-success"></i>
-                                    <small class="d-block mt-1">Created By</small>
-                                    <strong>{{ user.name }}</strong>
-                                </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <i class="bi bi-person-check text-success fs-4"></i>
+                                <small class="d-block mt-1 text-muted">Status</small>
+                                <strong class="text-dark">Active User</strong>
                             </div>
                         </div>
                     </div>

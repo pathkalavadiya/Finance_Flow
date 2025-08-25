@@ -461,11 +461,11 @@
     {% endif %}
 
     <!-- 1. Summary Cards -->
-    <div class="stats-grid mb-4">
+    <div class="row g-4 mb-4">
         <!-- Income Card -->
-        <div class="stat-card income fade-in-up stagger-1">
-            <div class="card-body p-4">
-                <div class="stat-icon">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stat-icon income-icon">
                     <i class="bi bi-graph-up"></i>
                 </div>
                 <div class="stat-value">₹{{ total_income|default:"0" }}</div>
@@ -491,9 +491,9 @@
         </div>
 
         <!-- Expense Card -->
-        <div class="stat-card expense fade-in-up stagger-2">
-            <div class="card-body p-4">
-                <div class="stat-icon">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stat-icon expense-icon">
                     <i class="bi bi-bar-chart"></i>
                 </div>
                 <div class="stat-value">₹{{ total_expense|default:"0" }}</div>
@@ -519,9 +519,9 @@
         </div>
 
         <!-- Balance Card -->
-        <div class="stat-card balance fade-in-up stagger-3">
-            <div class="card-body p-4">
-                <div class="stat-icon">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stat-icon balance-icon">
                     <i class="bi bi-cash-stack"></i>
                 </div>
                 <div class="stat-value">₹{{ balance|default:"0" }}</div>
@@ -541,6 +541,26 @@
                         {% else %}
                             No previous data
                         {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Savings Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stat-icon savings-icon">
+                    <i class="bi bi-piggy-bank"></i>
+                </div>
+                <div class="stat-value">₹{{ savings|default:"0" }}</div>
+                <div class="stat-label">Total Savings</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-info me-2">
+                        <i class="bi bi-arrow-up me-1"></i>
+                        New
+                    </span>
+                    <small class="text-muted">
+                        Monthly target
                     </small>
                 </div>
             </div>
