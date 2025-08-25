@@ -151,54 +151,54 @@
                             <div class="col-md-6">
                                 <label for="firstName" class="form-label">First Name</label>
                                 <input type="text" class="form-control" id="firstName" name="first_name" 
-                                       value="{{ user.first_name|default:'' }}" required>
+                                       value="{{ user.name|default:'John' }}" required>
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="lastName" class="form-label">Last Name</label>
                                 <input type="text" class="form-control" id="lastName" name="last_name" 
-                                       value="{{ user.last_name|default:'' }}" required>
+                                       value="{{ user.name|default:'Doe' }}" required>
                             </div>
                             
                             <div class="col-12">
                                 <label for="email" class="form-label">Email Address</label>
                                 <input type="email" class="form-control" id="email" name="email" 
-                                       value="{{ user.email|default:'' }}" required>
+                                       value="{{ user.email }}" required>
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="phone" class="form-label">Phone Number</label>
                                 <input type="tel" class="form-control" id="phone" name="phone" 
-                                       value="{{ user.phone|default:'' }}">
+                                       value="{{ user.phone_no }}">
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="dateOfBirth" class="form-label">Date of Birth</label>
                                 <input type="date" class="form-control" id="dateOfBirth" name="date_of_birth" 
-                                       value="{{ user.date_of_birth|default:'' }}">
+                                       value="{{ user.date_of_birth|default:'1990-01-01' }}">
                             </div>
                             
                             <div class="col-12">
                                 <label for="address" class="form-label">Address</label>
-                                <textarea class="form-control" id="address" name="address" rows="3">{{ user.address|default:'' }}</textarea>
+                                <textarea class="form-control" id="address" name="address" rows="3">{{ user.address }}</textarea>
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="city" class="form-label">City</label>
                                 <input type="text" class="form-control" id="city" name="city" 
-                                       value="{{ user.city|default:'' }}">
+                                       value="{{ user.city|default:'New York' }}">
                             </div>
                             
                             <div class="col-md-3">
                                 <label for="state" class="form-label">State</label>
                                 <input type="text" class="form-control" id="state" name="state" 
-                                       value="{{ user.state|default:'' }}">
+                                       value="{{ user.state|default:'NY' }}">
                             </div>
                             
                             <div class="col-md-3">
                                 <label for="zipCode" class="form-label">ZIP Code</label>
                                 <input type="text" class="form-control" id="zipCode" name="zip_code" 
-                                       value="{{ user.zip_code|default:'' }}">
+                                       value="{{ user.zip_code|default:'10001' }}">
                             </div>
                         </div>
                         
@@ -212,13 +212,13 @@
                             <div class="col-md-6">
                                 <label for="username" class="form-label">Username</label>
                                 <input type="text" class="form-control" id="username" name="username" 
-                                       value="{{ user.username|default:'' }}" required>
+                                       value="{{ user.email }}" required>
                             </div>
                             
                             <div class="col-md-6">
                                 <label for="currency" class="form-label">Preferred Currency</label>
                                 <select class="form-select" id="currency" name="currency">
-                                    <option value="USD" {% if user.currency == 'USD' %}selected{% endif %}>USD ($)</option>
+                                    <option value="USD" {% if user.currency == 'USD' or not user.currency %}selected{% endif %}>USD ($)</option>
                                     <option value="EUR" {% if user.currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
                                     <option value="GBP" {% if user.currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
                                     <option value="JPY" {% if user.currency == 'JPY' %}selected{% endif %}>JPY (¥)</option>
@@ -230,7 +230,7 @@
                                 <label for="timezone" class="form-label">Time Zone</label>
                                 <select class="form-select" id="timezone" name="timezone">
                                     <option value="UTC" {% if user.timezone == 'UTC' %}selected{% endif %}>UTC</option>
-                                    <option value="EST" {% if user.timezone == 'EST' %}selected{% endif %}>Eastern Time</option>
+                                    <option value="EST" {% if user.timezone == 'EST' or not user.timezone %}selected{% endif %}>Eastern Time</option>
                                     <option value="CST" {% if user.timezone == 'CST' %}selected{% endif %}>Central Time</option>
                                     <option value="MST" {% if user.timezone == 'MST' %}selected{% endif %}>Mountain Time</option>
                                     <option value="PST" {% if user.timezone == 'PST' %}selected{% endif %}>Pacific Time</option>
@@ -240,7 +240,7 @@
                             <div class="col-md-6">
                                 <label for="language" class="form-label">Language</label>
                                 <select class="form-select" id="language" name="language">
-                                    <option value="en" {% if user.language == 'en' %}selected{% endif %}>English</option>
+                                    <option value="en" {% if user.language == 'en' or not user.language %}selected{% endif %}>English</option>
                                     <option value="es" {% if user.language == 'es' %}selected{% endif %}>Spanish</option>
                                     <option value="fr" {% if user.language == 'fr' %}selected{% endif %}>French</option>
                                     <option value="de" {% if user.language == 'de' %}selected{% endif %}>German</option>

@@ -558,7 +558,7 @@
 </head>
 <body>
     <div class="dashboard-container">
-        {% if request.resolver_match.url_name != 'landing' %}
+        {% if request.resolver_match.url_name != 'landing' and request.resolver_match.url_name != 'register' and request.resolver_match.url_name != 'login' %}
         <!-- Left Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -616,7 +616,7 @@
         </div>
         {% endif %}
         <!-- Main Content -->
-        <div class="main-content" {% if request.resolver_match.url_name == 'landing' %}style="margin-left: 0; width: 100%;"{% endif %}>
+        <div class="main-content" {% if request.resolver_match.url_name == 'landing' or request.resolver_match.url_name == 'register' or request.resolver_match.url_name == 'login' %}style="margin-left: 0; width: 100%;"{% endif %}>
             {% block content %}{% endblock %}
         </div>
     </div>
@@ -926,16 +926,12 @@
     </div>
 
     <!-- Author Attribution Footer -->
-    {% if request.resolver_match.url_name != 'landing' %}
+    {% if request.resolver_match.url_name != 'landing' and request.resolver_match.url_name != 'register' and request.resolver_match.url_name != 'login' %}
     <footer class="app-footer">
         <div class="footer-content">
             <div class="footer-left">
-                <span class="footer-text">© 2024 FinanceFlow</span>
+                <span class="footer-text">© 2025 FinanceFlow</span>
                 <span class="footer-separator">•</span>
-                <span class="footer-author">
-                    <i class="bi bi-code-slash me-1"></i>
-                    Developed by <strong>Path Kalavadiya</strong>
-                </span>
             </div>
             <div class="footer-right">
                 <span class="footer-version">v2.1.0</span>
