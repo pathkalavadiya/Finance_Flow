@@ -3,11 +3,114 @@
 
 {% block title %}Groups - FinanceFlow{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Header improvements */
+    .groups-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .groups-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(30px, -30px);
+    }
+    
+    .header-actions-custom {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    @media (max-width: 768px) {
+        .header-actions-custom {
+            margin-top: 16px;
+            justify-content: flex-start;
+        }
+        
+        .groups-header {
+            padding: 20px;
+        }
+        
+        .btn-lg {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .header-actions {
+            padding-right: 12px !important;
+            gap: 12px;
+        }
+        
+        .user-name {
+            display: none;
+        }
+    }
+    
+    .filter-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+    
+    .filter-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        color: white;
+    }
+    
+    /* Header tools positioning */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+    }
+    
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-left: auto;
+        padding-left: 20px;
+    }
+    
+    .search-btn, .notification-btn {
+        background: rgba(0, 123, 255, 0.1);
+        border: 1px solid rgba(0, 123, 255, 0.2);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #007bff;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover, .notification-btn:hover {
+        background: rgba(0, 123, 255, 0.2);
+        border-color: rgba(0, 123, 255, 0.4);
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Content Header -->
 <div class="content-header">
     <h1 class="page-title">Groups</h1>
-    <div class="header-actions">
+    <div class="header-actions" style="margin-left: auto; padding-right: 24px;">
         <button class="search-btn" title="Search">
             <i class="bi bi-search"></i>
         </button>
@@ -33,15 +136,23 @@
 <!-- Content Body -->
 <div class="content-body">
     <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="text-gradient mb-2">Manage Your Groups</h2>
-            <p class="text-muted">Create and manage expense groups with friends and family</p>
+    <div class="groups-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap">
+            <div>
+                <h2 class="mb-2" style="color: white; font-weight: 600;">Manage Your Groups</h2>
+                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 0;">Create and manage expense groups with friends and family</p>
+            </div>
+            <div class="header-actions-custom">
+                <button class="btn filter-btn" title="Filter Groups">
+                    <i class="bi bi-funnel me-1"></i>
+                    Filter
+                </button>
+                <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#createGroupModal" style="font-weight: 500;">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Create New Group
+                </button>
+            </div>
         </div>
-        <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createGroupModal">
-            <i class="bi bi-plus-circle"></i>
-            Create New Group
-        </button>
     </div>
 
     <!-- Quick Stats -->

@@ -17,7 +17,7 @@
             transform: translateX(100%);
         }
     }
-    
+
     .btn-primary::before {
         content: '';
         position: absolute;
@@ -105,7 +105,7 @@
                                 </div>
 
                                 <div class="d-grid gap-2" data-aos="fade-up" data-aos-delay="600" data-aos-duration="800">
-                                    <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 12px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border: none; position: relative; overflow: hidden; box-shadow: 0 4px 15px -3px rgba(var(--primary-color-rgb), 0.5); transition: all 0.3s ease;">
+                                    <button type="submit" class="btn btn-success btn-lg" style="border-radius: 12px; background: linear-gradient(135deg, #28a745, #20c997); border: none; position: relative; overflow: hidden; box-shadow: 0 4px 15px -3px rgba(40, 167, 69, 0.5); transition: all 0.3s ease;">
                                         <i class="fas fa-save me-2"></i> Create Group
                                     </button>
                                     <p class="text-center text-muted small mt-2">Members will receive an email invitation to join this group</p>
@@ -156,18 +156,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add hover effects to buttons
-    const buttons = document.querySelectorAll('.btn-primary, .btn-outline-primary');
+    const buttons = document.querySelectorAll('.btn-success, .btn-outline-primary');
     buttons.forEach(button => {
         button.addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-3px)';
-            if (this.classList.contains('btn-primary')) {
-                this.style.boxShadow = '0 8px 15px -5px rgba(var(--primary-color-rgb), 0.6)';
+            if (this.classList.contains('btn-success')) {
+                this.style.boxShadow = '0 8px 15px -5px rgba(40, 167, 69, 0.6)';
             }
         });
         button.addEventListener('mouseleave', function() {
             this.style.transform = 'translateY(0)';
-            if (this.classList.contains('btn-primary')) {
-                this.style.boxShadow = '0 4px 15px -3px rgba(var(--primary-color-rgb), 0.5)';
+            if (this.classList.contains('btn-success')) {
+                this.style.boxShadow = '0 4px 15px -3px rgba(40, 167, 69, 0.5)';
             }
         });
     });

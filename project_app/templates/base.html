@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}Finance Flow{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
@@ -641,6 +642,17 @@
             }
         });
         
+        // Get CSRF token function
+        function getCSRFToken() {
+            // Try to get from form input first
+            const token = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (token) return token.value;
+            
+            // Fallback to meta tag
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            return metaToken ? metaToken.getAttribute('content') : '';
+        }
+        
         // Add hover effects to buttons and cards
         document.addEventListener('DOMContentLoaded', function() {
             // Button hover effects
@@ -724,6 +736,7 @@
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCSRFToken()
                 }
             })
             .then(response => response.json())

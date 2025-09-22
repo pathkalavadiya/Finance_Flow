@@ -77,6 +77,48 @@
         color: #6c757d;
         font-size: 0.75rem;
     }
+    
+    /* Header tools positioning */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+    }
+    
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-left: auto;
+        padding-left: 20px;
+    }
+    
+    .search-btn, .notification-btn {
+        background: rgba(0, 123, 255, 0.1);
+        border: 1px solid rgba(0, 123, 255, 0.2);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #007bff;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover, .notification-btn:hover {
+        background: rgba(0, 123, 255, 0.2);
+        border-color: rgba(0, 123, 255, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .header-actions {
+            padding-right: 12px !important;
+            gap: 12px;
+        }
+        
+        .user-name {
+            display: none;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -84,7 +126,7 @@
 <!-- Content Header -->
 <div class="content-header">
     <h1 class="page-title">User Profile</h1>
-    <div class="header-actions">
+    <div class="header-actions" style="margin-left: auto; padding-right: 24px;">
         <button class="search-btn" title="Search">
             <i class="bi bi-search"></i>
         </button>

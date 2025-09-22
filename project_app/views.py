@@ -13,7 +13,7 @@ from django.db.models.functions import TruncMonth
 from .models import Registration, Expense, Income, Group, GroupMember, GroupExpense, GroupExpenseSplit
 from itertools import chain
 from operator import attrgetter
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from datetime import datetime, date, timedelta
 from functools import wraps
 from django.db import OperationalError
@@ -32,6 +32,7 @@ def login_required(view_func):
 #this is the views file for the Finance Flow project
 # Create your views here.
 # registration
+@csrf_protect
 def register(request):
     if request.method == 'POST':
         # Get form data
@@ -89,6 +90,7 @@ def register(request):
 
  
 # login
+@csrf_protect
 def login(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
@@ -424,6 +426,7 @@ def dashboard(request):
 
 
 @login_required
+@csrf_protect
 def expense(request):
     user = None
     if 'entry_email' in request.session:
@@ -525,6 +528,7 @@ def transaction_history(request):
 
 
 @login_required
+@csrf_protect
 def income(request):
     user = None
     if 'entry_email' in request.session:
