@@ -1,17 +1,20 @@
 {% extends '../base.html' %}
 
-{% block title %}Sign In - Finance Flow{% endblock %}
+{% block title %}Sign In - FinanceFlow{% endblock %}
 
 {% block content %}
 <div class="auth-container">
     <div class="auth-card">
-        <!-- Logo Section -->
-        <div class="logo-section">
-            <div class="logo-icon">
-                <i class="bi bi-cash-stack"></i>
+        <!-- Header Section -->
+        <div class="auth-header">
+            <div class="auth-brand">
+                <span class="auth-logo">🔒</span>
+                <span class="brand-name">FinanceFlow</span>
             </div>
-            <h1 class="auth-title">Welcome Back</h1>
-            <p class="auth-subtitle">Sign in to your Finance Flow account</p>
+            <div class="auth-title-section">
+                <h1 class="auth-main-title">🔐 Welcome Back</h1>
+                <p class="auth-subtitle">Sign in to your FinanceFlow account</p>
+            </div>
         </div>
 
         <!-- Login Form -->
@@ -19,7 +22,6 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="email" class="form-label">Email Address</label>
                 <div class="input-wrapper">
                     <i class="input-icon bi bi-envelope"></i>
                     <input type="email" class="form-control" id="email" name="email" 
@@ -28,7 +30,6 @@
             </div>
 
             <div class="form-group">
-                <label for="password" class="form-label">Password</label>
                 <div class="input-wrapper">
                     <i class="input-icon bi bi-lock"></i>
                     <input type="password" class="form-control" id="password" name="password" 
@@ -60,8 +61,23 @@
             </div>
             {% endif %}
 
+            <!-- reCAPTCHA -->
+            <div class="recaptcha-placeholder">
+                <div class="recaptcha-box">
+                    <input type="checkbox" id="recaptcha" class="recaptcha-checkbox" required>
+                    <label for="recaptcha" class="recaptcha-label">I'm not a robot</label>
+                    <div class="recaptcha-logo">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDJDOC4yIDIgMiA4LjIgMiAxNlM4LjIgMzAgMTYgMzAgMzAgMjMuOCAzMCAxNlMyMy44IDIgMTYgMloiIGZpbGw9IiM0Mjg1RjQiLz4KPHA+PC9wPgo8L3N2Zz4K" alt="reCAPTCHA" width="32" height="32">
+                        <div class="recaptcha-text">
+                            <small>reCAPTCHA</small>
+                            <small>Privacy - Terms</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group">
-                <button type="submit" class="btn btn-primary w-100 btn-lg">
+                <button type="submit" class="btn btn-create w-100">
                     <i class="bi bi-box-arrow-in-right"></i>
                     Sign In
                 </button>
@@ -86,8 +102,8 @@
         </div>
 
         <!-- Sign Up Link -->
-        <div class="signup-link text-center">
-            <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+        <div class="auth-footer-link">
+            <p>Don't have an account? <a href="{% url 'register' %}">Sign up here</a></p>
         </div>
     </div>
 </div>
@@ -117,57 +133,61 @@
 
 .auth-card {
     width: 100%;
-    max-width: 420px;
-    padding: 40px;
+    max-width: 450px;
+    padding: 32px;
     position: relative;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
     animation: fadeInUp 0.6s ease-out;
 }
 
-.logo-section {
+.auth-header {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
-.logo-icon {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #10B981, #059669);
-    border-radius: 16px;
+.auth-brand {
+    position: absolute;
+    top: 16px;
+    left: 24px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-    color: white;
-    font-size: 28px;
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
 }
 
-.auth-title {
-    font-size: 28px;
+.auth-logo {
+    font-size: 18px;
+}
+
+.brand-name {
+    color: #7C3AED;
+}
+
+.auth-title-section {
+    margin-top: 40px;
+}
+
+.auth-main-title {
+    font-size: 24px;
     font-weight: 700;
-    color: #1E293B;
+    color: #1F2937;
     margin-bottom: 8px;
 }
 
 .auth-subtitle {
-    color: #64748B;
+    color: #6B7280;
     font-size: 16px;
+    margin-bottom: 0;
 }
 
 .form-group {
-    margin-bottom: 20px;
-}
-
-.form-label {
-    font-weight: 600;
-    color: #1E293B;
-    margin-bottom: 8px;
-    display: block;
+    margin-bottom: 16px;
 }
 
 .input-wrapper {
@@ -177,56 +197,64 @@
 
 .input-icon {
     position: absolute;
-    left: 16px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: #64748B;
+    color: #9CA3AF;
     z-index: 2;
+    font-size: 16px;
 }
 
 .form-control {
-    padding-left: 48px;
-    border: 2px solid #E2E8F0;
-    border-radius: 12px;
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #F9FAFB;
     transition: all 0.3s ease;
 }
 
 .form-control:focus {
-    border-color: #3B82F6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+    border-color: #7C3AED;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.form-control::placeholder {
+    color: #9CA3AF;
 }
 
 .forgot-password {
-    color: #3B82F6;
+    color: #7C3AED;
     text-decoration: none;
     font-size: 14px;
 }
 
 .forgot-password:hover {
-    color: #2563EB;
+    color: #6D28D9;
+    text-decoration: underline;
 }
 
-.alert {
-    border-radius: 12px;
+.btn-create {
+    background: linear-gradient(135deg, #7C3AED, #A855F7);
     border: none;
-    padding: 16px;
-    margin-bottom: 20px;
-    font-size: 14px;
+    color: white;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
 }
 
-.alert-danger {
-    background-color: #FEF2F2;
-    color: #DC2626;
-    border-left: 4px solid #DC2626;
+.btn-create:hover {
+    background: linear-gradient(135deg, #6D28D9, #9333EA);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
 }
 
-.alert-success {
-    background-color: #F0FDF4;
-    color: #16A34A;
-    border-left: 4px solid #16A34A;
-}
-
-.alert i {
+.btn-create i {
     margin-right: 8px;
 }
 
@@ -247,7 +275,7 @@
 }
 
 .divider span {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
     padding: 0 16px;
     color: #64748B;
     font-size: 14px;
@@ -257,14 +285,141 @@
     margin-bottom: 24px;
 }
 
-.signup-link a {
-    color: #3B82F6;
+.btn-outline-secondary {
+    border: 1px solid #D1D5DB;
+    background: white;
+    color: #374151;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: #F9FAFB;
+    border-color: #9CA3AF;
+    color: #1F2937;
+}
+
+.btn-outline-secondary i {
+    margin-right: 8px;
+}
+
+.auth-footer-link {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.auth-footer-link p {
+    color: #6B7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+.auth-footer-link a {
+    color: #7C3AED;
     text-decoration: none;
     font-weight: 600;
 }
 
-.signup-link a:hover {
-    color: #2563EB;
+.auth-footer-link a:hover {
+    color: #6D28D9;
+    text-decoration: underline;
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.alert-danger {
+    background-color: #FEF2F2;
+    color: #DC2626;
+    border-left: 4px solid #DC2626;
+}
+
+.alert-success {
+    background-color: #F0FDF4;
+    color: #16A34A;
+    border-left: 4px solid #16A34A;
+}
+
+.alert i {
+    margin-right: 8px;
+}
+
+.recaptcha-placeholder {
+    margin: 20px 0;
+}
+
+.recaptcha-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    background: #F9FAFB;
+    transition: all 0.3s ease;
+}
+
+.recaptcha-box:hover {
+    border-color: #9CA3AF;
+    background: white;
+}
+
+.recaptcha-checkbox {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: #7C3AED;
+}
+
+.recaptcha-label {
+    flex: 1;
+    font-size: 14px;
+    color: #374151;
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.recaptcha-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recaptcha-text {
+    text-align: right;
+}
+
+.recaptcha-text small {
+    display: block;
+    color: #6B7280;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+    .auth-card {
+        padding: 24px;
+        margin: 10px;
+    }
+    
+    .auth-brand {
+        position: static;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+    
+    .auth-title-section {
+        margin-top: 0;
+    }
 }
 
 @keyframes fadeInUp {
@@ -297,36 +452,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form submission validation
     form.addEventListener('submit', function(e) {
+        const recaptcha = document.getElementById('recaptcha');
         if (!email.value.trim() || !password.value.trim()) {
             e.preventDefault();
             alert('Please fill in all required fields');
+        } else if (!recaptcha.checked) {
+            e.preventDefault();
+            alert('Please verify that you are not a robot');
+        }
+    });
+    
+    // reCAPTCHA simulation
+    const recaptchaCheckbox = document.getElementById('recaptcha');
+    recaptchaCheckbox.addEventListener('change', function() {
+        const recaptchaBox = document.querySelector('.recaptcha-box');
+        if (this.checked) {
+            setTimeout(() => {
+                this.style.accentColor = '#10B981';
+                recaptchaBox.style.borderColor = '#10B981';
+                recaptchaBox.style.backgroundColor = '#F0FDF4';
+            }, 500);
+        } else {
+            this.style.accentColor = '#7C3AED';
+            recaptchaBox.style.borderColor = '#D1D5DB';
+            recaptchaBox.style.backgroundColor = '#F9FAFB';
         }
     });
 });
 </script>
 
-<!-- Footer -->
-<div class="auth-footer">
-    <span class="footer-text">© 2025 FinanceFlow</span>
-</div>
-
-<style>
-.auth-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 12px 20px;
-    text-align: center;
-    z-index: 1000;
-    font-size: 0.85rem;
-}
-
-.footer-text {
-    color: #6b7280;
-}
-</style>
 {% endblock %}
