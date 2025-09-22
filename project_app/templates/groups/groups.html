@@ -64,6 +64,247 @@
         border-color: rgba(0, 123, 255, 0.4);
         transform: translateY(-2px);
     }
+    
+    /* Add Group Section Styles */
+    .add-group-section {
+        margin-bottom: 2rem;
+    }
+    
+    .add-group-card {
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+        border: 2px dashed #007bff;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .add-group-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 40%, rgba(0, 123, 255, 0.05) 50%, transparent 60%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    
+    .add-group-card:hover {
+        border-color: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+    }
+    
+    .add-group-card:hover::before {
+        transform: translateX(100%);
+    }
+    
+    .add-group-icon {
+        font-size: 3rem;
+        color: #007bff;
+        margin-bottom: 1rem;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .add-group-card:hover .add-group-icon {
+        transform: scale(1.1);
+        color: #0056b3;
+    }
+    
+    .add-group-content h4 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .add-group-content p {
+        color: #6c757d;
+        font-size: 0.95rem;
+        max-width: 400px;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .btn-create-group {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+    
+    .btn-create-group:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        color: white;
+    }
+    
+    .btn-create-group:active {
+        transform: translateY(0);
+    }
+    
+    @media (max-width: 768px) {
+        .add-group-card {
+            padding: 1.5rem;
+            margin: 0 10px;
+        }
+        
+        .add-group-icon {
+            font-size: 2.5rem;
+        }
+        
+        .add-group-content h4 {
+            font-size: 1.25rem;
+        }
+        
+        .btn-create-group {
+            padding: 10px 25px;
+            font-size: 0.95rem;
+        }
+        
+        .search-groups-card {
+            padding: 1.5rem;
+            margin: 0 10px;
+        }
+        
+        .search-groups-icon {
+            font-size: 2.5rem;
+        }
+        
+        .search-groups-content h4 {
+            font-size: 1.25rem;
+        }
+        
+        .search-input-container {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn-search-groups {
+            padding: 10px 25px;
+            font-size: 0.95rem;
+        }
+    }
+    
+    /* Search Groups Section Styles */
+    .search-groups-section {
+        margin-bottom: 2rem;
+    }
+    
+    .search-groups-card {
+        background: linear-gradient(135deg, #fff8f0 0%, #f0f8ff 100%);
+        border: 2px dashed #28a745;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .search-groups-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 40%, rgba(40, 167, 69, 0.05) 50%, transparent 60%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+    
+    .search-groups-card:hover {
+        border-color: #1e7e34;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
+    }
+    
+    .search-groups-card:hover::before {
+        transform: translateX(100%);
+    }
+    
+    .search-groups-icon {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .search-groups-card:hover .search-groups-icon {
+        transform: scale(1.1);
+        color: #1e7e34;
+    }
+    
+    .search-groups-content h4 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .search-groups-content p {
+        color: #6c757d;
+        font-size: 0.95rem;
+        max-width: 400px;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .search-input-container {
+        display: flex;
+        gap: 15px;
+        max-width: 500px;
+        margin: 0 auto;
+        align-items: center;
+    }
+    
+    .search-input {
+        flex: 1;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        padding: 12px 20px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        outline: none;
+    }
+    
+    .btn-search-groups {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        white-space: nowrap;
+    }
+    
+    .btn-search-groups:hover {
+        background: linear-gradient(135deg, #1e7e34, #155724);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        color: white;
+    }
+    
+    .btn-search-groups:active {
+        transform: translateY(0);
+    }
 </style>
 {% endblock %}
 
@@ -145,6 +386,51 @@
                         Total
                     </span>
                     <small class="text-muted">All time across all groups</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Group Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="add-group-section">
+                <div class="add-group-card">
+                    <div class="add-group-icon">
+                        <i class="bi bi-plus-circle"></i>
+                    </div>
+                    <div class="add-group-content">
+                        <h4>Create New Group</h4>
+                        <p class="text-muted mb-3">Start managing shared expenses with friends, family, or colleagues</p>
+                        <button class="btn btn-create-group" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                            <i class="bi bi-plus me-2"></i>
+                            Create Group
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Groups Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="search-groups-section">
+                <div class="search-groups-card">
+                    <div class="search-groups-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <div class="search-groups-content">
+                        <h4>Search Groups</h4>
+                        <p class="text-muted mb-3">Find and filter your groups quickly</p>
+                        <div class="search-input-container">
+                            <input type="text" class="form-control search-input" id="groupSearch" placeholder="Search groups by name or description...">
+                            <button class="btn btn-search-groups" type="button">
+                                <i class="bi bi-search me-2"></i>
+                                Search
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -259,4 +545,79 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('groupSearch');
+    const searchButton = document.querySelector('.btn-search-groups');
+    const groupCards = document.querySelectorAll('.row.g-4 .col-lg-6');
+    
+    function filterGroups() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        groupCards.forEach(function(card) {
+            const groupName = card.querySelector('h5')?.textContent.toLowerCase() || '';
+            const groupDescription = card.querySelector('.card-body p')?.textContent.toLowerCase() || '';
+            
+            if (searchTerm === '' || groupName.includes(searchTerm) || groupDescription.includes(searchTerm)) {
+                card.style.display = 'block';
+                card.classList.add('fade-in-up');
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Show "no results" message if no groups match
+        const visibleGroups = Array.from(groupCards).filter(card => card.style.display !== 'none');
+        const groupsContainer = document.querySelector('.row.g-4');
+        let noResultsMsg = document.getElementById('noResultsMessage');
+        
+        if (visibleGroups.length === 0 && searchTerm !== '') {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.id = 'noResultsMessage';
+                noResultsMsg.className = 'col-12 text-center py-5';
+                noResultsMsg.innerHTML = `
+                    <div class="text-muted">
+                        <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <h4 class="mt-3">No groups found</h4>
+                        <p>Try adjusting your search terms</p>
+                    </div>
+                `;
+                groupsContainer.appendChild(noResultsMsg);
+            }
+            noResultsMsg.style.display = 'block';
+        } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+    
+    // Search on button click
+    searchButton.addEventListener('click', filterGroups);
+    
+    // Search on Enter key press
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            filterGroups();
+        }
+    });
+    
+    // Real-time search as user types (with debounce)
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(filterGroups, 300);
+    });
+    
+    // Clear search when input is empty
+    searchInput.addEventListener('input', function() {
+        if (this.value === '') {
+            filterGroups();
+        }
+    });
+});
+</script>
+
 {% endblock %}
