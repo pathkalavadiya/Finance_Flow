@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Finance Flow{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1D4ED8, #3B82F6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0 auto 16px;
+        color: white;
+        border: 3px solid #e9ecef;
+    }
+    .profile-name { font-weight: 700; margin-bottom: 4px; }
+    .profile-email { color: #6c757d; margin-bottom: 8px; }
+    .status-pill { padding: 4px 10px; font-size: .75rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; }
+    .status-pill i { font-size: .9rem; }
+
+    .account-meta { margin-top: 18px; }
+    .account-meta .meta-item { text-align: center; padding: 8px 4px; }
+    .account-meta .meta-icon { font-size: 1.25rem; margin-bottom: 6px; color: #0d6efd; }
+    .account-meta .meta-title { display:block; color: #6c757d; font-size: .9rem; }
+    .account-meta .meta-value { display:block; color: #111827; font-weight: 700; }
+    
+    .stats-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: box-shadow 0.15s ease-in-out;
+    }
+    
+    .stats-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-card .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-card .stat-icon.income {
+        background: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .stats-card .stat-icon.expense {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .stats-card .stat-icon.balance {
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .stats-card .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-card .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-card .stat-comparison {
+        color: #6c757d;
+        font-size: 0.75rem;
+    }
+    
+    /* Header tools positioning */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+    }
+    
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-left: auto;
+        padding-left: 20px;
+    }
+    
+    .search-btn, .notification-btn {
+        background: rgba(0, 123, 255, 0.1);
+        border: 1px solid rgba(0, 123, 255, 0.2);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #007bff;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover, .notification-btn:hover {
+        background: rgba(0, 123, 255, 0.2);
+        border-color: rgba(0, 123, 255, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .header-actions {
+            padding-right: 12px !important;
+            gap: 12px;
+        }
+        
+        .user-name {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+<div class="content-header">
+    <h1 class="page-title">User Profile</h1>
+    <div class="header-actions" style="margin-left: auto; padding-right: 24px;">
+        <button class="search-btn" title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+        <button class="notification-btn" title="Notifications">
+            <i class="bi bi-bell"></i>
+        </button>
+        <div class="user-profile dropdown">
+            <div class="user-info" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                <div class="user-avatar">{{ user.name|first|upper }}</div>
+                <div class="user-name">{{ user.name }}</div>
+                <i class="bi bi-chevron-down ms-2"></i>
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end" style="z-index: 9999; min-width: 180px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
+                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Content Body -->
+<div class="content-body">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Profile Card -->
+            <div class="card">
+                <div class="card-header text-center bg-white">
+                    <div class="profile-avatar">
+                        {{ user.name|first|upper }}
+                    </div>
+                    <h3 class="profile-name">{{ user.name|default:"User Name" }}</h3>
+                    <p class="profile-email">{{ user.email|default:"user@example.com" }}</p>
+                    <span class="badge bg-success status-pill">
+                        <i class="bi bi-check-circle"></i>
+                        Active Account
+                    </span>
+                    
+                    <!-- Account Information -->
+                    <div class="row account-meta">
+                        <div class="col-6 meta-item">
+                            <i class="bi bi-calendar-plus meta-icon"></i>
+                            <span class="meta-title">Account Created</span>
+                            <span class="meta-value">{{ user.date_joined|date:"M d, Y"|default:"Recently" }}</span>
+                        </div>
+                        <div class="col-6 meta-item">
+                            <i class="bi bi-person-check meta-icon" style="color:#198754"></i>
+                            <span class="meta-title">Status</span>
+                            <span class="meta-value">Active User</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" name="first_name" 
+                                       value="{{ user.name|default:'John' }}" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" name="last_name" 
+                                       value="{{ user.name|default:'Doe' }}" required>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ user.phone_no }}">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" id="dateOfBirth" name="date_of_birth" 
+                                       value="{{ user.date_of_birth|default:'1990-01-01' }}">
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="address" class="form-label">Address</label>
+                                <textarea class="form-control" id="address" name="address" rows="3">{{ user.address }}</textarea>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" class="form-control" id="city" name="city" 
+                                       value="{{ user.city|default:'New York' }}">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="state" name="state" 
+                                       value="{{ user.state|default:'NY' }}">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="zipCode" class="form-label">ZIP Code</label>
+                                <input type="text" class="form-control" id="zipCode" name="zip_code" 
+                                       value="{{ user.zip_code|default:'10001' }}">
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <h5 class="mb-3" id="account-settings">Account Settings</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       value="{{ user.email }}" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="currency" class="form-label">Preferred Currency</label>
+                                <select class="form-select" id="currency" name="currency">
+                                    <option value="USD" {% if user.currency == 'USD' or not user.currency %}selected{% endif %}>USD ($)</option>
+                                    <option value="EUR" {% if user.currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
+                                    <option value="GBP" {% if user.currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
+                                    <option value="JPY" {% if user.currency == 'JPY' %}selected{% endif %}>JPY (¥)</option>
+                                    <option value="CAD" {% if user.currency == 'CAD' %}selected{% endif %}>CAD (C$)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="timezone" class="form-label">Time Zone</label>
+                                <select class="form-select" id="timezone" name="timezone">
+                                    <option value="UTC" {% if user.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                                    <option value="EST" {% if user.timezone == 'EST' or not user.timezone %}selected{% endif %}>Eastern Time</option>
+                                    <option value="CST" {% if user.timezone == 'CST' %}selected{% endif %}>Central Time</option>
+                                    <option value="MST" {% if user.timezone == 'MST' %}selected{% endif %}>Mountain Time</option>
+                                    <option value="PST" {% if user.timezone == 'PST' %}selected{% endif %}>Pacific Time</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="language" class="form-label">Language</label>
+                                <select class="form-select" id="language" name="language">
+                                    <option value="en" {% if user.language == 'en' or not user.language %}selected{% endif %}>English</option>
+                                    <option value="es" {% if user.language == 'es' %}selected{% endif %}>Spanish</option>
+                                    <option value="fr" {% if user.language == 'fr' %}selected{% endif %}>French</option>
+                                    <option value="de" {% if user.language == 'de' %}selected{% endif %}>German</option>
+                                    <option value="it" {% if user.language == 'it' %}selected{% endif %}>Italian</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <h5 class="mb-3">Security Settings</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword" name="current_password">
+                                <small class="text-muted">Leave blank if you don't want to change</small>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" name="new_password">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="twoFactor" class="form-label">Two-Factor Authentication</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="twoFactor" name="two_factor">
+                                    <label class="form-check-label" for="twoFactor">
+                                        Enable 2FA for enhanced security
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                                <i class="bi bi-arrow-left"></i>
+                                Back
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card income fade-in-up stagger-1">
+                    <div class="stat-header">
+                        <div class="stat-icon income">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            Active
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ total_income|default:"0" }}</div>
+                    <div class="stat-label">Total Income</div>
+                    <div class="stat-comparison">Lifetime earnings</div>
+                </div>
+
+                <div class="stat-card expense fade-in-up stagger-2">
+                    <div class="stat-header">
+                        <div class="stat-icon expense">
+                            <i class="bi bi-graph-down"></i>
+                        </div>
+                        <div class="stat-change negative">
+                            <i class="bi bi-arrow-down"></i>
+                            Total
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ total_expenses|default:"0" }}</div>
+                    <div class="stat-label">Total Expenses</div>
+                    <div class="stat-comparison">Lifetime spending</div>
+                </div>
+
+                <div class="stat-card balance fade-in-up stagger-3">
+                    <div class="stat-header">
+                        <div class="stat-icon balance">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            Net
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ net_balance|default:"0" }}</div>
+                    <div class="stat-label">Net Balance</div>
+                    <div class="stat-comparison">Current savings</div>
+                </div>
+            </div>
+            
+            <!-- Account Actions -->
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Account Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'export_profile_data' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-download"></i>
+                            Export Data
+                        </a>
+                        <a href="#account-settings" class="btn btn-outline-warning">
+                            <i class="bi bi-shield-check"></i>
+                            Privacy Settings
+                        </a>
+                        <a href="mailto:support@financeflow.app?subject=FinanceFlow%20Help" class="btn btn-outline-info">
+                            <i class="bi bi-question-circle"></i>
+                            Help & Support
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" id="deleteAccountBtn">
+                            <i class="bi bi-trash"></i>
+                            Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const delBtn = document.getElementById('deleteAccountBtn');
+    if (delBtn) {
+        delBtn.addEventListener('click', function(){
+            if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+            fetch("{% url 'delete_account' %}", {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': (typeof getCSRFToken === 'function' ? getCSRFToken() : (document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : ''))
+                }
+            }).then(r=>r.json()).then(data=>{
+                if (data.success) {
+                    window.location.href = "{% url 'landing' %}";
+                } else {
+                    alert(data.message || 'Failed to delete account.');
+                }
+            }).catch(()=>alert('Failed to delete account.'));
+        });
+    }
+});
+</script>
+{% endblock %}

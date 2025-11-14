@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ report_type }} - {{ date_range }}</title>
+    <style>
+        @page { size: A4; margin: 22mm; }
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; }
+        h1 { font-size: 20px; margin: 0 0 6px 0; }
+        .muted { color: #666; font-size: 11px; }
+        .header { margin-bottom: 16px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 6px 8px; }
+        th { background: #f2f2f2; text-align: left; }
+        .right { text-align: right; }
+        .notice { margin-top: 12px; color: #a33; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ report_type }}</h1>
+        <div class="muted">
+            Date range: {{ date_range }}<br/>
+            Generated on: {{ generated_on|date:"Y-m-d H:i" }}<br/>
+            {% if user %}User: {{ user.name }}{% endif %}
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                {% for h in header %}
+                <th>{{ h }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in rows %}
+            <tr>
+                {% for c in r %}
+                <td>{% if forloop.parentloop.counter0 == 1 %}{{ c|floatformat:2 }}{% else %}{{ c }}{% endif %}</td>
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{{ header|length }}" class="muted">No data available for this period.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if pdf_notice %}
+    <p class="notice">{{ pdf_notice }}</p>
+    {% endif %}
+</body>
+</html>

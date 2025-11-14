@@ -1,0 +1,10 @@
+db.sqlite3
+project/__pycache__/urls.cpython-313.pyc
+project/__pycache__/urls.cpython-313.pyc
+project_app/__pycache__/models.cpython-313.pyc
+project_app/__pycache__/views.cpython-313.pyc
+project_app/__pycache__/views.cpython-313.pyc
+project_app/templates/analytics.html
+project_app/templates/analytics.html
+project_app/templates/groups.html
+project_app/templates/lending.html

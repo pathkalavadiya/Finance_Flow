@@ -1,0 +1,142 @@
+{% extends '../base.html' %}
+{% load math_filters %}
+
+{% block title %}{{ group.name }} - FinanceFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Main content -->
+    <main class="px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">{{ group.name }} <span class="badge bg-secondary">{{ group.get_group_type_display }}</span></h1>
+                    {% if group.description %}
+                        <p class="text-muted">{{ group.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'groups' %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> Back to Groups
+                    </a>
+                    <a href="{% url 'add_group_expense' group.id %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </a>
+                </div>
+            </div>
+
+            <!-- Member Balances -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Member Balances</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for member, balance in member_balances.items %}
+                                    <div class="col-md-4 col-lg-3 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-medium">{{ member.name }}</span>
+                                            <span class="badge {% if balance > 0 %}bg-success{% elif balance < 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                ${{ balance|floatformat:2 }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expenses -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Group Expenses</h5>
+                            <a href="{% url 'group_balances' group.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-chart-pie"></i> View Detailed Balances
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if expenses %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Who / What</th>
+                                                <th>Amount</th>
+                                                <th>Split</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for expense in expenses %}
+                                                <tr>
+                                                    <td>{{ expense.date|date:"M d, Y" }}</td>
+                                                    <td>
+                                                        <div class="fw-medium">{{ expense.paid_by.name }} paid ₹{{ expense.amount|floatformat:2 }} for {{ expense.description }}</div>
+                                                        <div class="text-muted small">
+                                                            Involved:
+                                                            {% for m in expense.included_members.all %}
+                                                                {{ m.name }}{% if not forloop.last %}, {% endif %}
+                                                            {% endfor %}
+                                                        </div>
+                                                    </td>
+                                                    <td class="fw-bold">₹{{ expense.amount|floatformat:2 }}</td>
+                                                    <td class="small">
+                                                        {% for m in expense.included_members.all %}
+                                                            <div>{{ m.name }}: ₹{{ expense.amount|divide:expense.included_members.count|floatformat:2 }}</div>
+                                                        {% endfor %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-receipt fa-2x text-muted mb-3"></i>
+                                    <h6 class="text-muted">No expenses yet</h6>
+                                    <p class="text-muted small">Add the first expense to start tracking shared costs.</p>
+                                    <a href="{% url 'add_group_expense' group.id %}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus"></i> Add First Expense
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group Actions -->
+            {% if group.created_by == user %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Group Management</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <a href="{% url 'add_group_member' group.id %}" class="btn btn-outline-primary">
+                                            <i class="fas fa-user-plus"></i> Add Member
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <a href="{% url 'delete_group' group.id %}" class="btn btn-outline-danger" 
+                                           onclick="return confirm('Are you sure you want to delete this group? This action cannot be undone.')">
+                                            <i class="fas fa-trash"></i> Delete Group
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+    </main>
+</div>
+{% endblock %}

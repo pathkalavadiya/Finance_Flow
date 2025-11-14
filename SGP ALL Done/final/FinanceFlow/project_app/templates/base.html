@@ -1,0 +1,1129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Finance Flow{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" crossorigin="anonymous">
+    <!-- AOS Animation Library - Preload -->
+    <link rel="preload" href="https://unpkg.com/aos@2.3.1/dist/aos.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"></noscript>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'CSS/Style.css' %}">
+    
+    <style>
+        /* Original Bootstrap-based FinanceFlow Design */
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .sidebar {
+            background: #ffffff;
+            border-right: 1px solid #dee2e6;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            width: 280px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .sidebar-nav {
+            padding: 1rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #6c757d;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin: 0.25rem 0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover {
+            color: #007bff;
+            background-color: #f8f9fa;
+            text-decoration: none;
+            transform: translateX(2px);
+        }
+        
+        .nav-item.active {
+            color: #007bff;
+            background-color: #e7f3ff;
+            font-weight: 600;
+            border-left: 3px solid #007bff;
+        }
+
+        .nav-item i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #adb5bd;
+            margin-bottom: 0.75rem;
+            padding: 0 1rem;
+        }
+
+        .navbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .navbar-nav .nav-link {
+            color: #6c757d;
+            padding: 0.5rem 1rem;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: #007bff;
+        }
+        
+        .navbar-nav .nav-link.active {
+            color: #007bff;
+        }
+
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-content {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        /* Global Styles */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --white: #ffffff;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+            border-color: #4e555b;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .card-header {
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-300);
+            color: var(--dark-color);
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+        }
+
+        .sidebar-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            padding: 0;
+            position: relative;
+            z-index: 2;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            width: 200px;
+            height: 56px;
+            overflow: hidden;
+        }
+
+        .sidebar-logo-img {
+            width: 100%;
+            height: 100%;
+            filter: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            background: transparent;
+            padding: 0;
+            object-fit: contain; /* contain to show entire logo without cropping */
+            display: block;
+        }
+
+        .sidebar-logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .sidebar .nav-link i,
+        .sidebar .nav-link span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .modal-header {
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-300);
+            color: var(--dark-color);
+            padding: 1rem 1.25rem;
+        }
+        
+        .modal-header::after {
+            content: '';
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Default modal title style: dark text */
+        .modal-title {
+            font-weight: 700;
+            color: #111827; /* dark/black */
+            font-size: 1.5rem;
+        }
+
+        /* Ensure Add Income modal title is clearly visible */
+        #addIncomeModalLabel {
+            color: #111827 !important;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+        
+        .modal-body {
+            padding: 1.25rem;
+        }
+        
+        .form-control {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            background-color: #fff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: 0;
+            background-color: #fff;
+        }
+        
+        .form-select {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .form-select:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: 0;
+        }
+        
+        .form-label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 0.375rem;
+            font-weight: 400;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            border: 1px solid transparent;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: #fff;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+            border-color: #4e555b;
+            color: #fff;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            margin-left: 280px;
+            background: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+        /* Content Header */
+        .content-header {
+            background: #ffffff;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 0;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #212529;
+            margin: 0;
+        }
+
+        .content-body {
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        /* Footer-safe layout */
+        .content-inner { flex: 1 0 auto; }
+
+        /* Global Footer */
+        .site-footer {
+            background: #ffffff;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+        .site-footer .footer-left { display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+        .site-footer .footer-logo { display: inline-flex; align-items: center; }
+        .site-footer .footer-logo img { height: 20px; width: auto; object-fit: contain; }
+        .site-footer .footer-text { color: #6c757d; }
+        .site-footer .footer-right { display: flex; align-items: center; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+        .site-footer .footer-right a { color: #6c757d; text-decoration: none; }
+        .site-footer .footer-right a:hover { color: #0d6efd; text-decoration: underline; }
+
+        /* Dashboard Cards */
+        .stats-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid #dee2e6;
+            transition: all 0.15s ease-in-out;
+            height: 100%;
+        }
+
+        .stats-card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+
+        
+
+        /* Analytics Page Styles */
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .income-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+        }
+
+        .expense-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+        }
+
+        .balance-icon {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3B82F6;
+        }
+
+        .savings-icon {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8B5CF6;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-btn, .notification-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 1.25rem;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .search-btn:hover, .notification-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .content-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 1rem;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .stats-card {
+                margin-bottom: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .card-body canvas {
+                height: 250px !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .content-header {
+                padding: 1rem;
+            }
+            
+            .content-body {
+                padding: 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+            
+            .user-name {
+                display: none;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="dashboard-container">
+        {% if request.resolver_match.url_name != 'landing' and request.resolver_match.url_name != 'register' and request.resolver_match.url_name != 'login' %}
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="{% static 'images/logo.png' %}" alt="FinanceFlow Logo" class="sidebar-logo-img">
+                </div>
+            </div>
+            <div class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main Menu</div>
+                    <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="bi bi-house-door"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#addIncomeModal">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>Add Income</span>
+                    </a>
+                    <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                        <i class="bi bi-dash-circle"></i>
+                        <span>Add Expense</span>
+                    </a>
+                    <a href="{% url 'groups' %}" class="nav-item {% if request.resolver_match.url_name == 'groups' %}active{% endif %}">
+                        <i class="bi bi-people"></i>
+                        <span>Groups</span>
+                    </a>
+                    <a href="{% url 'transaction_history' %}" class="nav-item {% if request.resolver_match.url_name == 'transaction_history' %}active{% endif %}">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Transaction History</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Analytics</div>
+                    <a href="{% url 'analytics' %}" class="nav-item {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Analytics</span>
+                    </a>
+                    <a href="{% url 'reports' %}" class="nav-item {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                        <i class="bi bi-pie-chart"></i>
+                        <span>Reports</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <a href="{% url 'profile' %}" class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                        <i class="bi bi-person"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a href="{% url 'logout' %}" class="nav-item">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <!-- Main Content -->
+        <div class="main-content" {% if request.resolver_match.url_name == 'landing' or request.resolver_match.url_name == 'register' or request.resolver_match.url_name == 'login' %}style="margin-left: 0; width: 100%;"{% endif %}>
+            <div class="content-inner">
+                {% block content %}{% endblock %}
+            </div>
+            {% if request.resolver_match.url_name != 'landing' %}
+            <footer class="site-footer">
+                <div class="footer-left">
+                    <span class="footer-logo"><img src="{% static 'images/logo.png' %}" alt="FinanceFlow"></span>
+                    <span class="footer-text">© {% now "Y" %} FinanceFlow</span>
+                </div>
+                <nav class="footer-right">
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'analytics' %}">Analytics</a>
+                    <a href="{% url 'reports' %}">Reports</a>
+                    <a href="{% url 'transaction_history' %}">Transactions</a>
+                    <a href="{% url 'groups' %}">Groups</a>
+                    <a href="{% url 'profile' %}">Profile</a>
+                </nav>
+            </footer>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <!-- Chart.js - Load synchronously for analytics pages -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
+    <!-- AOS Animation Library - Defer loading -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer crossorigin="anonymous"></script>
+    
+    <script>
+        // Initialize AOS animations when script loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 600,
+                    easing: 'ease-in-out',
+                    once: true,
+                    disable: 'mobile' // Disable on mobile for better performance
+                });
+            }
+        });
+        
+        // Get CSRF token function
+        function getCSRFToken() {
+            // Try to get from form input first
+            const token = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (token) return token.value;
+            
+            // Fallback to meta tag
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            return metaToken ? metaToken.getAttribute('content') : '';
+        }
+        
+        // Add hover effects to buttons and cards
+        document.addEventListener('DOMContentLoaded', function() {
+            // Button hover effects
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+            
+            // Card hover effects
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Global handlers for search/notification buttons on all pages
+            async function loadNotifications() {
+                try {
+                    const res = await fetch('{% url "notifications_data" %}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const data = await res.json();
+                    const count = parseInt(data.count || 0, 10) || 0;
+
+                    // Update any badges found on the page
+                    document.querySelectorAll('.notification-badge').forEach(b => {
+                        b.textContent = count;
+                        b.style.display = count > 0 ? 'flex' : 'none';
+                    });
+
+                    // Populate modal list if present
+                    const list = document.getElementById('notificationsList');
+                    const empty = document.getElementById('notificationsEmpty');
+                    if (list) {
+                        list.innerHTML = '';
+                        if (!data.items || data.items.length === 0) {
+                            if (empty) empty.style.display = 'block';
+                        } else {
+                            if (empty) empty.style.display = 'none';
+                            data.items.forEach(i => {
+                                const item = document.createElement('div');
+                                const cls = i.level === 'success' ? 'text-success' : (i.level === 'warning' ? 'text-warning' : 'text-info');
+                                item.className = 'list-group-item d-flex align-items-center';
+                                item.innerHTML = `<i class="bi ${i.icon || 'bi-lightbulb'} me-2 ${cls}"></i>` +
+                                    `<div><div class="fw-semibold">${i.title || ''}</div>` +
+                                    (i.subtitle ? `<small class=\"text-muted\">${i.subtitle}</small>` : '') + '</div>';
+                                list.appendChild(item);
+                            });
+                        }
+                    }
+                } catch (e) {
+                    // Fail silently to avoid blocking UI
+                }
+            }
+
+            // Initial load once DOM is ready
+            loadNotifications();
+
+            document.body.addEventListener('click', function(e) {
+                const target = e.target.closest('.search-btn');
+                if (target) {
+                    e.preventDefault();
+                    const modalEl = document.getElementById('globalSearchModal');
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                    return;
+                }
+            });
+
+            document.body.addEventListener('click', function(e) {
+                const target = e.target.closest('.notification-btn');
+                if (target) {
+                    e.preventDefault();
+                    // Refresh latest notifications before showing
+                    loadNotifications();
+                    const modalEl = document.getElementById('globalNotificationsModal');
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                    return;
+                }
+            });
+
+            // Handle Income Form Submission
+            const incomeForm = document.getElementById('addIncomeForm');
+            if (incomeForm) {
+                incomeForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitTransaction(this, 'income');
+                });
+            }
+
+            // Handle Expense Form Submission
+            const expenseForm = document.getElementById('addExpenseForm');
+            if (expenseForm) {
+                expenseForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitTransaction(this, 'expense');
+                });
+            }
+            
+            // Set default date to today when modals open
+            const incomeModal = document.getElementById('addIncomeModal');
+            const expenseModal = document.getElementById('addExpenseModal');
+            
+            if (incomeModal) {
+                incomeModal.addEventListener('show.bs.modal', function() {
+                    const dateInput = document.getElementById('incomeDate');
+                    if (dateInput) {
+                        const today = new Date().toISOString().split('T')[0];
+                        dateInput.value = today;
+                    }
+                });
+            }
+            
+            if (expenseModal) {
+                expenseModal.addEventListener('show.bs.modal', function() {
+                    const dateInput = document.getElementById('expenseDate');
+                    if (dateInput) {
+                        const today = new Date().toISOString().split('T')[0];
+                        dateInput.value = today;
+                    }
+                });
+            }
+
+        });
+
+        // Function to submit transaction forms
+        function submitTransaction(form, type) {
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Adding...';
+            submitBtn.disabled = true;
+
+            fetch(`/${type}/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCSRFToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success toast
+                    showToast('Success', data.message || `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully!`, 'success');
+                    
+                    // Close modal
+                    const modal = form.closest('.modal');
+                    const modalInstance = bootstrap.Modal.getInstance(modal);
+                    modalInstance.hide();
+                    
+                    // Reset form
+                    form.reset();
+                    
+                    // Reload page to update dashboard
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    // Show error toast
+                    showToast('Error', data.message || 'Failed to add transaction. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error', 'An error occurred. Please try again.', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        }
+
+        // Function to show toast notifications
+        function showToast(title, message, type) {
+            const toast = document.getElementById('transactionToast');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            // Update toast content
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+
+            // Update icon and colors based on type
+            if (type === 'success') {
+                toastIcon.className = 'bi bi-check-circle text-success me-2';
+                toast.classList.remove('bg-danger', 'text-white');
+                toast.classList.add('bg-success', 'text-white');
+            } else {
+                toastIcon.className = 'bi bi-exclamation-triangle text-danger me-2';
+                toast.classList.remove('bg-success', 'text-white');
+                toast.classList.add('bg-danger', 'text-white');
+            }
+
+            // Show toast
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+
+    <!-- Global Search Modal (available on all pages) -->
+    <div class="modal fade" id="globalSearchModal" tabindex="-1" aria-labelledby="globalSearchLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="globalSearchLabel"><i class="bi bi-search me-2"></i>Search</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="globalSearchInput" class="form-control" placeholder="Search transactions (press Enter to open history)">
+                    </div>
+                    <small class="text-muted d-block mt-2">Tip: Use Transaction History filters for advanced search.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="globalSearchGoBtn">Go</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Notifications Modal (available on all pages) -->
+    <div class="modal fade" id="globalNotificationsModal" tabindex="-1" aria-labelledby="globalNotificationsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="globalNotificationsLabel"><i class="bi bi-bell me-2"></i>Notifications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="notificationsList" class="list-group"></div>
+                    <small class="text-muted d-block mt-2" id="notificationsEmpty" style="display:none;">No notifications.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple redirect on search enter or Go button
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('globalSearchInput');
+            const goBtn = document.getElementById('globalSearchGoBtn');
+            function goSearch() {
+                const q = (input?.value || '').trim();
+                // Redirect to history with q param; page can use client-side filtering
+                window.location.href = `{% url 'transaction_history' %}` + (q ? (`?q=${encodeURIComponent(q)}`) : '');
+            }
+            if (input) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        goSearch();
+                    }
+                });
+            }
+            if (goBtn) goBtn.addEventListener('click', goSearch);
+        });
+    </script>
+    
+    <!-- Add Income Modal -->
+    <div class="modal fade" id="addIncomeModal" tabindex="-1" aria-labelledby="addIncomeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addIncomeModalLabel">
+                        <i class="bi bi-plus-circle text-success me-2"></i>Add Income
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="addIncomeForm" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="incomeAmount" class="form-label">Amount *</label>
+                            <input type="number" class="form-control" id="incomeAmount" name="amount" step="0.01" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incomeDescription" class="form-label">Description *</label>
+                            <input type="text" class="form-control" id="incomeDescription" name="description" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="incomeDate" class="form-label">Date *</label>
+                            <input type="date" class="form-control" id="incomeDate" name="date" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="incomeCategory" class="form-label">Category *</label>
+                            <select class="form-select" id="incomeCategory" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Freelance">Freelance</option>
+                                <option value="Investment">Investment</option>
+                                <option value="Business">Business</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incomeCurrency" class="form-label">Currency *</label>
+                            <select class="form-select" id="incomeCurrency" name="currency" required>
+                                <option value="INR">₹ INR</option>
+                                <option value="USD">$ USD</option>
+                                <option value="EUR">€ EUR</option>
+                                <option value="GBP">£ GBP</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-2"></i>Add Income
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addExpenseModalLabel">
+                        <i class="bi bi-dash-circle text-warning me-2"></i>Add Expense
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="addExpenseForm" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="expenseAmount" class="form-label">Amount *</label>
+                            <input type="number" class="form-control" id="expenseAmount" name="amount" step="0.01" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expenseDescription" class="form-label">Description *</label>
+                            <input type="text" class="form-control" id="expenseDescription" name="description" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="expenseDate" class="form-label">Date *</label>
+                            <input type="date" class="form-control" id="expenseDate" name="date" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="expenseCategory" class="form-label">Category *</label>
+                            <select class="form-select" id="expenseCategory" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Food">Food</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Housing">Housing</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Education">Education</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expenseCurrency" class="form-label">Currency *</label>
+                            <select class="form-select" id="expenseCurrency" name="currency" required>
+                                <option value="INR">₹ INR</option>
+                                <option value="USD">$ USD</option>
+                                <option value="EUR">€ EUR</option>
+                                <option value="GBP">£ GBP</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-dash-circle me-2"></i>Add Expense
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="transactionToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="bi bi-check-circle text-success me-2" id="toastIcon"></i>
+                <strong class="me-auto" id="toastTitle">Success</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Transaction added successfully!
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>

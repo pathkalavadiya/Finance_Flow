@@ -1,0 +1,811 @@
+{% extends '../base.html' %}
+{% load math_filters %}
+
+{% block title %}Analytics - Finance Flow{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+<div class="content-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title mb-1">Analytics Dashboard</h1>
+        <p class="text-muted mb-0">Comprehensive financial insights and analysis</p>
+    </div>
+    <div class="header-actions">
+        <button class="search-btn" title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+        <button class="notification-btn" title="Notifications">
+            <i class="bi bi-bell"></i>
+        </button>
+        <div class="user-profile dropdown">
+            <div class="user-info d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                <div class="user-avatar me-2">{{ user.name|first|upper }}</div>
+                <div class="user-name me-1">{{ user.name }}</div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end" style="z-index: 9999; min-width: 180px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
+                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Content Body -->
+<div class="content-body">
+    <!-- Analytics Overview Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card h-100">
+                <div class="stat-icon income-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stat-value">₹{{ total_income|default:"0"|floatformat:0 }}</div>
+                <div class="stat-label">Total Income</div>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="badge bg-success me-2">
+                        <i class="bi bi-arrow-up me-1"></i>
+                        {% if total_income and previous_income and previous_income > 0 %}
+                            {{ total_income|percentage_change:previous_income|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">vs last month</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card h-100">
+                <div class="stat-icon expense-icon">
+                    <i class="bi bi-graph-down"></i>
+                </div>
+                <div class="stat-value">₹{{ total_expenses|default:"0"|floatformat:0 }}</div>
+                <div class="stat-label">Total Expenses</div>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="badge bg-warning me-2">
+                        <i class="bi bi-arrow-down me-1"></i>
+                        {% if total_expenses and previous_expenses and previous_expenses > 0 %}
+                            {{ total_expenses|percentage_change:previous_expenses|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">vs last month</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card h-100">
+                <div class="stat-icon balance-icon">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="stat-value">₹{{ balance|default:"0"|floatformat:0 }}</div>
+                <div class="stat-label">Net Savings</div>
+                <div class="d-flex align-items-center mt-3">
+                    <span class="badge {% if balance >= 0 %}bg-success{% else %}bg-danger{% endif %} me-2">
+                        <i class="bi bi-arrow-{% if balance >= 0 %}up{% else %}down{% endif %} me-1"></i>
+                        {% if balance and previous_balance and previous_balance > 0 %}
+                            {{ balance|percentage_change:previous_balance|floatformat:1 }}%
+                        {% else %}
+                            New
+                        {% endif %}
+                    </span>
+                    <small class="text-muted">vs last month</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card h-100">
+                <div class="stat-icon savings-icon">
+                    <i class="bi bi-trending-up"></i>
+                </div>
+                <div class="stat-value">{{ savings_rate|default:0|floatformat:1 }}%</div>
+                <div class="stat-label">Savings Rate</div>
+                <div class="d-flex align-items-center mt-3">
+                    {% with change=savings_rate_change|default:0 %}
+                    <span class="badge {% if change >= 0 %}bg-info{% else %}bg-danger{% endif %} me-2">
+                        <i class="bi {% if change >= 0 %}bi-arrow-up{% else %}bi-arrow-down{% endif %} me-1"></i>
+                        {% if change >= 0 %}+{% endif %}{{ change|floatformat:1 }}%
+                    </span>
+                    <small class="text-muted">vs last period</small>
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Graphical Analysis -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Daily Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Weekly Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="weeklyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Monthly Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Expense Deep-Dive -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Highest Expense Categories</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="expenseCategoryChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Spending Areas</h5>
+                </div>
+                <div class="card-body">
+                    {% for category in expense_categories|slice:":5" %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="stat-icon expense me-3" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                            {% if category.category|lower == 'housing' or category.category|lower == 'rent' %}
+                                🏠
+                            {% elif category.category|lower == 'food' or category.category|lower == 'groceries' %}
+                                🍔
+                            {% elif category.category|lower == 'shopping' or category.category|lower == 'retail' %}
+                                🛍️
+                            {% elif category.category|lower == 'transport' or category.category|lower == 'transportation' %}
+                                🚗
+                            {% elif category.category|lower == 'entertainment' %}
+                                🎬
+                            {% elif category.category|lower == 'utilities' %}
+                                💡
+                            {% elif category.category|lower == 'healthcare' or category.category|lower == 'medical' %}
+                                🏥
+                            {% else %}
+                                💰
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold d-flex align-items-center">
+                                {{ category.category|title }}
+                                <span class="ms-2 text-success" style="font-size: 0.8rem;">↑</span>
+                            </div>
+                            <small class="text-muted">{% if total_expenses %}{{ category.total|multiply:100|divide:total_expenses|floatformat:1 }}% of total{% else %}Category{% endif %}</small>
+                        </div>
+                        <div class="text-danger fw-bold">₹{{ category.total|floatformat:0 }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted text-center">No expense categories found</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Category Chart -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Expense Categories (Pie Chart)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="pieChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Expense Categories (Bar Chart)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="barChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Comparison -->
+    <div class="card fade-in-up mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Income vs Expense Comparison Over Time</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="comparisonChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- 5. Future Insights -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Expense Analysis & Saving Tips</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for tip in saving_tips %}
+                        <div class="col-md-6">
+                            <div class="alert alert-{% if tip.level == 'warning' %}warning{% elif tip.level == 'success' %}success{% elif tip.level == 'primary' %}primary{% else %}info{% endif %}">
+                                <h6 class="mb-1">
+                                    {% if tip.level == 'warning' %}<i class="bi bi-exclamation-triangle me-2"></i>{% endif %}
+                                    {% if tip.level == 'success' %}<i class="bi bi-check-circle me-2"></i>{% endif %}
+                                    {% if tip.level == 'primary' %}<i class="bi bi-graph-up me-2"></i>{% endif %}
+                                    {% if tip.level == 'info' %}<i class="bi bi-lightbulb me-2"></i>{% endif %}
+                                    {{ tip.title }}
+                                </h6>
+                                <p class="mb-2">{{ tip.summary }}</p>
+                                {% if tip.lines %}
+                                <ul class="mb-0 small">
+                                    {% for l in tip.lines %}
+                                    <li>{{ l }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-secondary mb-0">No tips available yet. Add some transactions to see personalized insights.</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card fade-in-up">
+                <div class="card-header">
+                    <h5 class="mb-0">Predictions (ML Insights)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="display-6 text-primary">₹{{ predicted_expenses|default:0|floatformat:0 }}</div>
+                        <p class="text-muted">Predicted expenses next month</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Confidence Level</span>
+                            <span>{{ prediction_confidence|default:0|floatformat:0 }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" style="width: {{ prediction_confidence|default:0|floatformat:0 }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-robot me-2"></i>AI Recommendation</h6>
+                        <p class="mb-0 small">
+                            Based on your recent spending, you could save about ₹{{ potential_savings|default:0|floatformat:0 }} next month by optimizing
+                            {% if expense_categories and expense_categories.0.category %}
+                                {{ expense_categories.0.category|title }}
+                            {% else %}
+                                your top spending categories
+                            {% endif %}.
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <h6><i class="bi bi-target me-2"></i>Goal Achievement</h6>
+                        <p class="mb-0 small">You're {{ goal_achievement_pct|default:0|floatformat:0 }}% likely to achieve your monthly savings goal of ₹{{ savings_goal_amount|default:0|floatformat:0 }}.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get real data from Django
+    const expenseCategories = JSON.parse('{{ expense_categories_json|escapejs }}');
+    const incomeCategories = JSON.parse('{{ income_categories_json|escapejs }}');
+    const dailyIncomeData = JSON.parse('{{ daily_income_json|escapejs }}');
+    const dailyExpenseData = JSON.parse('{{ daily_expense_json|escapejs }}');
+    const weeklyIncomeData = JSON.parse('{{ weekly_income_json|escapejs }}');
+    const weeklyExpenseData = JSON.parse('{{ weekly_expense_json|escapejs }}');
+    // Daily Chart - Enhanced with side-by-side bars
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    new Chart(dailyCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Income',
+                data: dailyIncomeData,
+                backgroundColor: '#10B981',
+                borderColor: '#059669',
+                borderWidth: 1
+            }, {
+                label: 'Expenses',
+                data: dailyExpenseData,
+                backgroundColor: '#EF4444',
+                borderColor: '#DC2626',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Weekly Chart - Enhanced with stronger colors and percentage labels
+    const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+    new Chart(weeklyCtx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Income',
+                data: weeklyIncomeData,
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#10B981',
+                pointBorderColor: '#059669',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }, {
+                label: 'Expenses',
+                data: weeklyExpenseData,
+                borderColor: '#EF4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#EF4444',
+                pointBorderColor: '#DC2626',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed.y;
+                            const prevValue = context.dataIndex > 0 ? context.dataset.data[context.dataIndex - 1] : value;
+                            const change = ((value - prevValue) / prevValue * 100).toFixed(1);
+                            const changeText = context.dataIndex > 0 ? ` (${change > 0 ? '+' : ''}${change}%)` : '';
+                            return context.dataset.label + ': ₹' + value.toLocaleString() + changeText;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Monthly Chart - Enhanced with stronger colors and percentage labels
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Income',
+                data: weeklyIncomeData,
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#10B981',
+                pointBorderColor: '#059669',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }, {
+                label: 'Expenses',
+                data: weeklyExpenseData,
+                borderColor: '#EF4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#EF4444',
+                pointBorderColor: '#DC2626',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed.y;
+                            const prevValue = context.dataIndex > 0 ? context.dataset.data[context.dataIndex - 1] : value;
+                            const change = ((value - prevValue) / prevValue * 100).toFixed(1);
+                            const changeText = context.dataIndex > 0 ? ` (${change > 0 ? '+' : ''}${change}%)` : '';
+                            return context.dataset.label + ': ₹' + value.toLocaleString() + changeText;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Expense Category Chart - Enhanced with sorting and percentage labels
+    const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+    // Use the expense categories data defined above
+    
+    // Sort categories by amount in descending order
+    const sortedCategories = expenseCategories.sort((a, b) => parseFloat(b.total) - parseFloat(a.total));
+    const totalExpenses = sortedCategories.reduce((sum, item) => sum + parseFloat(item.total), 0);
+    
+    new Chart(expenseCategoryCtx, {
+        type: 'bar',
+        data: {
+            labels: sortedCategories.map(item => item.category),
+            datasets: [{
+                label: 'Amount (₹)',
+                data: sortedCategories.map(item => parseFloat(item.total)),
+                backgroundColor: [
+                    '#3B82F6', // Blue
+                    '#10B981', // Green
+                    '#8B5CF6', // Purple
+                    '#F59E0B', // Yellow
+                    '#EF4444', // Red
+                    '#06B6D4', // Cyan
+                    '#F97316', // Orange
+                    '#84CC16'  // Lime
+                ],
+                borderColor: [
+                    '#2563EB',
+                    '#059669',
+                    '#7C3AED',
+                    '#D97706',
+                    '#DC2626',
+                    '#0891B2',
+                    '#EA580C',
+                    '#65A30D'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed.y;
+                            const percentage = ((value / totalExpenses) * 100).toFixed(1);
+                            return `₹${value.toLocaleString()} (${percentage}% of total)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Pie Chart - Enhanced with distinct colors and hover tooltips
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: sortedCategories.map(item => item.category),
+            datasets: [{
+                data: sortedCategories.map(item => parseFloat(item.total)),
+                backgroundColor: [
+                    '#3B82F6', // Blue
+                    '#10B981', // Green
+                    '#8B5CF6', // Purple
+                    '#F59E0B', // Yellow
+                    '#EF4444', // Red
+                    '#06B6D4', // Cyan
+                    '#F97316', // Orange
+                    '#84CC16'  // Lime
+                ],
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                hoverBorderWidth: 3,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const percentage = ((value / totalExpenses) * 100).toFixed(1);
+                            return `${context.label}: ₹${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Bar Chart - Enhanced with distinct colors and hover tooltips
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: sortedCategories.map(item => item.category),
+            datasets: [{
+                label: 'Amount (₹)',
+                data: sortedCategories.map(item => parseFloat(item.total)),
+                backgroundColor: [
+                    '#3B82F6', // Blue
+                    '#10B981', // Green
+                    '#8B5CF6', // Purple
+                    '#F59E0B', // Yellow
+                    '#EF4444', // Red
+                    '#06B6D4', // Cyan
+                    '#F97316', // Orange
+                    '#84CC16'  // Lime
+                ],
+                borderColor: [
+                    '#2563EB',
+                    '#059669',
+                    '#7C3AED',
+                    '#D97706',
+                    '#DC2626',
+                    '#0891B2',
+                    '#EA580C',
+                    '#65A30D'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed.y;
+                            const percentage = ((value / totalExpenses) * 100).toFixed(1);
+                            return `₹${value.toLocaleString()} (${percentage}% of total)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Comparison Chart - Enhanced with Net Savings line
+    const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+    const incomeData = weeklyIncomeData;
+    const expenseData = weeklyExpenseData;
+    const netSavingsData = incomeData.map((income, index) => income - expenseData[index]);
+    
+    new Chart(comparisonCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Income',
+                data: incomeData,
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: false,
+                pointBackgroundColor: '#10B981',
+                pointBorderColor: '#059669',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }, {
+                label: 'Expenses',
+                data: expenseData,
+                borderColor: '#EF4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: false,
+                pointBackgroundColor: '#EF4444',
+                pointBorderColor: '#DC2626',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }, {
+                label: 'Net Savings',
+                data: netSavingsData,
+                borderColor: '#8B5CF6',
+                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#8B5CF6',
+                pointBorderColor: '#7C3AED',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+// Add custom CSS for better chart spacing and styling
+const style = document.createElement('style');
+style.textContent = `
+    .card-body canvas {
+        height: 300px !important;
+    }
+    .stats-grid .stat-card .stat-change {
+        font-weight: 600;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 10px 0;
+    }
+    .top-spending-item {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        padding: 8px;
+    }
+    .top-spending-item:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        transform: translateX(5px);
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
