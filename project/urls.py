@@ -15,9 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from project_app.views import register, login
-from project_app.views import dashboard
+from project_app.views import dashboard, lending
 from project_app.views import expense
 from project_app.views import profile
 from project_app.views import income
@@ -26,7 +26,9 @@ from project_app.views import transaction_history
 
 from project_app.views import reports, export_report, generate_report, generate_custom_report
 from project_app.views import analytics, chart_data
-from project_app.views import landing
+from project_app.views import landing, subscribe_newsletter
+from project_app.views import notifications_data
+from project_app.views import export_profile_data, delete_account
 
 # Edit and Delete Transaction Views
 from project_app.views import edit_income, edit_expense, delete_income, delete_expense
@@ -44,6 +46,7 @@ urlpatterns = [
     path('login/', login, name='login'),
     path('logout/', logout, name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
+    path('lending/', lending, name='lending'),
     path('expense/', expense, name='expense'),
     path('profile/', profile, name='profile'),
     path('income/', income, name='income'),
@@ -55,6 +58,12 @@ urlpatterns = [
     path('generate-custom-report/', generate_custom_report, name='generate_custom_report'),
     path('analytics/', analytics, name='analytics'),
     path('chart-data/', chart_data, name='chart_data'),
+    path('notifications-data/', notifications_data, name='notifications_data'),
+    path('subscribe-newsletter/', subscribe_newsletter, name='subscribe_newsletter'),
+    path('accounts/', include('allauth.urls')),
+    # Profile actions
+    path('profile/export/', export_profile_data, name='export_profile_data'),
+    path('profile/delete/', delete_account, name='delete_account'),
     
     # Edit and Delete Transaction URLs
     path('income/edit/<int:income_id>/', edit_income, name='edit_income'),

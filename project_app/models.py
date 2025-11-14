@@ -8,7 +8,7 @@ class Registration(models.Model):
     name=models.CharField(max_length=50)
     email=models.EmailField()
     phone_no=models.CharField(max_length=10)
-    password=models.CharField(max_length=8)
+    password=models.CharField(max_length=128)
     address=models.TextField()
 
     def __str__(self):

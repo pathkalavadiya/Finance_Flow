@@ -64,8 +64,8 @@
             <!-- reCAPTCHA -->
             <div class="recaptcha-placeholder">
                 <div class="recaptcha-box">
-                    <input type="checkbox" id="recaptcha" class="recaptcha-checkbox" required>
-                    <label for="recaptcha" class="recaptcha-label">I'm not a robot</label>
+                    <input type="checkbox" id="recaptcha_login" class="recaptcha-checkbox" required>
+                    <label for="recaptcha_login" class="recaptcha-label">I'm not a robot</label>
                     <div class="recaptcha-logo">
                         <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDJDOC4yIDIgMiA4LjIgMiAxNlM4LjIgMzAgMTYgMzAgMzAgMjMuOCAzMCAxNlMyMy44IDIgMTYgMloiIGZpbGw9IiM0Mjg1RjQiLz4KPHA+PC9wPgo8L3N2Zz4K" alt="reCAPTCHA" width="32" height="32">
                         <div class="recaptcha-text">
@@ -84,22 +84,7 @@
             </div>
         </form>
 
-        <!-- Divider -->
-        <div class="divider">
-            <span>or</span>
-        </div>
-
-        <!-- Social Login -->
-        <div class="social-login">
-            <button class="btn btn-outline-secondary w-100 mb-2">
-                <i class="bi bi-google"></i>
-                Continue with Google
-            </button>
-            <button class="btn btn-outline-secondary w-100">
-                <i class="bi bi-facebook"></i>
-                Continue with Facebook
-            </button>
-        </div>
+        <!-- Social login removed -->
 
         <!-- Sign Up Link -->
         <div class="auth-footer-link">
@@ -115,20 +100,10 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Use neutral background to avoid the purple top strip */
+    background: #f8f9fa;
     position: relative;
-    overflow: hidden;
-}
-
-.auth-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    opacity: 0.3;
+    overflow: auto;
 }
 
 .auth-card {
@@ -437,8 +412,12 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('.login-form');
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
+    if (!form) return;
+    const email = form.querySelector('#email');
+    const password = form.querySelector('#password');
+    const checkbox = form.querySelector('#recaptcha_login');
+    const recaptchaBox = form.querySelector('.recaptcha-box');
+    const submitBtn = form.querySelector('button[type="submit"]');
     
     // Email validation
     email.addEventListener('input', function() {
@@ -451,33 +430,44 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Form submission validation
+    // Disable submit until captcha checked
+    if (submitBtn && checkbox) {
+        submitBtn.disabled = !checkbox.checked;
+        checkbox.addEventListener('change', function(){
+            submitBtn.disabled = !this.checked;
+        });
+    }
+
     form.addEventListener('submit', function(e) {
-        const recaptcha = document.getElementById('recaptcha');
         if (!email.value.trim() || !password.value.trim()) {
             e.preventDefault();
             alert('Please fill in all required fields');
-        } else if (!recaptcha.checked) {
+        } else if (checkbox && !checkbox.checked) {
             e.preventDefault();
             alert('Please verify that you are not a robot');
         }
     });
     
     // reCAPTCHA simulation
-    const recaptchaCheckbox = document.getElementById('recaptcha');
-    recaptchaCheckbox.addEventListener('change', function() {
-        const recaptchaBox = document.querySelector('.recaptcha-box');
-        if (this.checked) {
-            setTimeout(() => {
-                this.style.accentColor = '#10B981';
-                recaptchaBox.style.borderColor = '#10B981';
-                recaptchaBox.style.backgroundColor = '#F0FDF4';
-            }, 500);
-        } else {
-            this.style.accentColor = '#7C3AED';
-            recaptchaBox.style.borderColor = '#D1D5DB';
-            recaptchaBox.style.backgroundColor = '#F9FAFB';
-        }
-    });
+    if (checkbox) {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                setTimeout(() => {
+                    this.style.accentColor = '#10B981';
+                    if (recaptchaBox){
+                        recaptchaBox.style.borderColor = '#10B981';
+                        recaptchaBox.style.backgroundColor = '#F0FDF4';
+                    }
+                }, 300);
+            } else {
+                this.style.accentColor = '#7C3AED';
+                if (recaptchaBox){
+                    recaptchaBox.style.borderColor = '#D1D5DB';
+                    recaptchaBox.style.backgroundColor = '#F9FAFB';
+                }
+            }
+        });
+    }
 });
 </script>
 

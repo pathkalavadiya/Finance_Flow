@@ -220,9 +220,7 @@
                                 <i class="bi bi-file-earmark-text"></i>
                                 Generate Report
                             </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#previewModal">
-                                <i class="bi bi-eye"></i> Preview
-                            </button>
+                            <!-- Preview removed in old reports page -->
                         </div>
                     </div>
                 </div>
@@ -275,34 +273,38 @@
         </div>
 
         <div class="col-lg-3 col-md-6">
-            <div class="stats-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Excellent! Your net savings increased by ₹7,050. You're on track to meet your savings goal.">
+            <div class="stats-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Net savings change compared to the previous 30 days.">
                 <div class="stat-icon balance-icon">
                     <i class="bi bi-cash-stack"></i>
                 </div>
                 <div class="stat-value">₹{{ balance|default:"0" }}</div>
                 <div class="stat-label">Net Savings</div>
                 <div class="d-flex align-items-center mt-2">
-                    <span class="badge bg-success me-2">
-                        <i class="bi bi-arrow-up me-1"></i>
-                        +32.1%
+                    {% with ch=balance_change_percent_report|default:0 %}
+                    <span class="badge {% if ch >= 0 %}bg-success{% else %}bg-danger{% endif %} me-2">
+                        <i class="bi bi-arrow-{% if ch >= 0 %}up{% else %}down{% endif %} me-1"></i>
+                        {% if ch >= 0 %}+{% endif %}{{ ch|floatformat:1 }}%
                     </span>
+                    {% endwith %}
                     <small class="text-muted">vs last period</small>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-3 col-md-6">
-            <div class="stats-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Outstanding savings rate! You're saving 58.4% of your income - well above the recommended 20%.">
+            <div class="stats-card" data-bs-toggle="tooltip" data-bs-placement="top" title="Savings rate over the last 30 days and change vs the previous 30 days.">
                 <div class="stat-icon savings-icon">
                     <i class="bi bi-trending-up"></i>
                 </div>
-                <div class="stat-value">58.4%</div>
+                <div class="stat-value">{{ savings_rate_report|default:0|floatformat:1 }}%</div>
                 <div class="stat-label">Savings Rate</div>
                 <div class="d-flex align-items-center mt-2">
-                    <span class="badge bg-info me-2">
+                    {% with ch=savings_rate_change_report|default:0 %}
+                    <span class="badge {% if ch >= 0 %}bg-info{% else %}bg-danger{% endif %} me-2">
                         <i class="bi bi-percent me-1"></i>
-                        +22.4%
+                        {% if ch >= 0 %}+{% endif %}{{ ch|floatformat:1 }}%
                     </span>
+                    {% endwith %}
                     <small class="text-muted">vs last period</small>
                 </div>
             </div>
@@ -326,11 +328,11 @@
                             <small class="text-muted">Detailed breakdown of all income sources</small>
                         </div>
                         <div class="btn-group" role="group">
-                            <button class="btn btn-outline-success btn-sm" onclick="viewIncomeOnline('monthly')">
+                            <a class="btn btn-outline-success btn-sm" href="{% url 'analytics' %}">
                                 <i class="bi bi-eye"></i>
                                 View Online
-                            </button>
-                            <button class="btn btn-success btn-sm">
+                            </a>
+                            <button type="button" class="btn btn-success btn-sm download-report" data-report-type="Income Report">
                                 <i class="bi bi-download"></i>
                                 Download
                             </button>
@@ -346,11 +348,11 @@
                             <small class="text-muted">Visual representation of income distribution</small>
                         </div>
                         <div class="btn-group" role="group">
-                            <button class="btn btn-outline-success btn-sm" onclick="viewIncomeOnline('category')">
+                            <a class="btn btn-outline-success btn-sm" href="{% url 'analytics' %}">
                                 <i class="bi bi-eye"></i>
                                 View Online
-                            </button>
-                            <button class="btn btn-success btn-sm">
+                            </a>
+                            <button type="button" class="btn btn-success btn-sm download-report" data-report-type="Income Report">
                                 <i class="bi bi-download"></i>
                                 Download
                             </button>
@@ -366,11 +368,11 @@
                             <small class="text-muted">Historical income analysis and forecasting</small>
                         </div>
                         <div class="btn-group" role="group">
-                            <button class="btn btn-outline-success btn-sm" onclick="viewIncomeOnline('trends')">
+                            <a class="btn btn-outline-success btn-sm" href="{% url 'analytics' %}">
                                 <i class="bi bi-eye"></i>
                                 View Online
-                            </button>
-                            <button class="btn btn-success btn-sm">
+                            </a>
+                            <button type="button" class="btn btn-success btn-sm download-report" data-report-type="Income Report">
                                 <i class="bi bi-download"></i>
                                 Download
                             </button>
@@ -395,11 +397,11 @@
                             <small class="text-muted">Comprehensive expense breakdown</small>
                         </div>
                         <div class="btn-group" role="group">
-                            <button class="btn btn-outline-warning btn-sm" onclick="viewExpenseOnline('monthly')">
+                            <a class="btn btn-outline-warning btn-sm" href="{% url 'analytics' %}">
                                 <i class="bi bi-eye"></i>
                                 View Online
-                            </button>
-                            <button class="btn btn-warning btn-sm">
+                            </a>
+                            <button type="button" class="btn btn-warning btn-sm download-report" data-report-type="Expense Report">
                                 <i class="bi bi-download"></i>
                                 Download
                             </button>
@@ -415,11 +417,11 @@
                             <small class="text-muted">Category-wise expense analysis</small>
                         </div>
                         <div class="btn-group" role="group">
-                            <button class="btn btn-outline-warning btn-sm" onclick="viewExpenseOnline('category')">
+                            <a class="btn btn-outline-warning btn-sm" href="{% url 'analytics' %}">
                                 <i class="bi bi-eye"></i>
                                 View Online
-                            </button>
-                            <button class="btn btn-warning btn-sm">
+                            </a>
+                            <button type="button" class="btn btn-warning btn-sm download-report" data-report-type="Expense Report">
                                 <i class="bi bi-download"></i>
                                 Download
                             </button>
@@ -435,11 +437,11 @@
                             <small class="text-muted">Identify spending trends and patterns</small>
                         </div>
                         <div class="btn-group" role="group">
-                            <button class="btn btn-outline-warning btn-sm" onclick="viewExpenseOnline('patterns')">
+                            <a class="btn btn-outline-warning btn-sm" href="{% url 'analytics' %}">
                                 <i class="bi bi-eye"></i>
                                 View Online
-                            </button>
-                            <button class="btn btn-warning btn-sm">
+                            </a>
+                            <button type="button" class="btn btn-warning btn-sm download-report" data-report-type="Expense Report">
                                 <i class="bi bi-download"></i>
                                 Download
                             </button>
@@ -466,7 +468,7 @@
                             <div class="fw-semibold">Balance Overview</div>
                             <small class="text-muted">Monthly balance trends and analysis</small>
                         </div>
-                        <button class="btn btn-primary btn-sm">
+                        <button type="button" class="btn btn-primary btn-sm download-report" data-report-type="Balance Report">
                             <i class="bi bi-download"></i>
                             Download
                         </button>
@@ -482,7 +484,7 @@
                             <div class="fw-semibold">Savings Analysis</div>
                             <small class="text-muted">Savings rate and goal tracking</small>
                         </div>
-                        <button class="btn btn-primary btn-sm">
+                        <button type="button" class="btn btn-primary btn-sm download-report" data-report-type="Balance Report">
                             <i class="bi bi-download"></i>
                             Download
                         </button>
@@ -600,117 +602,69 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="slide-in-left stagger-1">
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="stat-icon income me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
-                                        <i class="bi bi-file-earmark-text"></i>
+                        {% if recent_reports %}
+                            {% for r in recent_reports %}
+                            <tr class="slide-in-left stagger-{{ forloop.counter }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="stat-icon {% if r.type == 'Income' %}income{% elif r.type == 'Expense' %}expense{% elif r.type == 'Balance' %}balance{% else %}profit{% endif %} me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ r.name }}</div>
+                                            <small class="text-muted">Recent {{ r.type|lower }} summary</small>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div class="fw-semibold">Income Report - Dec 2024</div>
-                                        <small class="text-muted">Monthly income summary</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="badge bg-success">Income</span></td>
-                            <td>Dec 15, 2024</td>
-                            <td>2.4 MB</td>
-                            <td>
-                                <button class="btn btn-primary btn-sm me-2">
-                                    <i class="bi bi-eye"></i>
-                                    View
-                                </button>
-                                <button class="btn btn-success btn-sm">
-                                    <i class="bi bi-download"></i>
-                                    Download
-                                </button>
-                            </td>
-                        </tr>
-                        
-                        <tr class="slide-in-left stagger-2">
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="stat-icon expense me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
-                                        <i class="bi bi-file-earmark-text"></i>
-                                    </div>
-                                    <div>
-                                        <div class="fw-semibold">Expense Report - Dec 2024</div>
-                                        <small class="text-muted">Monthly expense breakdown</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="badge bg-warning">Expense</span></td>
-                            <td>Dec 14, 2024</td>
-                            <td>1.8 MB</td>
-                            <td>
-                                <button class="btn btn-primary btn-sm me-2">
-                                    <i class="bi bi-eye"></i>
-                                    View
-                                </button>
-                                <button class="btn btn-success btn-sm">
-                                    <i class="bi bi-download"></i>
-                                    Download
-                                </button>
-                            </td>
-                        </tr>
-                        
-                        <tr class="slide-in-left stagger-3">
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="stat-icon balance me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
-                                        <i class="bi bi-file-earmark-text"></i>
-                                    </div>
-                                    <div>
-                                        <div class="fw-semibold">Balance Report - Nov 2024</div>
-                                        <small class="text-muted">Monthly balance summary</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="badge bg-primary">Balance</span></td>
-                            <td>Dec 1, 2024</td>
-                            <td>3.1 MB</td>
-                            <td>
-                                <button class="btn btn-primary btn-sm me-2">
-                                    <i class="bi bi-eye"></i>
-                                    View
-                                </button>
-                                <button class="btn btn-success btn-sm">
-                                    <i class="bi bi-download"></i>
-                                    Download
-                                </button>
-                            </td>
-                        </tr>
-                        
-                        <tr class="slide-in-left stagger-4">
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="stat-icon profit me-3" style="width: 32px; height: 32px; font-size: 0.875rem;">
-                                        <i class="bi bi-file-earmark-text"></i>
-                                    </div>
-                                    <div>
-                                        <div class="fw-semibold">Custom Report - Food Expenses</div>
-                                        <small class="text-muted">Food category analysis</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="badge bg-info">Custom</span></td>
-                            <td>Nov 28, 2024</td>
-                            <td>1.2 MB</td>
-                            <td>
-                                <button class="btn btn-primary btn-sm me-2">
-                                    <i class="bi bi-eye"></i>
-                                    View
-                                </button>
-                                <button class="btn btn-success btn-sm">
-                                    <i class="bi bi-download"></i>
-                                    Download
-                                </button>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <span class="badge {% if r.type == 'Income' %}bg-success{% elif r.type == 'Expense' %}bg-warning{% elif r.type == 'Balance' %}bg-primary{% else %}bg-info{% endif %}">{{ r.type }}</span>
+                                </td>
+                                <td>{{ r.generated }}</td>
+                                <td>{{ r.size_display }}</td>
+                                <td>
+                                    <a class="btn btn-primary btn-sm me-2" href="{% url 'analytics' %}">
+                                        <i class="bi bi-eye"></i>
+                                        View
+                                    </a>
+                                    <button type="button" class="btn btn-success btn-sm download-report" data-report-type="{{ r.type }} Report">
+                                        <i class="bi bi-download"></i>
+                                        Download
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-muted text-center">No reports available yet</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+    <script>
+    (function(){
+        const exportForm = document.querySelector('form[action="{% url "generate_report" %}"]');
+        const downloadBtns = document.querySelectorAll('.download-report');
+        function navigateGenerate(reportType){
+            const dateSel = exportForm ? exportForm.querySelector('select[name="date_range"]') : null;
+            const fmtSel = exportForm ? exportForm.querySelector('select[name="format"]') : null;
+            const base = '{% url "generate_report" %}';
+            const url = new URL(base, window.location.origin);
+            url.searchParams.set('report_type', reportType || 'Income Report');
+            url.searchParams.set('date_range', dateSel ? dateSel.value : 'Last 7 days');
+            url.searchParams.set('format', fmtSel ? fmtSel.value : 'CSV');
+            window.location.href = url.toString();
+        }
+        downloadBtns.forEach(btn=>{
+            btn.addEventListener('click', function(e){
+                if (e && e.preventDefault) e.preventDefault();
+                const type = this.getAttribute('data-report-type') || 'Income Report';
+                navigateGenerate(type);
+            });
+        });
+    })();
+    </script>
 </div>
 {% endblock %}

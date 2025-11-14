@@ -317,19 +317,19 @@
     }
     
     .income-icon {
-        background-color: #28a745;
+        background-color: #f4f8f5;
     }
     
     .expense-icon {
-        background-color: #dc3545;
+        background-color: #faf8f9;
     }
     
     .balance-icon {
-        background-color: #007bff;
+        background-color: #f9fafb;
     }
     
     .savings-icon {
-        background-color: #17a2b8;
+        background-color: #fafdfd;
     }
 
     .stat-value {
@@ -418,6 +418,24 @@
     .author-icon {
         color: #3b82f6;
     }
+    
+    /* Transaction avatar badges (do not affect global .user-avatar) */
+    .tx-avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent !important;
+        border-radius: 0;
+        width: auto;
+        height: auto;
+        box-shadow: none;
+        color: inherit;
+    }
+    .tx-avatar.income,
+    .tx-avatar.expense { background: transparent !important; }
+    .tx-avatar i { opacity: 1; font-size: 1.1rem; }
+    .tx-avatar.income i { color: #10B981; }
+    .tx-avatar.expense i { color: #EF4444; }
     
     /* Glassmorphism Table Styling */
     .table {
@@ -520,7 +538,7 @@
         </div>
         <button class="notification-btn" title="Notifications">
             <i class="bi bi-bell"></i>
-            <span class="notification-badge">3</span>
+            <span class="notification-badge">{{ notifications_count|default:0 }}</span>
         </button>
         <div class="user-profile">
             <div class="dropdown">
@@ -799,7 +817,7 @@
     <div class="card fade-in-up mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Recent Transactions (Last 10)</h5>
-            <a href="#" class="btn btn-primary btn-sm">View All</a>
+            <a href="{% url 'transaction_history' %}" class="btn btn-primary btn-sm" role="button">View All</a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -819,9 +837,13 @@
                             <tr class="slide-in-left stagger-{{ forloop.counter }}">
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="user-avatar me-3" style="width: 32px; height: 32px; font-size: 0.75rem;">
-                                            {% if transaction.type == 'income' %}💰{% else %}🛒{% endif %}
-                                        </div>
+                                        <span class="tx-avatar {% if transaction.type == 'income' %}income{% else %}expense{% endif %} me-3">
+                                            {% if transaction.type == 'income' %}
+                                                <i class="bi bi-cash-coin"></i>
+                                            {% else %}
+                                                <i class="bi bi-bag"></i>
+                                            {% endif %}
+                                        </span>
                                         <div>
                                             <div class="fw-semibold">{{ transaction.description }}</div>
                                             <small class="text-muted">{{ transaction.category }}</small>
@@ -917,29 +939,80 @@
                     <h5 class="mb-0">Quick Insights</h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info mb-3">
-                        <i class="bi bi-lightbulb me-2"></i>
-                        <strong>This week you spent 20% more than last week</strong>
-                        <small class="d-block text-muted mt-1">Consider reviewing your expenses</small>
-                    </div>
-                    <div class="alert alert-success mb-3">
-                        <i class="bi bi-check-circle me-2"></i>
-                        <strong>You're on track with your budget goals!</strong>
-                        <small class="d-block text-muted mt-1">Keep up the good work</small>
-                    </div>
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong>Food expenses increased by 15%</strong>
-                        <small class="d-block text-muted mt-1">Review your dining habits</small>
-                    </div>
+                    {% if insights and insights|length > 0 %}
+                        {% for i in insights %}
+                        <div class="alert alert-{{ i.level|default:'info' }} mb-3">
+                            <i class="bi {{ i.icon|default:'bi-lightbulb' }} me-2"></i>
+                            <strong>{{ i.title }}</strong>
+                            {% if i.subtitle %}
+                                <small class="d-block text-muted mt-1">{{ i.subtitle }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-muted">No insights yet. Add more data to see personalized tips.</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+{% if insights %}
+{{ insights|json_script:"insights-data" }}
+{% endif %}
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Dashboard header: search input behavior and dynamic badge
+    (function(){
+        const input = document.querySelector('.search-input');
+        const icon = document.querySelector('.search-icon');
+        const badge = document.querySelector('.notification-badge');
+        const notifyBtn = document.querySelector('.notification-btn');
+        
+        function goSearch() {
+            if (!input) return;
+            const q = (input.value || '').trim();
+            window.location.href = '{% url "transaction_history" %}' + (q ? ('?q=' + encodeURIComponent(q)) : '');
+        }
+        if (input) {
+            input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); goSearch(); } });
+        }
+        if (icon) { icon.addEventListener('click', goSearch); }
+        // Ensure badge reflects insights length
+        let insightsArr = [];
+        const insightsEl = document.getElementById('insights-data');
+        if (insightsEl) {
+            try { insightsArr = JSON.parse(insightsEl.textContent || '[]'); } catch(e) { insightsArr = []; }
+        }
+        if (badge) {
+            const n = insightsArr.length;
+            badge.textContent = n;
+            badge.style.display = n > 0 ? 'flex' : 'none';
+        }
+
+        // Populate global notifications modal from insights
+        function populateNotifications() {
+            const list = document.getElementById('notificationsList');
+            const empty = document.getElementById('notificationsEmpty');
+            if (!list) return;
+            list.innerHTML = '';
+            if (!insightsArr || insightsArr.length === 0) {
+                if (empty) empty.style.display = 'block';
+                return;
+            }
+            if (empty) empty.style.display = 'none';
+            insightsArr.forEach(i => {
+                const item = document.createElement('div');
+                item.className = 'list-group-item d-flex align-items-center';
+                const iconHtml = `<i class="bi ${i.icon || 'bi-lightbulb'} me-2 ${i.level === 'success' ? 'text-success' : (i.level === 'warning' ? 'text-warning' : 'text-info')}"></i>`;
+                item.innerHTML = `${iconHtml}<div><div class="fw-semibold">${i.title || ''}</div>${i.subtitle ? `<small class="text-muted">${i.subtitle}</small>` : ''}</div>`;
+                list.appendChild(item);
+            });
+        }
+        if (notifyBtn) notifyBtn.addEventListener('click', populateNotifications);
+    })();
     // Fetch monthly chart data from API
     fetch('{% url "chart_data" %}?type=monthly')
         .then(response => response.json())
@@ -1090,30 +1163,51 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             const balanceTrendCtx = document.getElementById('balanceTrendChart').getContext('2d');
+            const series = (data.datasets && data.datasets[0] && Array.isArray(data.datasets[0].data)) ? data.datasets[0].data.map(Number) : [];
+            const vals = series.length ? series : [0,0,0,0,0,0,0,0,0,0,0,0];
+            const minVal = Math.min.apply(null, vals);
+            const maxVal = Math.max.apply(null, vals);
+            const padding = Math.max(1000, Math.round((maxVal - minVal) * 0.1));
             new Chart(balanceTrendCtx, {
                 type: 'line',
                 data: {
                     labels: data.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     datasets: [{
                         label: 'Balance',
-                        data: data.datasets[0]?.data || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        data: vals,
                         borderColor: '#ff6b35',
                         backgroundColor: 'rgba(255, 107, 53, 0.1)',
-                        tension: 0.4,
-                        fill: true
+                        tension: 0.35,
+                        fill: true,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        spanGaps: true
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx){
+                                    const v = ctx.parsed.y || 0;
+                                    return 'Balance: \u20B9' + v.toLocaleString();
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
-                        }
+                            suggestedMin: minVal - padding,
+                            suggestedMax: maxVal + padding,
+                            ticks: {
+                                callback: function(value){ return '\u20B9' + value.toLocaleString(); }
+                            },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: { grid: { display: false } }
                     }
                 }
             });
@@ -1262,6 +1356,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function applyFilters() {
     const dateRange = document.getElementById('dateRangeFilter').value;
     const category = document.getElementById('categoryFilter').value;
+    const amountRange = document.getElementById('amountRangeFilter').value;
     
     console.log('Applying filters:', { dateRange, category, amountRange });
     
@@ -1270,7 +1365,8 @@ function applyFilters() {
     
     // Build query parameters
     const params = new URLSearchParams();
-    if (dateRange !== 'all') params.append('date_range', dateRange);
+    // Only append date range if not default/all; skip 'custom' until implemented
+    if (dateRange && dateRange !== 'all' && dateRange !== 'custom') params.append('date_range', dateRange);
     if (category !== 'all') params.append('category', category);
     if (amountRange !== 'all') params.append('amount_range', amountRange);
     
@@ -1357,9 +1453,9 @@ function updateRecentTransactionsTable(transactions) {
         <tr class="slide-in-left stagger-${index + 1}">
             <td>
                 <div class="d-flex align-items-center">
-                    <div class="user-avatar me-3" style="width: 32px; height: 32px; font-size: 0.75rem;">
-                        ${transaction.type === 'income' ? '💰' : '🛒'}
-                    </div>
+                    <span class="tx-avatar ${transaction.type === 'income' ? 'income' : 'expense'} me-3">
+                        <i class="bi ${transaction.type === 'income' ? 'bi-cash-coin' : 'bi-bag'}"></i>
+                    </span>
                     <div>
                         <div class="fw-semibold">${transaction.description}</div>
                         <small class="text-muted">${transaction.category}</small>

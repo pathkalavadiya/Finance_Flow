@@ -1,0 +1,112 @@
+{% extends '../base.html' %}
+
+{% block title %}Lending - FinanceFlow{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="page-title">Lending</h1>
+    <div class="header-actions" style="margin-left: auto; padding-right: 24px;">
+        <button class="search-btn" title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+    </div>
+</div>
+
+<div class="content-body">
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stat-icon savings-icon">
+                    <i class="bi bi-piggy-bank"></i>
+                </div>
+                <div class="stat-value">₹{{ total_lent }}</div>
+                <div class="stat-label">Total Lent</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-info me-2">Summary</span>
+                    <small class="text-muted">Outstanding: ₹{{ outstanding }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stat-icon income-icon">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div class="stat-value">₹{{ total_received }}</div>
+                <div class="stat-label">Received Back</div>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-success me-2">Status</span>
+                    <small class="text-muted">Completed lendings</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-12">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLendingModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add Lending
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    {% if message %}
+                    <div class="alert alert-success">{{ message }}</div>
+                    {% endif %}
+
+                    <h5 class="mb-3">Active Lendings</h5>
+                    {% if lendings %}
+                    <div class="list-group">
+                        {% for l in lendings %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ l.name }}</strong>
+                                <div><small class="text-muted">₹{{ l.amount }} — {{ l.date }}</small></div>
+                            </div>
+                            <div>
+                                <span class="badge bg-warning">{{ l.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No lendings yet. Click Add Lending to create one.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Lending Modal -->
+<div class="modal fade" id="addLendingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Lending</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="lendName" class="form-label">Person</label>
+                        <input type="text" class="form-control" id="lendName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="lendAmount" class="form-label">Amount</label>
+                        <input type="number" class="form-control" id="lendAmount" name="amount" step="0.01" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="lendDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="lendDate" name="date" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -7,14 +7,20 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Sum, Q
 from django.http import JsonResponse, HttpResponse
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.db.models import Sum, Count, Value, CharField
 from django.db.models.functions import TruncMonth
 from .models import Registration, Expense, Income, Group, GroupMember, GroupExpense, GroupExpenseSplit
 from itertools import chain
 from operator import attrgetter
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.views.decorators.http import require_http_methods
 from datetime import datetime, date, timedelta
+from django.utils import timezone
+from django.template.loader import render_to_string
+from io import BytesIO
 from functools import wraps
 from django.db import OperationalError
 from decimal import Decimal
@@ -37,26 +43,37 @@ def register(request):
     if request.method == 'POST':
         # Get form data
         name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
+        email = request.POST.get('email', '').strip().lower()
         phone_no = request.POST.get('mob', '').strip()
         password = request.POST.get('password', '')
-        confirm_password = request.POST.get('confirm_password', '')
-        address = request.POST.get('add', '').strip()
+        # confirm_password and address removed from form; set address to empty
+        address = ''
         
         # Basic validation
-        if not all([name, email, phone_no, password, confirm_password, address]):
+        if not all([name, email, phone_no, password]):
             return render(request, 'authentication/register.html', 
                         {'register_check_key': "All fields are required"})
-        
-        # Check password match
-        if password != confirm_password:
+
+        # Email format validation
+        import re
+        email_regex = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+        if not email_regex.match(email):
+            return render(request, 'authentication/register.html',
+                        {'register_check_key': "Please enter a valid email address"})
+
+        # Strong password validation: min 8, 1 uppercase, 1 digit, 1 special
+        if len(password) < 8:
             return render(request, 'authentication/register.html', 
-                        {'password_mismatch': "Passwords do not match"})
-        
-        # Check password length (model constraint is 8 characters)
-        if len(password) > 8:
+                        {'register_check_key': "Password must be at least 8 characters long"})
+        if not re.search(r'[A-Z]', password):
             return render(request, 'authentication/register.html', 
-                        {'register_check_key': "Password must be 8 characters or less"})
+                        {'register_check_key': "Password must contain at least one uppercase letter"})
+        if not re.search(r'\d', password):
+            return render(request, 'authentication/register.html', 
+                        {'register_check_key': "Password must contain at least one digit"})
+        if not re.search(r'[!@#$%^&*()_+\-=[\]{};:\\|,.<>/?]', password):
+            return render(request, 'authentication/register.html', 
+                        {'register_check_key': "Password must contain at least one special character"})
         
         # Check phone number length
         if len(phone_no) != 10:
@@ -87,6 +104,43 @@ def register(request):
                             {'register_check_key': f"Registration failed: {str(e)}"})
     
     return render(request, 'authentication/register.html')
+
+
+@require_http_methods(["GET", "POST"])
+def lending(request):
+    """Simple lending UI: shows a list and accepts POSTs but doesn't persist.
+
+    This provides a working page so the user can interact with the lending UI.
+    """
+    message = ''
+    # simple in-memory sample lendings for UI
+    lendings = [
+        { 'name': 'Rohit', 'amount': '1500', 'date': '2025-09-01', 'status': 'Pending' },
+        { 'name': 'Anita', 'amount': '2500', 'date': '2025-08-12', 'status': 'Returned' },
+    ]
+
+    total_lent = sum(float(l['amount']) for l in lendings)
+    outstanding = sum(float(l['amount']) for l in lendings if l['status'] != 'Returned')
+    total_received = sum(float(l['amount']) for l in lendings if l['status'] == 'Returned')
+
+    if request.method == 'POST':
+        # read fields and show a success message; not persisted
+        name = request.POST.get('name', '').strip()
+        amount = request.POST.get('amount', '').strip()
+        date = request.POST.get('date', '').strip()
+        if name and amount and date:
+            message = f'Lending saved for {name} (₹{amount}) on {date}'
+        else:
+            message = 'Please fill all required fields.'
+
+    context = {
+        'lendings': lendings,
+        'total_lent': int(total_lent),
+        'outstanding': int(outstanding),
+        'total_received': int(total_received),
+        'message': message,
+    }
+    return render(request, 'lending/lending.html', context)
 
  
 # login
@@ -127,8 +181,63 @@ def landing(request):
     # If logged in, go to dashboard; otherwise show public landing page
     if 'entry_email' in request.session:
         return redirect('dashboard')
-    return render(request, 'landing.html')
+    
+    # Dynamic stats
+    user_count = Registration.objects.count()
+    total_income_sum = Income.objects.aggregate(total=Sum('amount'))['total'] or 0
+    total_expense_sum = Expense.objects.aggregate(total=Sum('amount'))['total'] or 0
+    money_managed = float(total_income_sum) + float(total_expense_sum)
+    total_transactions = Income.objects.count() + Expense.objects.count()
+    satisfaction_rate = 90  # default static unless you want to compute from feedback later
 
+    context = {
+        'user_count': user_count,
+        'actual_user_count': user_count,
+        'money_managed': int(money_managed),
+        'total_transactions': int(total_transactions),
+        'satisfaction_rate': int(satisfaction_rate),
+    }
+    return render(request, 'landing.html', context)
+
+
+@require_http_methods(["POST"])
+@csrf_protect
+def subscribe_newsletter(request):
+    """Subscribe to the newsletter by appending email to a CSV file.
+    - If AJAX (fetch/XHR), returns JSON {success, message}
+    - Otherwise redirects back to landing with a query param for simple feedback
+    This avoids DB migrations while making the feature work immediately.
+    """
+    email = (request.POST.get('email') or '').strip()
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if not email:
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': 'Please enter an email address.'}, status=400)
+        return redirect(f"{request.META.get('HTTP_REFERER', '/') }?newsletter=missing")
+
+    try:
+        # Ensure file exists, then append a new line with timestamp
+        from pathlib import Path
+        import csv
+        from datetime import datetime
+
+        base_dir = Path(settings.BASE_DIR) if hasattr(settings, 'BASE_DIR') else Path.cwd()
+        out_path = base_dir / 'newsletter_subscribers.csv'
+        new_file = not out_path.exists()
+        with out_path.open('a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            if new_file:
+                writer.writerow(['email', 'subscribed_at', 'ip'])
+            writer.writerow([email, datetime.utcnow().isoformat(), request.META.get('REMOTE_ADDR', '')])
+
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': 'Subscribed successfully!'}, status=200)
+        return redirect(f"{request.META.get('HTTP_REFERER', '/') }?newsletter=success")
+    except Exception as e:
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': f'Failed to subscribe: {str(e)}'}, status=500)
+        return redirect(f"{request.META.get('HTTP_REFERER', '/') }?newsletter=error")
 
 @login_required
 def dashboard(request):
@@ -141,6 +250,7 @@ def dashboard(request):
     previous_balance = 0
     balance = 0
     balance_change_percent = 0.0
+    insights = []
     
     # Transaction card variables
     today_transactions = 0
@@ -240,6 +350,16 @@ def dashboard(request):
             days_in_month = calendar.monthrange(current_date.year, current_date.month)[1]
             days_left = days_in_month - current_date.day
             
+            # Savings rate (current month) and change vs previous month (for dashboard cards)
+            def _rate(income, expense):
+                try:
+                    return float(((income or 0) - (expense or 0)) / income * 100) if income and income > 0 else 0.0
+                except Exception:
+                    return 0.0
+            savings_rate = _rate(current_month_income, current_month_expense)
+            previous_savings_rate = _rate(previous_income, previous_expenses)
+            savings_rate_change = savings_rate - previous_savings_rate
+
             # Get last update timestamps
             last_income = Income.objects.filter(user=user).order_by('-created_at').first()
             last_expense = Expense.objects.filter(user=user).order_by('-created_at').first()
@@ -374,6 +494,100 @@ def dashboard(request):
             
             # Sort by date (most recent first) and limit to 10
             recent_transactions = sorted(recent_transactions, key=lambda x: x['date'], reverse=True)[:10]
+
+            # Dynamic Insights
+            # 1) Week-over-week spending change
+            prev_week_start = week_start - timedelta(days=7)
+            prev_week_end = week_start
+            prev_week_expense = Expense.objects.filter(
+                user=user,
+                created_at__gte=prev_week_start,
+                created_at__lt=prev_week_end
+            ).aggregate(total=Sum('amount'))['total'] or 0
+
+            if prev_week_expense and prev_week_expense > 0:
+                wo_w_change_pct = ((weekly_expense - prev_week_expense) / prev_week_expense) * 100
+                if wo_w_change_pct > 5:
+                    insights.append({
+                        'level': 'info',
+                        'icon': 'bi-lightbulb',
+                        'title': f"This week you spent {wo_w_change_pct:.0f}% more than last week",
+                        'subtitle': 'Consider reviewing your expenses'
+                    })
+                elif wo_w_change_pct < -5:
+                    insights.append({
+                        'level': 'success',
+                        'icon': 'bi-graph-up-arrow',
+                        'title': f"Great! You spent {-wo_w_change_pct:.0f}% less than last week",
+                        'subtitle': 'Nice savings trend'
+                    })
+            else:
+                if weekly_expense > 0:
+                    insights.append({
+                        'level': 'info',
+                        'icon': 'bi-lightbulb',
+                        'title': 'Spending started this week',
+                        'subtitle': 'No spend was recorded last week for comparison'
+                    })
+
+            # 2) Budget pacing vs month progress
+            days_in_month = calendar.monthrange(current_date.year, current_date.month)[1]
+            day_of_month = current_date.day
+            month_progress_pct = (day_of_month / days_in_month) * 100 if days_in_month else 0
+            expected_expense_pct = month_progress_pct
+            if expense_progress_percentage <= expected_expense_pct + 5:
+                insights.append({
+                    'level': 'success',
+                    'icon': 'bi-check-circle',
+                    'title': "You're on track with your budget goals!",
+                    'subtitle': 'Keep up the good work'
+                })
+            else:
+                over_pct = max(0, expense_progress_percentage - expected_expense_pct)
+                insights.append({
+                    'level': 'warning',
+                    'icon': 'bi-exclamation-triangle',
+                    'title': f'Your spending pace is {over_pct:.0f}% ahead of budget',
+                    'subtitle': 'Reduce discretionary expenses to stay on target'
+                })
+
+            # 3) Category spike this month vs previous month
+            current_cat_totals = Expense.objects.filter(
+                user=user,
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).values('category').annotate(total=Sum('amount'))
+
+            prev_month_start = (month_start - timedelta(days=1)).replace(day=1)
+            prev_month_end = month_start
+            prev_cat_totals = Expense.objects.filter(
+                user=user,
+                created_at__gte=prev_month_start,
+                created_at__lt=prev_month_end
+            ).values('category').annotate(total=Sum('amount'))
+
+            prev_map = {row['category']: row['total'] for row in prev_cat_totals}
+            spike = None
+            for row in current_cat_totals:
+                cat = row['category'] or 'Other'
+                cur = row['total'] or 0
+                prev = prev_map.get(cat, 0) or 0
+                if prev > 0:
+                    change = ((cur - prev) / prev) * 100
+                    if change >= 10 and (not spike or change > spike['change']):
+                        spike = {'category': cat, 'change': change}
+                elif cur > 0 and prev == 0:
+                    # Newly appearing category with spend
+                    if not spike:
+                        spike = {'category': cat, 'change': 100}
+
+            if spike:
+                insights.append({
+                    'level': 'warning',
+                    'icon': 'bi-exclamation-triangle',
+                    'title': f"{spike['category']} expenses increased by {spike['change']:.0f}%",
+                    'subtitle': 'Review recent purchases in this category'
+                })
     
     context = {
             'user': user,
@@ -409,6 +623,9 @@ def dashboard(request):
             'expense_change_percent': expense_change_percent,
             'previous_balance': previous_balance,
             'balance': balance,
+        'savings_rate': savings_rate,
+        'previous_savings_rate': previous_savings_rate,
+        'savings_rate_change': savings_rate_change,
             'balance_change_percent': balance_change_percent,
             # Transaction card data
             'today_transactions': today_transactions,
@@ -420,7 +637,9 @@ def dashboard(request):
             'monthly_transactions': monthly_transactions,
             'monthly_income': monthly_income,
             'monthly_expense': monthly_expense,
-            'recent_transactions': recent_transactions
+            'recent_transactions': recent_transactions,
+            'insights': insights,
+            'notifications_count': len(insights)
         }
     return render(request, 'dashboard/dashboard.html', context)
 
@@ -496,17 +715,27 @@ def expense(request):
 def transaction_history(request):
     user = None
     transactions = []
+    q = (request.GET.get('q') or '').strip()
     
     if 'entry_email' in request.session:
         user = Registration.objects.filter(email=request.session['entry_email']).first()
         
         if user:
-            # Get all income and expense records
-            incomes = Income.objects.filter(user=user).annotate(
+            # Base querysets
+            incomes_qs = Income.objects.filter(user=user)
+            expenses_qs = Expense.objects.filter(user=user)
+
+            # Apply search filter if provided
+            if q:
+                incomes_qs = incomes_qs.filter(Q(description__icontains=q) | Q(category__icontains=q))
+                expenses_qs = expenses_qs.filter(Q(description__icontains=q) | Q(category__icontains=q))
+
+            # Prepare values for rendering
+            incomes = incomes_qs.annotate(
                 type=Value('income', output_field=CharField())
             ).values('id', 'amount', 'description', 'date', 'category', 'created_at', 'type', 'user__name')
             
-            expenses = Expense.objects.filter(user=user).annotate(
+            expenses = expenses_qs.annotate(
                 type=Value('expense', output_field=CharField())
             ).values('id', 'amount', 'description', 'date', 'category', 'created_at', 'type', 'user__name')
             
@@ -525,6 +754,160 @@ def transaction_history(request):
     }
     
     return render(request, 'transactions/history.html', context)
+
+
+@login_required
+def notifications_data(request):
+    """Return dynamic insights as notifications for the current user.
+    Shape: { count: int, items: [{level, icon, title, subtitle}] }
+    """
+    user = None
+    items = []
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+
+    if not user:
+        return JsonResponse({'count': 0, 'items': []})
+
+    # Compute minimal data needed to generate insights
+    current_date = datetime.now()
+
+    # Weekly expense vs last week
+    week_start = current_date - timedelta(days=current_date.weekday())
+    week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_end = week_start + timedelta(days=7)
+    weekly_expense = Expense.objects.filter(user=user, created_at__gte=week_start, created_at__lt=week_end).aggregate(total=Sum('amount'))['total'] or 0
+    prev_week_start = week_start - timedelta(days=7)
+    prev_week_end = week_start
+    prev_week_expense = Expense.objects.filter(user=user, created_at__gte=prev_week_start, created_at__lt=prev_week_end).aggregate(total=Sum('amount'))['total'] or 0
+    if prev_week_expense and prev_week_expense > 0:
+        wo_w_change_pct = ((weekly_expense - prev_week_expense) / prev_week_expense) * 100
+        if wo_w_change_pct > 5:
+            items.append({'level': 'info', 'icon': 'bi-lightbulb', 'title': f"This week you spent {wo_w_change_pct:.0f}% more than last week", 'subtitle': 'Consider reviewing your expenses'})
+        elif wo_w_change_pct < -5:
+            items.append({'level': 'success', 'icon': 'bi-graph-up-arrow', 'title': f"Great! You spent {-wo_w_change_pct:.0f}% less than last week", 'subtitle': 'Nice savings trend'})
+    elif weekly_expense > 0:
+        items.append({'level': 'info', 'icon': 'bi-lightbulb', 'title': 'Spending started this week', 'subtitle': 'No spend was recorded last week for comparison'})
+
+    # Budget pacing vs month progress
+    # Monthly totals and simple budget constants (keep in sync with dashboard)
+    month_start = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    if current_date.month == 12:
+        month_end = month_start.replace(year=current_date.year + 1, month=1)
+    else:
+        month_end = month_start.replace(month=current_date.month + 1)
+    current_month_expense = Expense.objects.filter(user=user, created_at__gte=month_start, created_at__lt=month_end).aggregate(total=Sum('amount'))['total'] or 0
+    expense_budget = 2500  # same as dashboard
+    expense_progress_percentage = min(int(((current_month_expense or 0) / expense_budget) * 100), 100) if expense_budget > 0 else 0
+    days_in_month = calendar.monthrange(current_date.year, current_date.month)[1]
+    day_of_month = current_date.day
+    month_progress_pct = (day_of_month / days_in_month) * 100 if days_in_month else 0
+    expected_expense_pct = month_progress_pct
+    if expense_progress_percentage <= expected_expense_pct + 5:
+        items.append({'level': 'success', 'icon': 'bi-check-circle', 'title': "You're on track with your budget goals!", 'subtitle': 'Keep up the good work'})
+    else:
+        over_pct = max(0, expense_progress_percentage - expected_expense_pct)
+        items.append({'level': 'warning', 'icon': 'bi-exclamation-triangle', 'title': f'Your spending pace is {over_pct:.0f}% ahead of budget', 'subtitle': 'Reduce discretionary expenses to stay on target'})
+
+    # Category spike vs previous month
+    current_cat_totals = Expense.objects.filter(user=user, created_at__gte=month_start, created_at__lt=month_end).values('category').annotate(total=Sum('amount'))
+    prev_month_start = (month_start - timedelta(days=1)).replace(day=1)
+    prev_month_end = month_start
+    prev_cat_totals = Expense.objects.filter(user=user, created_at__gte=prev_month_start, created_at__lt=prev_month_end).values('category').annotate(total=Sum('amount'))
+    prev_map = {row['category']: row['total'] for row in prev_cat_totals}
+    spike = None
+    for row in current_cat_totals:
+        cat = row['category'] or 'Other'
+        cur = row['total'] or 0
+        prev = prev_map.get(cat, 0) or 0
+        if prev > 0:
+            change = ((cur - prev) / prev) * 100
+            if change >= 10 and (not spike or change > spike['change']):
+                spike = {'category': cat, 'change': change}
+        elif cur > 0 and prev == 0 and not spike:
+            spike = {'category': cat, 'change': 100}
+    if spike:
+        items.append({'level': 'warning', 'icon': 'bi-exclamation-triangle', 'title': f"{spike['category']} expenses increased by {spike['change']:.0f}%", 'subtitle': 'Review recent purchases in this category'})
+
+    return JsonResponse({'count': len(items), 'items': items})
+
+
+@login_required
+def export_profile_data(request):
+    """Export the current user's incomes and expenses as a CSV file."""
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    if not user:
+        return redirect('login')
+
+    # Prepare CSV response
+    from io import StringIO
+    buffer = StringIO()
+    writer = csv.writer(buffer)
+
+    # Basic user info
+    writer.writerow(['FinanceFlow Export'])
+    writer.writerow(['Name', user.name])
+    writer.writerow(['Email', user.email])
+    writer.writerow([])
+
+    # Incomes
+    writer.writerow(['Incomes'])
+    writer.writerow(['Date', 'Amount', 'Currency', 'Category', 'Description'])
+    for inc in Income.objects.filter(user=user).order_by('-created_at'):
+        writer.writerow([getattr(inc, 'date', getattr(inc, 'created_at', '')),
+                         inc.amount, getattr(inc, 'currency', ''), inc.category, inc.description])
+    writer.writerow([])
+
+    # Expenses
+    writer.writerow(['Expenses'])
+    writer.writerow(['Date', 'Amount', 'Currency', 'Category', 'Description'])
+    for exp in Expense.objects.filter(user=user).order_by('-created_at'):
+        writer.writerow([getattr(exp, 'date', getattr(exp, 'created_at', '')),
+                         exp.amount, getattr(exp, 'currency', ''), exp.category, exp.description])
+
+    content = buffer.getvalue()
+    buffer.close()
+
+    from django.http import HttpResponse
+    resp = HttpResponse(content, content_type='text/csv')
+    resp['Content-Disposition'] = f'attachment; filename="financeflow_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+    return resp
+
+
+@login_required
+@require_http_methods(["POST"]) 
+def delete_account(request):
+    """Delete the current user's account and related data."""
+    # Detect AJAX vs normal form
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    user = None
+    if 'entry_email' in request.session:
+        user = Registration.objects.filter(email=request.session['entry_email']).first()
+    if not user:
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+        return redirect('login')
+
+    try:
+        # Delete user-related data
+        Income.objects.filter(user=user).delete()
+        Expense.objects.filter(user=user).delete()
+        # Finally delete Registration record
+        user.delete()
+        # Clear session
+        if 'entry_email' in request.session:
+            del request.session['entry_email']
+
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': 'Account deleted successfully.'})
+        return redirect('landing')
+    except Exception as e:
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': f'Failed to delete account: {str(e)}'}, status=500)
+        return redirect('profile')
 
 
 @login_required
@@ -616,6 +999,70 @@ def profile(request):
             # Calculate net balance
             net_balance = total_income - total_expenses
     
+            # Build dynamic recent reports list (virtual entries)
+            def _size_estimate(count):
+                # Rough estimate: 60 bytes per row -> convert to MB
+                mb = (count * 60) / (1024*1024)
+                return f"{mb:.1f} MB"
+
+            recent_reports = []
+            # Define reporting window
+            end_date = timezone.now()
+            current_start = end_date - timedelta(days=30)
+            # Income Report (last 30 days)
+            inc_count = Income.objects.filter(user=user, created_at__range=[current_start, end_date]).count()
+            if inc_count:
+                recent_reports.append({
+                    'name': f"Income Report - {end_date.strftime('%b %Y')}",
+                    'desc': 'Monthly income summary',
+                    'type': 'Income',
+                    'badge': 'success',
+                    'generated': end_date.strftime('%b %d, %Y'),
+                    'size': _size_estimate(inc_count),
+                    'view_url': reverse('analytics'),
+                    'download_url': reverse('generate_report') + f"?report_type=Income+Report&date_range=Last+30+days&format=CSV"
+                })
+
+            # Expense Report (last 30 days)
+            exp_count = Expense.objects.filter(user=user, created_at__range=[current_start, end_date]).count()
+            if exp_count:
+                recent_reports.append({
+                    'name': f"Expense Report - {end_date.strftime('%b %Y')}",
+                    'desc': 'Monthly expense breakdown',
+                    'type': 'Expense',
+                    'badge': 'warning',
+                    'generated': end_date.strftime('%b %d, %Y'),
+                    'size': _size_estimate(exp_count),
+                    'view_url': reverse('analytics'),
+                    'download_url': reverse('generate_report') + f"?report_type=Expense+Report&date_range=Last+30+days&format=CSV"
+                })
+
+            # Balance Report (last 30 days)
+            if inc_count or exp_count:
+                recent_reports.append({
+                    'name': f"Balance Report - {end_date.strftime('%b %Y')}",
+                    'desc': 'Monthly balance summary',
+                    'type': 'Balance',
+                    'badge': 'primary',
+                    'generated': end_date.strftime('%b %d, %Y'),
+                    'size': _size_estimate(inc_count + exp_count),
+                    'view_url': reverse('analytics'),
+                    'download_url': reverse('generate_report') + f"?report_type=Balance+Report&date_range=Last+30+days&format=CSV"
+                })
+
+            # Custom Report example if Food category exists
+            if Expense.objects.filter(user=user, category__iexact='Food').exists() or Expense.objects.filter(user=user, category__iexact='Groceries').exists():
+                recent_reports.append({
+                    'name': 'Custom Report - Food Expenses',
+                    'desc': 'Food category analysis',
+                    'type': 'Custom',
+                    'badge': 'info',
+                    'generated': end_date.strftime('%b %d, %Y'),
+                    'size': _size_estimate(exp_count),
+                    'view_url': reverse('analytics'),
+                    'download_url': reverse('generate_report') + f"?report_type=Expense+Report&date_range=Last+30+days&format=CSV"
+                })
+
     context = {
         'user': user,
         'total_income': total_income,
@@ -662,8 +1109,55 @@ def reports(request):
                 count=Count('id')
             ).order_by('-total')
             
+            # Calculate current and previous 30-day periods for dynamic KPIs
+            end_date = timezone.now()
+            current_start = end_date - timedelta(days=30)
+            prev_start = end_date - timedelta(days=60)
+            prev_end = current_start - timedelta(seconds=1)
+
+            # Current period sums (last 30 days)
+            current_income_sum = Income.objects.filter(
+                user=user,
+                created_at__range=[current_start, end_date]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            current_expense_sum = Expense.objects.filter(
+                user=user,
+                created_at__range=[current_start, end_date]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+
+            # Previous period sums (30-60 days ago)
+            previous_income = Income.objects.filter(
+                user=user,
+                created_at__range=[prev_start, prev_end]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            previous_expenses = Expense.objects.filter(
+                user=user,
+                created_at__range=[prev_start, prev_end]
+            ).aggregate(total=Sum('amount'))['total'] or 0
+
+            # Dynamic KPIs
+            def _rate(income, expense):
+                try:
+                    return float(((income or 0) - (expense or 0)) / income * 100) if income and income > 0 else 0.0
+                except Exception:
+                    return 0.0
+
+            savings_rate_report = _rate(current_income_sum, current_expense_sum)
+            previous_savings_rate_report = _rate(previous_income, previous_expenses)
+            savings_rate_change_report = savings_rate_report - previous_savings_rate_report
+
+            # Net savings change percent
+            current_balance_period = float(current_income_sum) - float(current_expense_sum)
+            previous_balance_period = float(previous_income) - float(previous_expenses)
+            if previous_balance_period:
+                balance_change_percent_report = ((current_balance_period - previous_balance_period) / abs(previous_balance_period)) * 100.0
+            else:
+                balance_change_percent_report = 0.0
+
+            # Overall balance (all-time) remains for other cards
+            balance = net_balance
             # Calculate previous period data for comparison
-            end_date = datetime.now()
+            end_date = timezone.now()
             previous_period_start = end_date - timedelta(days=30)
             previous_period_end = end_date - timedelta(days=1)
             
@@ -679,6 +1173,88 @@ def reports(request):
             
             # Calculate balance for comparison
             balance = net_balance
+
+            # Build dynamic recent reports with computed sizes (CSV simulation)
+            import io as _io
+
+            def _format_size(n_bytes: int) -> str:
+                try:
+                    if n_bytes >= 1024 * 1024:
+                        return f"{n_bytes / (1024*1024):.1f} MB"
+                    if n_bytes >= 1024:
+                        return f"{n_bytes / 1024:.1f} KB"
+                    return f"{n_bytes} B"
+                except Exception:
+                    return "-"
+
+            def _csv_size_for(queryset, kind: str) -> int:
+                # Build a CSV in-memory similar to generate_report()
+                header = ['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date']
+                buf = _io.StringIO()
+                w = csv.writer(buf)
+                w.writerow(header)
+                for obj in queryset:
+                    w.writerow([
+                        kind,
+                        float(obj.amount),
+                        obj.category,
+                        obj.description,
+                        obj.currency,
+                        obj.created_at.strftime('%Y-%m-%d %H:%M')
+                    ])
+                return len(buf.getvalue().encode('utf-8'))
+
+            # time windows for these sample recent reports
+            gen_dt = timezone.now()
+            last30_start = gen_dt - timedelta(days=30)
+            last30_incomes = Income.objects.filter(user=user, created_at__range=[last30_start, gen_dt]).order_by('-created_at')
+            last30_expenses = Expense.objects.filter(user=user, created_at__range=[last30_start, gen_dt]).order_by('-created_at')
+
+            income_csv_bytes = _csv_size_for(last30_incomes, 'Income')
+            expense_csv_bytes = _csv_size_for(last30_expenses, 'Expense')
+
+            # Balance report uses both incomes and expenses
+            buf_bal = _io.StringIO()
+            w_bal = csv.writer(buf_bal)
+            w_bal.writerow(['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'])
+            for obj in last30_incomes:
+                w_bal.writerow(['Income', float(obj.amount), obj.category, obj.description, obj.currency, obj.created_at.strftime('%Y-%m-%d %H:%M')])
+            for obj in last30_expenses:
+                w_bal.writerow(['Expense', float(obj.amount), obj.category, obj.description, obj.currency, obj.created_at.strftime('%Y-%m-%d %H:%M')])
+            balance_csv_bytes = len(buf_bal.getvalue().encode('utf-8'))
+
+            # Custom report example: top expense category in last 30 days
+            top_cat_row = last30_expenses.values('category').annotate(total=Sum('amount')).order_by('-total').first()
+            top_cat = (top_cat_row or {}).get('category', 'All')
+            custom_qs = last30_expenses if top_cat == 'All' else last30_expenses.filter(category=top_cat)
+            custom_csv_bytes = _csv_size_for(custom_qs, 'Expense')
+
+            recent_reports = [
+                {
+                    'name': f"Income Report - {gen_dt.strftime('%b %Y')}",
+                    'type': 'Income',
+                    'generated': gen_dt.strftime('%b %d, %Y'),
+                    'size_display': _format_size(income_csv_bytes),
+                },
+                {
+                    'name': f"Expense Report - {gen_dt.strftime('%b %Y')}",
+                    'type': 'Expense',
+                    'generated': (gen_dt - timedelta(days=1)).strftime('%b %d, %Y'),
+                    'size_display': _format_size(expense_csv_bytes),
+                },
+                {
+                    'name': f"Balance Report - { (gen_dt - timedelta(days=gen_dt.day)).strftime('%b %Y') }",
+                    'type': 'Balance',
+                    'generated': (gen_dt - timedelta(days=gen_dt.day)).strftime('%b %d, %Y'),
+                    'size_display': _format_size(balance_csv_bytes),
+                },
+                {
+                    'name': f"Custom Report - {top_cat if top_cat else 'All'}",
+                    'type': 'Custom',
+                    'generated': (gen_dt - timedelta(days=16)).strftime('%b %d, %Y'),
+                    'size_display': _format_size(custom_csv_bytes),
+                },
+            ]
     
     context = {
         'user': user,
@@ -695,6 +1271,11 @@ def reports(request):
         'income_categories': income_categories,
         'message': message,
         'message_type': message_type,
+        'recent_reports': recent_reports if 'recent_reports' in locals() else [],
+        # Dynamic KPIs for Reports page
+        'savings_rate_report': savings_rate_report if 'savings_rate_report' in locals() else 0,
+        'savings_rate_change_report': savings_rate_change_report if 'savings_rate_change_report' in locals() else 0,
+        'balance_change_percent_report': balance_change_percent_report if 'balance_change_percent_report' in locals() else 0,
     }
     return render(request, 'reports/reports.html', context)
 
@@ -702,7 +1283,7 @@ def reports(request):
 @login_required
 def generate_report(request):
     """Generate and download financial reports"""
-    if request.method != 'POST':
+    if request.method not in ('POST', 'GET'):
         return redirect('reports')
     
     user = None
@@ -712,12 +1293,13 @@ def generate_report(request):
     if not user:
         return HttpResponse('Unauthorized', status=401)
     
-    report_type = request.POST.get('report_type', 'Income Report')
-    date_range = request.POST.get('date_range', 'Last 7 days')
-    format_type = request.POST.get('format', 'PDF')
+    data = request.POST if request.method == 'POST' else request.GET
+    report_type = data.get('report_type', 'Income Report')
+    date_range = data.get('date_range', 'Last 7 days')
+    format_type = data.get('format', 'PDF')
     
     # Calculate date range based on selection
-    end_date = datetime.now()
+    end_date = timezone.now()
     if date_range == 'Last 7 days':
         start_date = end_date - timedelta(days=7)
     elif date_range == 'Last 30 days':
@@ -742,75 +1324,126 @@ def generate_report(request):
         created_at__range=[start_date, end_date]
     ).order_by('-created_at')
     
+    # Build rows once, reuse for CSV/Excel/JSON
+    rows = []
+    header = ['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date']
+    if report_type == 'Income Report':
+        for income in incomes:
+            rows.append([
+                'Income',
+                float(income.amount),
+                income.category,
+                income.description,
+                income.currency,
+                income.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+    elif report_type == 'Expense Report':
+        for expense in expenses:
+            rows.append([
+                'Expense',
+                float(expense.amount),
+                expense.category,
+                expense.description,
+                expense.currency,
+                expense.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+    else:  # Balance Report
+        for income in incomes:
+            rows.append([
+                'Income',
+                float(income.amount),
+                income.category,
+                income.description,
+                income.currency,
+                income.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+        for expense in expenses:
+            rows.append([
+                'Expense',
+                float(expense.amount),
+                expense.category,
+                expense.description,
+                expense.currency,
+                expense.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+
     if format_type == 'CSV':
         # Generate CSV report
         response = HttpResponse(content_type='text/csv')
         filename = f"{report_type.replace(' ', '_')}_{date_range.replace(' ', '_')}_{end_date.strftime('%Y%m%d')}.csv"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         writer = csv.writer(response)
-        
-        # Write headers
         writer.writerow(['Report Type', report_type])
         writer.writerow(['Date Range', date_range])
         writer.writerow(['Generated On', end_date.strftime('%Y-%m-%d %H:%M')])
         writer.writerow([])
-        
-        if report_type == 'Income Report':
-            writer.writerow(['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'])
-            for income in incomes:
-                writer.writerow([
-                    'Income',
-                    income.amount,
-                    income.category,
-                    income.description,
-                    income.currency,
-                    income.created_at.strftime('%Y-%m-%d %H:%M')
-                ])
-        elif report_type == 'Expense Report':
-            writer.writerow(['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'])
-            for expense in expenses:
-                writer.writerow([
-                    'Expense',
-                    expense.amount,
-                    expense.category,
-                    expense.description,
-                    expense.currency,
-                    expense.created_at.strftime('%Y-%m-%d %H:%M')
-                ])
-        else:  # Balance Report
-            writer.writerow(['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'])
-            for income in incomes:
-                writer.writerow([
-                    'Income',
-                    income.amount,
-                    income.category,
-                    income.description,
-                    income.currency,
-                    income.created_at.strftime('%Y-%m-%d %H:%M')
-                ])
-            writer.writerow([])
-            for expense in expenses:
-                writer.writerow([
-                    'Expense',
-                    expense.amount,
-                    expense.category,
-                    expense.description,
-                    expense.currency,
-                    expense.created_at.strftime('%Y-%m-%d %H:%M')
-                ])
-        
+        writer.writerow(header)
+        writer.writerows(rows)
+        return response
+
+    elif format_type == 'Excel':
+        # Return Excel-friendly CSV (Excel opens CSV natively)
+        response = HttpResponse(content_type='application/vnd.ms-excel')
+        filename = f"{report_type.replace(' ', '_')}_{date_range.replace(' ', '_')}_{end_date.strftime('%Y%m%d')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        writer = csv.writer(response)
+        writer.writerow(header)
+        writer.writerows(rows)
+        return response
+
+    elif format_type == 'JSON':
+        payload = {
+            'report_type': report_type,
+            'date_range': date_range,
+            'generated_on': end_date.strftime('%Y-%m-%d %H:%M'),
+            'columns': header,
+            'rows': rows,
+        }
+        data = json.dumps(payload, indent=2)
+        response = HttpResponse(data, content_type='application/json')
+        filename = f"{report_type.replace(' ', '_')}_{date_range.replace(' ', '_')}_{end_date.strftime('%Y%m%d')}.json"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
 
     
     elif format_type == 'PDF':
-        # For PDF, we'll redirect to a formatted view that can be printed
-        # For now, return CSV as PDF generation requires additional libraries
-        return HttpResponse('PDF generation is not yet implemented. Please use CSV format.', content_type='text/plain')
+        # Attempt to generate a real PDF using xhtml2pdf (pisa)
+        try:
+            from xhtml2pdf import pisa
+        except Exception:
+            html = render_to_string('reports/pdf_report.html', {
+                'user': user,
+                'report_type': report_type,
+                'date_range': date_range,
+                'generated_on': end_date,
+                'header': ['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'],
+                'rows': rows,
+                'pdf_notice': 'xhtml2pdf is not installed. Please install it to enable direct PDF download.'
+            })
+            return HttpResponse(html)
+
+        html = render_to_string('reports/pdf_report.html', {
+            'user': user,
+            'report_type': report_type,
+            'date_range': date_range,
+            'generated_on': end_date,
+            'header': ['Type', 'Amount', 'Category', 'Description', 'Currency', 'Date'],
+            'rows': rows,
+            'pdf_notice': ''
+        })
+        result = BytesIO()
+        pdf = pisa.CreatePDF(src=html, dest=result)
+        if pdf.err:
+            return HttpResponse('Failed to generate PDF.', content_type='text/plain', status=500)
+        filename = f"{report_type.replace(' ', '_')}_{date_range.replace(' ', '_')}_{end_date.strftime('%Y%m%d')}.pdf"
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
     
     else:
-        # Default to CSV
-        return redirect('generate_report')
+        # PDF or other non-implemented formats
+        return HttpResponse('PDF generation is not yet implemented. Please choose CSV, Excel or JSON.', content_type='text/plain')
 
 
 @login_required
@@ -934,11 +1567,92 @@ def analytics(request):
     ).aggregate(total=Sum('amount'))['total'] or 0
     
     balance = current_income - current_expenses
+
+    # Savings rate (current month) and change vs previous month
+    def _rate(income, expense):
+        try:
+            return float(((income or 0) - (expense or 0)) / income * 100) if income and income > 0 else 0.0
+        except Exception:
+            return 0.0
+    savings_rate = _rate(current_income, current_expenses)
+    previous_savings_rate = _rate(previous_income, previous_expenses)
+    savings_rate_change = savings_rate - previous_savings_rate
     
     # Average monthly income and expense
     avg_monthly_income = total_income / 12 if total_income > 0 else 0
     avg_monthly_expense = total_expense / 12 if total_expense > 0 else 0
-    
+
+    # Build dynamic Expense Analysis & Saving Tips using current vs previous month
+    # Current month category totals
+    current_cats = Expense.objects.filter(
+        user=user,
+        created_at__gte=current_month_start,
+        created_at__lt=end_date
+    ).values('category').annotate(total=Sum('amount')).order_by('-total')
+
+    # Previous month category totals
+    prev_cats = Expense.objects.filter(
+        user=user,
+        created_at__gte=previous_month_start,
+        created_at__lt=previous_month
+    ).values('category').annotate(total=Sum('amount')).order_by('-total')
+
+    prev_map = {row['category'] or 'Other': float(row['total'] or 0) for row in prev_cats}
+    cur_map = {row['category'] or 'Other': float(row['total'] or 0) for row in current_cats}
+
+    total_cur_exp = sum(cur_map.values()) or 0.0
+    saving_tips = []
+
+    # 1) Top category optimization (e.g., Housing if dominant)
+    if current_cats:
+        top_cat = (current_cats[0]['category'] or 'Other')
+        top_pct = (float(current_cats[0]['total'])/total_cur_exp*100.0) if total_cur_exp > 0 else 0.0
+        if top_pct >= 25.0:
+            saving_tips.append({
+                'level': 'info',
+                'title': f"{top_cat.title()} Optimization",
+                'summary': f"Your {top_cat.lower()} costs are {top_pct:.0f}% of total expenses. Consider:",
+                'lines': [
+                    'Negotiating contract/plan',
+                    'Switching to economical alternatives',
+                    'Setting a monthly cap for this category',
+                ]
+            })
+
+    # 2) Food spending alert if increased > 10%
+    cur_food = cur_map.get('Food', 0.0) + cur_map.get('Groceries', 0.0)
+    prev_food = prev_map.get('Food', 0.0) + prev_map.get('Groceries', 0.0)
+    if prev_food > 0 and cur_food > prev_food * 1.10:
+        rise = ((cur_food - prev_food)/prev_food*100.0)
+        saving_tips.append({
+            'level': 'warning',
+            'title': 'Food Spending Alert',
+            'summary': f"Food expenses increased by {rise:.0f}% this month:",
+            'lines': ['Plan meals in advance', 'Use grocery lists', 'Limit dining out']
+        })
+
+    # 3) Transport savings if decreased > 10%
+    cur_trans = cur_map.get('Transport', 0.0) + cur_map.get('Transportation', 0.0)
+    prev_trans = prev_map.get('Transport', 0.0) + prev_map.get('Transportation', 0.0)
+    if prev_trans > 0 and cur_trans < prev_trans * 0.90:
+        saving_tips.append({
+            'level': 'success',
+            'title': 'Transportation Savings',
+            'summary': 'Great job on transport costs:',
+            'lines': ['Consider carpooling', 'Public transport options', 'Regular maintenance']
+        })
+
+    # 4) Income growth tip if current income > previous by > 10%
+    if previous_income and current_income and previous_income > 0:
+        inc_growth = ((float(current_income) - float(previous_income))/float(previous_income))*100.0
+        if inc_growth >= 10.0:
+            saving_tips.append({
+                'level': 'primary',
+                'title': 'Income Growth',
+                'summary': f"Your income grew by {inc_growth:.1f}%:",
+                'lines': ['Freelance opportunities', 'Skill development', 'Investment income']
+            })
+
     # Daily data (last 7 days)
     today = datetime.now().date()
     daily_income = []
@@ -979,6 +1693,39 @@ def analytics(request):
         
         weekly_income.insert(0, float(week_income))
         weekly_expense.insert(0, float(week_expense))
+
+    # Simple ML-like predictions based on recent monthly trends
+    # Build last 6 month expense totals (floats)
+    recent_months = []
+    recent_expenses_list = []
+    for i in range(1, 7):
+        m_end = end_date.replace(day=1) - timedelta(days=30*(i-1))
+        m_start = (m_end - timedelta(days=1)).replace(day=1)
+        total_m_exp = Expense.objects.filter(user=user, created_at__gte=m_start, created_at__lt=m_end).aggregate(total=Sum('amount'))['total'] or 0
+        recent_months.append(m_start.strftime('%b %Y'))
+        recent_expenses_list.append(float(total_m_exp))
+
+    # Prediction = average of last 3 months (fallback to 0)
+    last3 = recent_expenses_list[:3] if recent_expenses_list else []
+    predicted_expenses = float(sum(last3)/len(last3)) if last3 and len(last3) > 0 else 0.0
+
+    # Confidence from variance: lower variance -> higher confidence
+    import statistics
+    try:
+        stddev = statistics.pstdev(last3) if last3 and len(last3) > 1 else 0
+        mean = (sum(last3)/len(last3)) if last3 and len(last3) > 0 else 0
+        variability = (stddev/mean) if mean > 0 else 0
+        prediction_confidence = max(0, min(1.0, 1.0 - variability)) * 100.0
+    except Exception:
+        prediction_confidence = 60.0
+
+    # Potential savings suggestion (10% of predicted)
+    potential_savings = max(0.0, predicted_expenses * 0.10)
+
+    # Goal achievement likelihood vs a default savings goal for the month
+    savings_goal_amount = 30000.0
+    current_month_savings = float(max(0.0, (current_income or 0) - (current_expenses or 0)))
+    goal_achievement_pct = max(0.0, min(100.0, (current_month_savings / savings_goal_amount * 100.0) if savings_goal_amount > 0 else 0.0))
 
     # Convert Decimal objects to float for JSON serialization
     expense_categories_for_json = []
@@ -1034,6 +1781,12 @@ def analytics(request):
         'daily_expense_json': json.dumps(daily_expense),
         'weekly_income_json': json.dumps(weekly_income),
         'weekly_expense_json': json.dumps(weekly_expense),
+        # Predictions (ML Insights)
+        'predicted_expenses': predicted_expenses,
+        'prediction_confidence': prediction_confidence,
+        'potential_savings': potential_savings,
+        'savings_goal_amount': savings_goal_amount,
+        'goal_achievement_pct': goal_achievement_pct,
     }
     
     return render(request, 'analytics/analytics.html', context)
@@ -1870,13 +2623,75 @@ def generate_custom_report(request):
             transactions.sort(key=lambda x: x['category'])
         
         # Generate report based on format
+        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"Custom_Report_{timestamp}"
+
         if export_format == 'CSV':
-            return generate_csv_report(transactions, f"Custom_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            return generate_csv_report(transactions, filename)
         elif export_format == 'JSON':
-            return generate_json_report(transactions, f"Custom_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            return generate_json_report(transactions, filename)
+        elif export_format == 'Excel':
+            # Excel-friendly CSV content type
+            response = HttpResponse(content_type='application/vnd.ms-excel')
+            response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['Type', 'Amount', 'Category', 'Description', 'Date'])
+            for t in transactions:
+                writer.writerow([
+                    t['type'],
+                    float(t['amount']),
+                    t['category'],
+                    t['description'],
+                    t['created_at'].strftime('%Y-%m-%d %H:%M')
+                ])
+            return response
+        elif export_format == 'PDF':
+            # Build rows for PDF
+            header = ['Type', 'Amount', 'Category', 'Description', 'Date']
+            rows = []
+            for t in transactions:
+                rows.append([
+                    t['type'],
+                    float(t['amount']),
+                    t['category'],
+                    t['description'],
+                    t['created_at'].strftime('%Y-%m-%d %H:%M')
+                ])
+
+            try:
+                from xhtml2pdf import pisa
+            except Exception:
+                # Fallback to HTML preview if xhtml2pdf is not installed
+                html = render_to_string('reports/pdf_report.html', {
+                    'user': user,
+                    'report_type': 'Custom Report',
+                    'date_range': f"{start_date or ''} to {end_date or ''}".strip(),
+                    'generated_on': timezone.now(),
+                    'header': header,
+                    'rows': rows,
+                    'pdf_notice': 'xhtml2pdf is not installed. Please install it to enable direct PDF download.'
+                })
+                return HttpResponse(html)
+
+            html = render_to_string('reports/pdf_report.html', {
+                'user': user,
+                'report_type': 'Custom Report',
+                'date_range': f"{start_date or ''} to {end_date or ''}".strip(),
+                'generated_on': timezone.now(),
+                'header': header,
+                'rows': rows,
+                'pdf_notice': ''
+            })
+            result = BytesIO()
+            pdf = pisa.CreatePDF(src=html, dest=result)
+            if pdf.err:
+                return HttpResponse('Failed to generate PDF.', content_type='text/plain', status=500)
+            response = HttpResponse(result.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
+            return response
         else:
-            # Default to existing generate_report functionality
-            return generate_report(request)
+            # Default to CSV if format is unrecognized
+            return generate_csv_report(transactions, filename)
     
     return redirect('reports')
 

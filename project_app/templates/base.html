@@ -187,25 +187,32 @@
         }
 
         .sidebar-logo {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 0;
+            margin: 0 auto;
             padding: 0;
             position: relative;
             z-index: 2;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            width: 200px;
+            height: 56px;
+            overflow: hidden;
         }
 
         .sidebar-logo-img {
-            width: 200px;
-            height: 50px;
+            width: 100%;
+            height: 100%;
             filter: none;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 0;
             border: none;
             background: transparent;
             padding: 0;
-            object-fit: contain;
+            object-fit: contain; /* contain to show entire logo without cropping */
+            display: block;
         }
 
         .sidebar-logo-img:hover {
@@ -229,16 +236,22 @@
             color: var(--dark-color);
             padding: 1rem 1.25rem;
         }
-
+        
         .modal-header::after {
             content: '';
             background: rgba(255, 255, 255, 0.2);
         }
         
+        /* Default modal title style: dark text */
         .modal-title {
             font-weight: 700;
-            color: white;
+            color: #111827; /* dark/black */
             font-size: 1.5rem;
+        }
+
+        /* Ensure Add Income modal title is clearly visible */
+        #addIncomeModalLabel {
+            color: #111827 !important;
         }
 
         .btn-close {
@@ -333,7 +346,9 @@
             margin-left: 280px;
             background: #f8f9fa;
             min-height: 100vh;
-            flex: 1;
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
         }
 
         .dashboard-container {
@@ -363,6 +378,31 @@
             background: #f8f9fa;
         }
 
+        /* Footer-safe layout */
+        .content-inner { flex: 1 0 auto; }
+
+        /* Global Footer */
+        .site-footer {
+            background: #ffffff;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+        .site-footer .footer-left { display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+        .site-footer .footer-logo { display: inline-flex; align-items: center; }
+        .site-footer .footer-logo img { height: 20px; width: auto; object-fit: contain; }
+        .site-footer .footer-text { color: #6c757d; }
+        .site-footer .footer-right { display: flex; align-items: center; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+        .site-footer .footer-right a { color: #6c757d; text-decoration: none; }
+        .site-footer .footer-right a:hover { color: #0d6efd; text-decoration: underline; }
+
         /* Dashboard Cards */
         .stats-card {
             background: white;
@@ -391,6 +431,8 @@
             padding: 1rem 1.5rem;
             font-weight: 600;
         }
+
+        
 
         /* Analytics Page Styles */
         .stat-icon {
@@ -564,7 +606,7 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="{% static 'images/financeflow-logo-proper.svg' %}" alt="FinanceFlow Logo" class="sidebar-logo-img">
+                    <img src="{% static 'images/logo.png' %}" alt="FinanceFlow Logo" class="sidebar-logo-img">
                 </div>
             </div>
             <div class="sidebar-nav">
@@ -618,7 +660,25 @@
         {% endif %}
         <!-- Main Content -->
         <div class="main-content" {% if request.resolver_match.url_name == 'landing' or request.resolver_match.url_name == 'register' or request.resolver_match.url_name == 'login' %}style="margin-left: 0; width: 100%;"{% endif %}>
-            {% block content %}{% endblock %}
+            <div class="content-inner">
+                {% block content %}{% endblock %}
+            </div>
+            {% if request.resolver_match.url_name != 'landing' %}
+            <footer class="site-footer">
+                <div class="footer-left">
+                    <span class="footer-logo"><img src="{% static 'images/logo.png' %}" alt="FinanceFlow"></span>
+                    <span class="footer-text">© {% now "Y" %} FinanceFlow</span>
+                </div>
+                <nav class="footer-right">
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'analytics' %}">Analytics</a>
+                    <a href="{% url 'reports' %}">Reports</a>
+                    <a href="{% url 'transaction_history' %}">Transactions</a>
+                    <a href="{% url 'groups' %}">Groups</a>
+                    <a href="{% url 'profile' %}">Profile</a>
+                </nav>
+            </footer>
+            {% endif %}
         </div>
     </div>
 
@@ -675,6 +735,69 @@
                 card.addEventListener('mouseleave', function() {
                     this.style.transform = 'translateY(0)';
                 });
+            });
+
+            // Global handlers for search/notification buttons on all pages
+            async function loadNotifications() {
+                try {
+                    const res = await fetch('{% url "notifications_data" %}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const data = await res.json();
+                    const count = parseInt(data.count || 0, 10) || 0;
+
+                    // Update any badges found on the page
+                    document.querySelectorAll('.notification-badge').forEach(b => {
+                        b.textContent = count;
+                        b.style.display = count > 0 ? 'flex' : 'none';
+                    });
+
+                    // Populate modal list if present
+                    const list = document.getElementById('notificationsList');
+                    const empty = document.getElementById('notificationsEmpty');
+                    if (list) {
+                        list.innerHTML = '';
+                        if (!data.items || data.items.length === 0) {
+                            if (empty) empty.style.display = 'block';
+                        } else {
+                            if (empty) empty.style.display = 'none';
+                            data.items.forEach(i => {
+                                const item = document.createElement('div');
+                                const cls = i.level === 'success' ? 'text-success' : (i.level === 'warning' ? 'text-warning' : 'text-info');
+                                item.className = 'list-group-item d-flex align-items-center';
+                                item.innerHTML = `<i class="bi ${i.icon || 'bi-lightbulb'} me-2 ${cls}"></i>` +
+                                    `<div><div class="fw-semibold">${i.title || ''}</div>` +
+                                    (i.subtitle ? `<small class=\"text-muted\">${i.subtitle}</small>` : '') + '</div>';
+                                list.appendChild(item);
+                            });
+                        }
+                    }
+                } catch (e) {
+                    // Fail silently to avoid blocking UI
+                }
+            }
+
+            // Initial load once DOM is ready
+            loadNotifications();
+
+            document.body.addEventListener('click', function(e) {
+                const target = e.target.closest('.search-btn');
+                if (target) {
+                    e.preventDefault();
+                    const modalEl = document.getElementById('globalSearchModal');
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                    return;
+                }
+            });
+
+            document.body.addEventListener('click', function(e) {
+                const target = e.target.closest('.notification-btn');
+                if (target) {
+                    e.preventDefault();
+                    // Refresh latest notifications before showing
+                    loadNotifications();
+                    const modalEl = document.getElementById('globalNotificationsModal');
+                    if (modalEl) new bootstrap.Modal(modalEl).show();
+                    return;
+                }
             });
 
             // Handle Income Form Submission
@@ -802,6 +925,69 @@
     </script>
     
     {% block extra_js %}{% endblock %}
+
+    <!-- Global Search Modal (available on all pages) -->
+    <div class="modal fade" id="globalSearchModal" tabindex="-1" aria-labelledby="globalSearchLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="globalSearchLabel"><i class="bi bi-search me-2"></i>Search</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="globalSearchInput" class="form-control" placeholder="Search transactions (press Enter to open history)">
+                    </div>
+                    <small class="text-muted d-block mt-2">Tip: Use Transaction History filters for advanced search.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="globalSearchGoBtn">Go</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Notifications Modal (available on all pages) -->
+    <div class="modal fade" id="globalNotificationsModal" tabindex="-1" aria-labelledby="globalNotificationsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="globalNotificationsLabel"><i class="bi bi-bell me-2"></i>Notifications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="notificationsList" class="list-group"></div>
+                    <small class="text-muted d-block mt-2" id="notificationsEmpty" style="display:none;">No notifications.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple redirect on search enter or Go button
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('globalSearchInput');
+            const goBtn = document.getElementById('globalSearchGoBtn');
+            function goSearch() {
+                const q = (input?.value || '').trim();
+                // Redirect to history with q param; page can use client-side filtering
+                window.location.href = `{% url 'transaction_history' %}` + (q ? (`?q=${encodeURIComponent(q)}`) : '');
+            }
+            if (input) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        goSearch();
+                    }
+                });
+            }
+            if (goBtn) goBtn.addEventListener('click', goSearch);
+        });
+    </script>
     
     <!-- Add Income Modal -->
     <div class="modal fade" id="addIncomeModal" tabindex="-1" aria-labelledby="addIncomeModalLabel" aria-hidden="true">
@@ -938,78 +1124,6 @@
         </div>
     </div>
 
-    <!-- Author Attribution Footer -->
-    {% if request.resolver_match.url_name != 'landing' and request.resolver_match.url_name != 'register' and request.resolver_match.url_name != 'login' %}
-    <footer class="app-footer">
-        <div class="footer-content">
-            <div class="footer-left">
-                <span class="footer-text">© 2025 FinanceFlow</span>
-                <span class="footer-separator">•</span>
-            </div>
-            <div class="footer-right">
-                <span class="footer-version">v2.1.0</span>
-            </div>
-        </div>
-    </footer>
-    {% endif %}
-
-    <style>
-        .app-footer {
-            position: fixed;
-            bottom: 0;
-            left: 280px;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 8px 20px;
-            z-index: 1000;
-            font-size: 0.85rem;
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .footer-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .footer-text, .footer-author {
-            color: #6b7280;
-        }
-        
-        .footer-author strong {
-            color: #3b82f6;
-            font-weight: 600;
-        }
-        
-        .footer-separator {
-            color: #d1d5db;
-        }
-        
-        .footer-version {
-            color: #9ca3af;
-            font-size: 0.8rem;
-        }
-        
-        .main-content {
-            padding-bottom: 50px;
-        }
-        
-        @media (max-width: 768px) {
-            .app-footer {
-                left: 0;
-            }
-            .footer-content {
-                flex-direction: column;
-                gap: 4px;
-            }
-        }
-    </style>
+    
 </body>
 </html>

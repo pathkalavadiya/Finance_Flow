@@ -5,19 +5,29 @@
 {% block extra_css %}
 <style>
     .profile-avatar {
-        width: 100px;
-        height: 100px;
+        width: 96px;
+        height: 96px;
         border-radius: 50%;
-        background: #0d6efd;
+        background: linear-gradient(135deg, #1D4ED8, #3B82F6);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: bold;
-        margin: 0 auto 20px;
+        margin: 0 auto 16px;
         color: white;
         border: 3px solid #e9ecef;
     }
+    .profile-name { font-weight: 700; margin-bottom: 4px; }
+    .profile-email { color: #6c757d; margin-bottom: 8px; }
+    .status-pill { padding: 4px 10px; font-size: .75rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; }
+    .status-pill i { font-size: .9rem; }
+
+    .account-meta { margin-top: 18px; }
+    .account-meta .meta-item { text-align: center; padding: 8px 4px; }
+    .account-meta .meta-icon { font-size: 1.25rem; margin-bottom: 6px; color: #0d6efd; }
+    .account-meta .meta-title { display:block; color: #6c757d; font-size: .9rem; }
+    .account-meta .meta-value { display:block; color: #111827; font-weight: 700; }
     
     .stats-card {
         background: white;
@@ -159,28 +169,24 @@
                     <div class="profile-avatar">
                         {{ user.name|first|upper }}
                     </div>
-                    <h3 class="mb-2">{{ user.name|default:"User Name" }}</h3>
-                    <p class="mb-3 text-muted">{{ user.email|default:"user@example.com" }}</p>
-                    <span class="badge bg-success">
-                        <i class="bi bi-check-circle me-1"></i>
+                    <h3 class="profile-name">{{ user.name|default:"User Name" }}</h3>
+                    <p class="profile-email">{{ user.email|default:"user@example.com" }}</p>
+                    <span class="badge bg-success status-pill">
+                        <i class="bi bi-check-circle"></i>
                         Active Account
                     </span>
                     
                     <!-- Account Information -->
-                    <div class="row mt-4">
-                        <div class="col-6">
-                            <div class="text-center">
-                                <i class="bi bi-calendar-plus text-primary fs-4"></i>
-                                <small class="d-block mt-1 text-muted">Account Created</small>
-                                <strong class="text-dark">{{ user.date_joined|date:"M d, Y"|default:"Recently" }}</strong>
-                            </div>
+                    <div class="row account-meta">
+                        <div class="col-6 meta-item">
+                            <i class="bi bi-calendar-plus meta-icon"></i>
+                            <span class="meta-title">Account Created</span>
+                            <span class="meta-value">{{ user.date_joined|date:"M d, Y"|default:"Recently" }}</span>
                         </div>
-                        <div class="col-6">
-                            <div class="text-center">
-                                <i class="bi bi-person-check text-success fs-4"></i>
-                                <small class="d-block mt-1 text-muted">Status</small>
-                                <strong class="text-dark">Active User</strong>
-                            </div>
+                        <div class="col-6 meta-item">
+                            <i class="bi bi-person-check meta-icon" style="color:#198754"></i>
+                            <span class="meta-title">Status</span>
+                            <span class="meta-value">Active User</span>
                         </div>
                     </div>
                 </div>
@@ -248,7 +254,7 @@
                         
                         <div class="row g-3">
                             <div class="col-12">
-                                <h5 class="mb-3">Account Settings</h5>
+                                <h5 class="mb-3" id="account-settings">Account Settings</h5>
                             </div>
                             
                             <div class="col-md-6">
@@ -396,19 +402,19 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button class="btn btn-outline-primary">
+                        <a href="{% url 'export_profile_data' %}" class="btn btn-outline-primary">
                             <i class="bi bi-download"></i>
                             Export Data
-                        </button>
-                        <button class="btn btn-outline-warning">
+                        </a>
+                        <a href="#account-settings" class="btn btn-outline-warning">
                             <i class="bi bi-shield-check"></i>
                             Privacy Settings
-                        </button>
-                        <button class="btn btn-outline-info">
+                        </a>
+                        <a href="mailto:support@financeflow.app?subject=FinanceFlow%20Help" class="btn btn-outline-info">
                             <i class="bi bi-question-circle"></i>
                             Help & Support
-                        </button>
-                        <button class="btn btn-outline-danger">
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" id="deleteAccountBtn">
                             <i class="bi bi-trash"></i>
                             Delete Account
                         </button>
@@ -418,4 +424,27 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const delBtn = document.getElementById('deleteAccountBtn');
+    if (delBtn) {
+        delBtn.addEventListener('click', function(){
+            if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+            fetch("{% url 'delete_account' %}", {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': (typeof getCSRFToken === 'function' ? getCSRFToken() : (document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : ''))
+                }
+            }).then(r=>r.json()).then(data=>{
+                if (data.success) {
+                    window.location.href = "{% url 'landing' %}";
+                } else {
+                    alert(data.message || 'Failed to delete account.');
+                }
+            }).catch(()=>alert('Failed to delete account.'));
+        });
+    }
+});
+</script>
 {% endblock %}

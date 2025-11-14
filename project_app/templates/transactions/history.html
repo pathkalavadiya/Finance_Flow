@@ -184,13 +184,21 @@
                                 {% if transaction.type == 'income' %}+{% else %}-{% endif %}₹{{ transaction.amount }}
                             </div>
                             <div class="transaction-actions">
-                                <button class="btn btn-sm btn-outline-primary me-1" 
-                                        onclick="editTransaction('{{ transaction.type }}', {{ transaction.id }}, '{{ transaction.description }}', {{ transaction.amount }}, '{{ transaction.category }}', '{{ transaction.date|date:"Y-m-d" }}')"
+                                <button class="btn btn-sm btn-outline-primary me-1 edit-transaction-btn"
+                                        data-type="{{ transaction.type }}"
+                                        data-id="{{ transaction.id }}"
+                                        data-description="{{ transaction.description|escapejs }}"
+                                        data-amount="{{ transaction.amount }}"
+                                        data-category="{{ transaction.category|escapejs }}"
+                                        data-date="{{ transaction.date|date:'Y-m-d' }}"
                                         title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" 
-                                        onclick="deleteTransaction('{{ transaction.type }}', {{ transaction.id }}, '{{ transaction.description }}', {{ transaction.amount }})"
+                                <button class="btn btn-sm btn-outline-danger delete-transaction-btn"
+                                        data-type="{{ transaction.type }}"
+                                        data-id="{{ transaction.id }}"
+                                        data-description="{{ transaction.description|escapejs }}"
+                                        data-amount="{{ transaction.amount }}"
                                         title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -200,8 +208,8 @@
                     
                     <div class="transaction-meta">
                         <div class="author-info">
-                            <i class="bi bi-person-check text-primary"></i>
-                            <span>Created by <strong>{{ transaction.author_name }}</strong></span>
+                            <i class="bi {% if transaction.type == 'income' %}bi-arrow-down-left-circle text-success{% else %}bi-arrow-up-right-circle text-danger{% endif %}"></i>
+                            <span>{% if transaction.type == 'income' %}Credited{% else %}Debited{% endif %} by <strong>{{ transaction.author_name }}</strong></span>
                         </div>
                         <div class="date-info">
                             <i class="bi bi-calendar3 me-1"></i>
@@ -342,6 +350,31 @@
                         card.style.display = 'none';
                     }
                 });
+            });
+        });
+
+        // Wire up edit/delete buttons using data-* attributes
+        document.querySelectorAll('.edit-transaction-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                editTransaction(
+                    this.dataset.type,
+                    parseInt(this.dataset.id, 10),
+                    this.dataset.description,
+                    parseFloat(this.dataset.amount),
+                    this.dataset.category,
+                    this.dataset.date
+                );
+            });
+        });
+
+        document.querySelectorAll('.delete-transaction-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                deleteTransaction(
+                    this.dataset.type,
+                    parseInt(this.dataset.id, 10),
+                    this.dataset.description,
+                    parseFloat(this.dataset.amount)
+                );
             });
         });
     });
